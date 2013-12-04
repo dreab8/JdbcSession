@@ -23,8 +23,6 @@
  */
 package org.hibernate.resource2.transaction;
 
-import org.hibernate.engine.transaction.spi.SynchronizationRegistry;
-
 /**
  * @author Steve Ebersole
  */

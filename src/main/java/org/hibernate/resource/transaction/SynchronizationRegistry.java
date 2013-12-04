@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) 2011, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -23,13 +23,32 @@
  */
 package org.hibernate.resource.transaction;
 
+import java.io.Serializable;
+import javax.transaction.Synchronization;
+
 /**
+ * Manages a registry of (local) JTA {@link Synchronization} instances
+ *
  * @author Steve Ebersole
  */
-public interface TransactionCoordinator {
-	public PhysicalTransactionInflow getPhysicalTransactionInflow();
+public interface SynchronizationRegistry extends Serializable {
+	/**
+	 * Register a {@link Synchronization} callback for this transaction.
+	 *
+	 * @param synchronization The synchronization callback to register.
+	 */
+	void registerSynchronization(Synchronization synchronization);
 
-	public void pulse();
+	/**
+	 * Delegates the {@link Synchronization#beforeCompletion} call to each registered Synchronization
+	 */
+	void notifySynchronizationsBeforeTransactionCompletion();
 
-	public SynchronizationRegistry getLocalSynchronizations();
+	/**
+	 * Delegates the {@link Synchronization#afterCompletion} call to each registered Synchronization.  Will also
+	 * clear the registered Synchronizations after all have been notified.
+	 *
+	 * @param status The transaction status, per {@link javax.transaction.Status} constants
+	 */
+	void notifySynchronizationsAfterTransactionCompletion(int status);
 }

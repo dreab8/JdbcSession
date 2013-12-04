@@ -25,11 +25,10 @@ package org.hibernate.resource2.transaction.internal;
 
 import javax.transaction.Status;
 
-import org.hibernate.engine.transaction.internal.SynchronizationRegistryImpl;
-import org.hibernate.engine.transaction.spi.SynchronizationRegistry;
 import org.hibernate.resource2.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource2.jdbc.spi.PhysicalJdbcTransaction;
 import org.hibernate.resource2.transaction.PhysicalTransactionInflow;
+import org.hibernate.resource2.transaction.SynchronizationRegistry;
 import org.hibernate.resource2.transaction.TransactionCoordinator;
 
 /**
@@ -39,7 +38,7 @@ import org.hibernate.resource2.transaction.TransactionCoordinator;
  */
 public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 	private final JdbcSessionImplementor jdbcSession;
-	private final SynchronizationRegistry synchronizationRegistry = new SynchronizationRegistryImpl();
+	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
 	private PhysicalTransactionInflowImpl inflow;
 

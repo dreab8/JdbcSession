@@ -21,15 +21,16 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction;
+package org.hibernate.resource.transaction.synchronization.spi;
+
+import javax.transaction.Synchronization;
 
 /**
+ * Manages funneling JTA Synchronization callbacks back into the Hibernate transaction engine.
+ *
  * @author Steve Ebersole
  */
-public interface TransactionCoordinator {
-	public PhysicalTransactionInflow getPhysicalTransactionInflow();
-
+public interface SynchronizationCallbackCoordinator extends Synchronization {
 	public void pulse();
-
-	public SynchronizationRegistry getLocalSynchronizations();
+	public void processAnyDelayedAfterCompletion();
 }
