@@ -59,19 +59,6 @@ public interface JdbcSession {
 	 */
 	public TransactionCoordinator getTransactionCoordinator();
 
-	// todo : does this manage/expose the TransactionCoordinator (TC)?  Which in turn manages/exposes the PhysicalTransaction (PT).
-	//		* in that model, since the TC is building the PT the PT would in fact know all the info it needs to
-	// 		perform the slight variances outlined in proposal.md
-	//		* since the TC knows about the JdbcSession) the PT here
-
-	// add a LocalTransactionInflowTarget which is a delegate the TC exposes to "LocalTransactionInflow" (see next). it
-	// combines the "physical transaction" (jdbc/jta)
-
-	// add a LocalTransactionInflow which  is the bridge between
-	// 		1) the notion of a transaction exposed to the user
-	//		2) the LocalTransactionInflowTarget
-	// i
-
 	/**
 	 * Is this JdbcSession still open/active.  In other words, has {@link #close} not been called yet?
 	 *
