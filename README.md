@@ -150,10 +150,7 @@ concrete implementation of the interface that gets used.  Essentially we now hav
 for transaction driving.
 * A second change is to further split JDBC-based versus JTA-based transaction handling.  Here we have a contract
 called TransactionCoordinator whose overall role is roughly the same as the _org.hibernate.engine.transaction.spi.TransactionCoordinator_
-contract in the current Hibernate code.  However, how that contract is implemented here is much different.  In the
-existing code, the TransactionCoordinator impl actually handles both JDBC and JTA cases, meaning it is very complex
-with lots of if statements for the various cases.  The proposed change here is to instead have different implementations
-specific to JDBC/JTA cases.
+contract in the current Hibernate code.  However, the way in which that contract is implemented here is much different.  In the existing code, the TransactionCoordinator impl actually handles both JDBC and JTA cases, meaning it is very complex with lots of if statements for the various cases.  The proposed change here is to instead have different implementations specific to JDBC/JTA cases.
 * For JTA environments, I would love to always drive "transaction reaction" from a Synchronization registered with
 the JTA transaction.  I am just not sure how feasible it is to say this will *always* be an option (e.g., some
 JTA TransactionManagers won't let you register a Synchronization against a transaction that has been marked for
