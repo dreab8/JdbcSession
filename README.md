@@ -9,7 +9,7 @@ proposal ;)
 ## Granularity of the JDBC abstraction API
 
 First and foremost is the API we want to expose from a JdbcSession.  I did 2 approaches to compare/contract styles.
-The first approach (org.hibernate.jdbc package) largely follows what we have in Hibernate today; a very granular
+The first approach (org.hibernate.resource2.jdbc package) largely follows what we have in Hibernate today; a very granular
 low-level API.  The client of this API is expected to make a lot of decisions, make a lot of "little" calls based on
 those decisions and do a lot of error handling.  In many ways what we have is a *very* thin wrapper over JDBC.  For
 example, using JDBC directly we would have code like:
