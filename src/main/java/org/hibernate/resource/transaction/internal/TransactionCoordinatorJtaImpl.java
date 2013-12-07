@@ -4,7 +4,7 @@ import javax.transaction.Status;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
-import org.hibernate.resource.transaction.PhysicalTransactionInflow;
+import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackTarget;
@@ -42,7 +42,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 	}
 
 	@Override
-	public PhysicalTransactionInflow getPhysicalTransactionInflow() {
+	public PhysicalTransactionDelegate getPhysicalTransactionDelegate() {
 		return null;  //To change body of implemented methods use File | Settings | File Templates.
 	}
 

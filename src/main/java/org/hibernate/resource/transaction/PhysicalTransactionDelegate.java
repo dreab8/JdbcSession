@@ -28,7 +28,7 @@ package org.hibernate.resource.transaction;
  *
  * @author Steve Ebersole
  */
-public interface PhysicalTransactionInflow {
+public interface PhysicalTransactionDelegate {
 	/**
 	 * Begin the physical transaction
 	 */

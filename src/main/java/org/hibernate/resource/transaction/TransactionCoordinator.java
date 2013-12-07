@@ -24,12 +24,24 @@
 package org.hibernate.resource.transaction;
 
 /**
+ * Models the coordination of all transaction related flows.
+ *
  * @author Steve Ebersole
  */
 public interface TransactionCoordinator {
-	public PhysicalTransactionInflow getPhysicalTransactionInflow();
+	/**
+	 * Get the PhysicalTransactionDelegate for this TransactionCoordinator for use by the local transaction
+	 *
+	 * @return The PhysicalTransactionDelegate
+	 */
+	public PhysicalTransactionDelegate getPhysicalTransactionDelegate();
 
 	public void pulse();
 
+	/**
+	 * Get access to the local registry of Synchronization instances
+	 *
+	 * @return The local Synchronization registry
+	 */
 	public SynchronizationRegistry getLocalSynchronizations();
 }

@@ -27,7 +27,7 @@ import javax.transaction.Status;
 
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.PhysicalJdbcTransaction;
-import org.hibernate.resource.transaction.PhysicalTransactionInflow;
+import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 
@@ -40,18 +40,18 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 	private final JdbcSessionImplementor jdbcSession;
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
-	private PhysicalTransactionInflowImpl inflow;
+	private PhysicalTransactionDelegateImpl physicalTransactionDelegate;
 
 	public TransactionCoordinatorJdbcImpl(JdbcSessionImplementor jdbcSession) {
 		this.jdbcSession = jdbcSession;
 	}
 
 	@Override
-	public PhysicalTransactionInflow getPhysicalTransactionInflow() {
-		if ( inflow == null ) {
-			inflow = new PhysicalTransactionInflowImpl( jdbcSession.getPhysicalJdbcTransaction() );
+	public PhysicalTransactionDelegate getPhysicalTransactionDelegate() {
+		if ( physicalTransactionDelegate == null ) {
+			physicalTransactionDelegate = new PhysicalTransactionDelegateImpl( jdbcSession.getPhysicalJdbcTransaction() );
 		}
-		return inflow;
+		return physicalTransactionDelegate;
 	}
 
 	@Override
@@ -74,12 +74,12 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 	}
 
 	private void invalidateInflow() {
-		if ( inflow == null ) {
-			throw new IllegalStateException( "transaction inflow handle not known on attempt to invalidate" );
+		if ( physicalTransactionDelegate == null ) {
+			throw new IllegalStateException( "Physical-transaction delegate not known on attempt to invalidate" );
 		}
 
-		inflow.invalidate();
-		inflow = null;
+		physicalTransactionDelegate.invalidate();
+		physicalTransactionDelegate = null;
 	}
 
 	@Override
@@ -87,11 +87,11 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 		return synchronizationRegistry;
 	}
 
-	public class PhysicalTransactionInflowImpl implements PhysicalTransactionInflow {
+	public class PhysicalTransactionDelegateImpl implements PhysicalTransactionDelegate {
 		private final PhysicalJdbcTransaction jdbcTransaction;
 		private boolean valid = true;
 
-		public PhysicalTransactionInflowImpl(PhysicalJdbcTransaction jdbcTransaction) {
+		public PhysicalTransactionDelegateImpl(PhysicalJdbcTransaction jdbcTransaction) {
 			this.jdbcTransaction = jdbcTransaction;
 		}
 
@@ -109,7 +109,7 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 
 		private void errorIfInvalid() {
 			if ( !valid ) {
-				throw new IllegalStateException( "transaction inflow handle is no longer valid" );
+				throw new IllegalStateException( "Physical-transaction delegate is no longer valid" );
 			}
 		}
 
