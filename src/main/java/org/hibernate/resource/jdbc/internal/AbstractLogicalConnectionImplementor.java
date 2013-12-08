@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import org.hibernate.ResourceClosedException;
 import org.hibernate.TransactionException;
+import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.jdbc.spi.PhysicalJdbcTransaction;
 
@@ -15,6 +16,8 @@ import org.jboss.logging.Logger;
  */
 public abstract class AbstractLogicalConnectionImplementor implements LogicalConnectionImplementor, PhysicalJdbcTransaction {
 	private static final Logger log = Logger.getLogger( AbstractLogicalConnectionImplementor.class );
+
+	private final ResourceRegistryStandardImpl resourceRegistry = new ResourceRegistryStandardImpl();
 
 	@Override
 	public PhysicalJdbcTransaction getPhysicalJdbcTransaction() {
@@ -27,6 +30,22 @@ public abstract class AbstractLogicalConnectionImplementor implements LogicalCon
 			throw new ResourceClosedException( this.toString() + " is closed" );
 		}
 	}
+
+	@Override
+	public ResourceRegistry getResourceRegistry() {
+		return resourceRegistry;
+	}
+
+
+	@Override
+	public void afterTransaction() {
+		log.trace( "LogicalConnection#afterTransaction" );
+
+		resourceRegistry.releaseResources();
+	}
+
+
+	// PhysicalJdbcTransaction impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	protected abstract Connection getConnectionForTransactionManagement();
 

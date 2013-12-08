@@ -34,7 +34,17 @@ public interface LogicalConnectionImplementor extends LogicalConnection {
 	// todo : expose the Connection as below?  or accept(WorkInConnection) where WorkInConnection is given access to Connection?
 	public Connection getPhysicalConnection();
 
-	public void releaseConnection();
+	/**
+	 * Notification indicating a JDBC statement has been executed to trigger
+	 * {@link org.hibernate.ConnectionReleaseMode#AFTER_STATEMENT} releasing if needed
+	 */
+	public void afterStatement();
+
+	/**
+	 * Notification indicating a transaction has completed to trigger
+	 * {@link org.hibernate.ConnectionReleaseMode#AFTER_TRANSACTION} releasing if needed
+	 */
+	public void afterTransaction();
 
 	/**
 	 * Manually disconnect the underlying JDBC Connection.  The assumption here

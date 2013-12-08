@@ -38,7 +38,7 @@ public interface JdbcSessionContext {
 	public int getFetchSize();
 
 	public ConnectionReleaseMode getConnectionReleaseMode();
-	public ConnectionAcquisitionMode getConnectionAcquisitionMod();
+	public ConnectionAcquisitionMode getConnectionAcquisitionMode();
 
 	public StatementInspector getStatementInspector();
 

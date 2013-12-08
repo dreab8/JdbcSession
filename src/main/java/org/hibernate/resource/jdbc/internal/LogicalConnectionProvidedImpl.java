@@ -56,6 +56,9 @@ public class LogicalConnectionProvidedImpl extends AbstractLogicalConnectionImpl
 	@Override
 	public Connection close() {
 		log.trace( "Closing logical connection" );
+
+		getResourceRegistry().releaseResources();
+
 		try {
 			return providedConnection;
 		}
@@ -78,9 +81,9 @@ public class LogicalConnectionProvidedImpl extends AbstractLogicalConnectionImpl
 	}
 
 	@Override
-	public void releaseConnection() {
-		errorIfClosed();
-		// no connection release (and re-acquisition) supported here, so nothing to do.
+	public void afterStatement() {
+		// todo : implement for real
+		log.trace( "LogicalConnection#afterStatement" );
 	}
 
 	@Override
@@ -128,6 +131,8 @@ public class LogicalConnectionProvidedImpl extends AbstractLogicalConnectionImpl
 
 	@Override
 	protected void afterCompletion() {
+		afterTransaction();
+
 		resetConnection( initiallyAutoCommit );
 	}
 }

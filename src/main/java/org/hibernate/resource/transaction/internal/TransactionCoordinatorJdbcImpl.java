@@ -88,11 +88,11 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 	}
 
 	public class PhysicalTransactionDelegateImpl implements PhysicalTransactionDelegate {
-		private final PhysicalJdbcTransaction jdbcTransaction;
+		private final PhysicalJdbcTransaction physicalJdbcTransaction;
 		private boolean valid = true;
 
-		public PhysicalTransactionDelegateImpl(PhysicalJdbcTransaction jdbcTransaction) {
-			this.jdbcTransaction = jdbcTransaction;
+		public PhysicalTransactionDelegateImpl(PhysicalJdbcTransaction physicalJdbcTransaction) {
+			this.physicalJdbcTransaction = physicalJdbcTransaction;
 		}
 
 		private void invalidate() {
@@ -103,7 +103,7 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 		public void begin() {
 			errorIfInvalid();
 
-			jdbcTransaction.begin();
+			physicalJdbcTransaction.begin();
 			TransactionCoordinatorJdbcImpl.this.afterBegin();
 		}
 
@@ -118,7 +118,7 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 			errorIfInvalid();
 
 			TransactionCoordinatorJdbcImpl.this.beforeCompletion();
-			jdbcTransaction.commit();
+			physicalJdbcTransaction.commit();
 			TransactionCoordinatorJdbcImpl.this.afterCompletion( true );
 		}
 
@@ -126,7 +126,7 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 		public void rollback() {
 			errorIfInvalid();
 
-			jdbcTransaction.rollback();
+			physicalJdbcTransaction.rollback();
 			TransactionCoordinatorJdbcImpl.this.afterCompletion( false );
 		}
 	}

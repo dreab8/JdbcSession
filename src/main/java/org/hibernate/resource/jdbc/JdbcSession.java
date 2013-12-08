@@ -42,15 +42,6 @@ public interface JdbcSession {
 	public LogicalConnection getLogicalConnection();
 
 	/**
-	 * Provides access to the registry of JDBC resources associated with this JdbcSession.
-	 *
-	 * @return The JDBC resource registry.
-	 *
-	 * @throws org.hibernate.ResourceClosedException if the JdbcSession is closed
-	 */
-	public ResourceRegistry getResourceRegistry();
-
-	/**
 	 * Provides access to the TransactionCoordinator for this JdbcSession
 	 *
 	 * @return The

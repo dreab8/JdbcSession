@@ -40,7 +40,7 @@ public class JdbcSessionContextStandardTestingImpl implements JdbcSessionContext
 	}
 
 	@Override
-	public ConnectionAcquisitionMode getConnectionAcquisitionMod() {
+	public ConnectionAcquisitionMode getConnectionAcquisitionMode() {
 		return ConnectionAcquisitionMode.DEFAULT;
 	}
 

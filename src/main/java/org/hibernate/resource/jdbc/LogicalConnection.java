@@ -54,4 +54,13 @@ public interface LogicalConnection {
 	 */
 	public boolean isPhysicallyConnected();
 
+	/**
+	 * Provides access to the registry of JDBC resources associated with this LogicalConnection.
+	 *
+	 * @return The JDBC resource registry.
+	 *
+	 * @throws org.hibernate.ResourceClosedException if the LogicalConnection is closed
+	 */
+	public ResourceRegistry getResourceRegistry();
+
 }

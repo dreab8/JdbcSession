@@ -2,7 +2,6 @@ package org.hibernate.resource.jdbc.internal;
 
 import org.hibernate.resource.jdbc.LogicalConnection;
 import org.hibernate.resource.jdbc.Operation;
-import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
@@ -21,7 +20,6 @@ public class JdbcSessionImpl implements JdbcSessionImplementor {
 	private final JdbcSessionContext context;
 	private final LogicalConnectionImplementor logicalConnection;
 	private final TransactionCoordinator transactionCoordinator;
-	private final ResourceRegistryStandardImpl resourceRegistry;
 
 	private boolean closed;
 
@@ -32,7 +30,6 @@ public class JdbcSessionImpl implements JdbcSessionImplementor {
 		this.context = context;
 		this.logicalConnection = logicalConnection;
 		this.transactionCoordinator = transactionCoordinatorBuilder.buildTransactionCoordinator( this );
-		this.resourceRegistry = new ResourceRegistryStandardImpl();
 	}
 
 	@Override
@@ -48,11 +45,6 @@ public class JdbcSessionImpl implements JdbcSessionImplementor {
 	@Override
 	public LogicalConnection getLogicalConnection() {
 		return logicalConnection;
-	}
-
-	@Override
-	public ResourceRegistry getResourceRegistry() {
-		return resourceRegistry;
 	}
 
 	@Override
@@ -72,7 +64,6 @@ public class JdbcSessionImpl implements JdbcSessionImplementor {
 		}
 
 		try {
-			resourceRegistry.releaseResources();
 			logicalConnection.close();
 		}
 		finally {
@@ -82,7 +73,9 @@ public class JdbcSessionImpl implements JdbcSessionImplementor {
 
 	@Override
 	public boolean isReadyToSerialize() {
-		return !logicalConnection.isPhysicallyConnected() && !resourceRegistry.hasRegisteredResources();
+		// todo : new LogicalConnectionImplementor.isReadyToSerialize method?
+		return !logicalConnection.isPhysicallyConnected()
+				&& !logicalConnection.getResourceRegistry().hasRegisteredResources();
 	}
 
 	@Override
