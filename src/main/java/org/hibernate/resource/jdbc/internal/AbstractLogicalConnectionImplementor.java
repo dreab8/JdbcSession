@@ -36,6 +36,10 @@ public abstract class AbstractLogicalConnectionImplementor implements LogicalCon
 		return resourceRegistry;
 	}
 
+	@Override
+	public void afterStatement() {
+		log.trace( "LogicalConnection#afterStatement" );
+	}
 
 	@Override
 	public void afterTransaction() {

@@ -81,12 +81,6 @@ public class LogicalConnectionProvidedImpl extends AbstractLogicalConnectionImpl
 	}
 
 	@Override
-	public void afterStatement() {
-		// todo : implement for real
-		log.trace( "LogicalConnection#afterStatement" );
-	}
-
-	@Override
 	public LogicalConnectionImplementor makeShareableCopy() {
 		errorIfClosed();
 

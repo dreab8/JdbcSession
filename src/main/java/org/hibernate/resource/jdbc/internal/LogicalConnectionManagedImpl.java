@@ -82,7 +82,7 @@ public class LogicalConnectionManagedImpl extends AbstractLogicalConnectionImple
 
 	@Override
 	public void afterStatement() {
-		log.trace( "LogicalConnection#afterStatement" );
+		super.afterStatement();
 
 		if ( connectionReleaseMode == ConnectionReleaseMode.AFTER_STATEMENT ) {
 			if ( getResourceRegistry().hasRegisteredResources() ) {
