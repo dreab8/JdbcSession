@@ -56,9 +56,9 @@ public abstract class AbstractLogicalConnectionImplementor implements LogicalCon
 	@Override
 	public void begin() {
 		try {
-			log.trace( "Preparing to 'begin' transaction via JDBC Connection.setAutoCommit(false)" );
+			log.trace( "Preparing to begin transaction via JDBC Connection.setAutoCommit(false)" );
 			getConnectionForTransactionManagement().setAutoCommit( false );
-			log.trace( "Transaction 'begun' via JDBC Connection.setAutoCommit(false)" );
+			log.trace( "Transaction begun via JDBC Connection.setAutoCommit(false)" );
 		}
 		catch( SQLException e ) {
 			throw new TransactionException( "JDBC begin transaction failed: ", e );
@@ -68,9 +68,9 @@ public abstract class AbstractLogicalConnectionImplementor implements LogicalCon
 	@Override
 	public void commit() {
 		try {
-			log.trace( "Beginning physical transaction commit via JDBC Connection.commit()" );
+			log.trace( "Preparing to commit transaction via JDBC Connection.commit()" );
 			getConnectionForTransactionManagement().commit();
-			log.trace( "Completed physical transaction commit via JDBC Connection.commit()" );
+			log.trace( "Transaction committed via JDBC Connection.commit()" );
 		}
 		catch( SQLException e ) {
 			throw new TransactionException( "Unable to commit against JDBC Connection", e );
@@ -100,9 +100,9 @@ public abstract class AbstractLogicalConnectionImplementor implements LogicalCon
 	@Override
 	public void rollback() {
 		try {
-			log.trace( "Beginning physical transaction rollback via JDBC Connection.rollback()" );
+			log.trace( "Preparing to rollback transaction via JDBC Connection.rollback()" );
 			getConnectionForTransactionManagement().rollback();
-			log.trace( "Completed physical transaction rollback via JDBC Connection.rollback()" );
+			log.trace( "Transaction rolled-back via JDBC Connection.rollback()" );
 		}
 		catch( SQLException e ) {
 			throw new TransactionException( "Unable to rollback against JDBC Connection", e );
