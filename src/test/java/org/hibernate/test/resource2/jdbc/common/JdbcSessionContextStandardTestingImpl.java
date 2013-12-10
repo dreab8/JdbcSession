@@ -1,4 +1,4 @@
-package org.hibernate.test.jdbc.common;
+package org.hibernate.test.resource2.jdbc.common;
 
 import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;

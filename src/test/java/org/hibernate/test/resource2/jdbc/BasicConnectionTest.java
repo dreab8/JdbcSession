@@ -1,4 +1,4 @@
-package org.hibernate.test.jdbc;
+package org.hibernate.test.resource2.jdbc;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -11,7 +11,7 @@ import java.util.Properties;
 import org.hibernate.JDBCException;
 import org.hibernate.dialect.H2Dialect;
 
-import org.hibernate.test.jdbc.common.JdbcSessionContextStandardTestingImpl;
+import org.hibernate.test.resource2.jdbc.common.JdbcSessionContextStandardTestingImpl;
 
 import org.hibernate.resource2.jdbc.JdbcSession;
 import org.hibernate.resource2.jdbc.internal.LogicalConnectionProvidedImpl;
