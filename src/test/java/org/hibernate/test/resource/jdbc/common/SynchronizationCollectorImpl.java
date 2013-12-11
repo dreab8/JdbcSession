@@ -21,16 +21,43 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.synchronization.spi;
+package org.hibernate.test.resource.jdbc.common;
 
+import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
 /**
- * Manages funneling JTA Synchronization callbacks back into the Hibernate transaction engine.
- *
  * @author Steve Ebersole
  */
-public interface SynchronizationCallbackCoordinator extends Synchronization {
-	public void synchronizationRegistered();
-	public void processAnyDelayedAfterCompletion();
+public class SynchronizationCollectorImpl implements Synchronization {
+	private int beforeCompletionCount;
+	private int successfulCompletionCount;
+	private int failedCompletionCount;
+
+	@Override
+	public void beforeCompletion() {
+		beforeCompletionCount++;
+	}
+
+	@Override
+	public void afterCompletion(int status) {
+		if ( status == Status.STATUS_COMMITTED ) {
+			successfulCompletionCount++;
+		}
+		else {
+			failedCompletionCount++;
+		}
+	}
+
+	public int getBeforeCompletionCount() {
+		return beforeCompletionCount;
+	}
+
+	public int getSuccessfulCompletionCount() {
+		return successfulCompletionCount;
+	}
+
+	public int getFailedCompletionCount() {
+		return failedCompletionCount;
+	}
 }

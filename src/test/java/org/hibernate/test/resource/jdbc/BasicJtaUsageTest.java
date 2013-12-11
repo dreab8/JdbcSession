@@ -42,18 +42,20 @@ import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaImpl
 import org.hibernate.test.resource.jdbc.common.ConnectionProviderJtaAwareImpl;
 import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
 import org.hibernate.test.resource.jdbc.common.JtaPlatformStandardTestingImpl;
+import org.hibernate.test.resource.jdbc.common.SynchronizationCollectorImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Steve Ebersole
  */
 public class BasicJtaUsageTest {
 	private ConnectionProviderJtaAwareImpl connectionProvider;
-	private JdbcSession jdbcSession;
 
 	@Before
 	public void setUp() throws Exception {
@@ -65,8 +67,15 @@ public class BasicJtaUsageTest {
 
 		connectionProvider = new ConnectionProviderJtaAwareImpl();
 		connectionProvider.configure( props );
+	}
 
-		jdbcSession = new JdbcSessionImpl(
+	@After
+	public void tearDown() throws Exception {
+		connectionProvider.stop();
+	}
+
+	private JdbcSession buildJdbcSession() {
+		return  new JdbcSessionImpl(
 				JdbcSessionContextStandardTestingImpl.INSTANCE,
 				new LogicalConnectionManagedImpl(
 						new JdbcConnectionAccess() {
@@ -85,29 +94,78 @@ public class BasicJtaUsageTest {
 				new TransactionCoordinatorBuilder() {
 					@Override
 					public TransactionCoordinator buildTransactionCoordinator(JdbcSessionImplementor jdbcSession) {
-						return new TransactionCoordinatorJtaImpl( jdbcSession, JtaPlatformStandardTestingImpl.INSTANCE, true, false );
+						return new TransactionCoordinatorJtaImpl(
+								jdbcSession,
+								JtaPlatformStandardTestingImpl.INSTANCE,
+								// do auto join
+								true,
+								// do not prefer UserTransaction (over TransactionManager)
+								false,
+								// do not perform JTA thread tracking
+								false
+						);
 					}
 				}
 		);
 	}
 
-	@After
-	public void tearDown() throws Exception {
-		jdbcSession.close();
-		connectionProvider.stop();
-	}
-
 
 	@Test
-	public void bmtUsageTest() throws Exception {
+	public void basicBmtUsageTest() throws Exception {
+		final JdbcSession jdbcSession = buildJdbcSession();
+		final TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) jdbcSession.getTransactionCoordinator();
+
+		try {
+			final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
+			assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
+			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
+
+			jdbcSession.getTransactionCoordinator().getPhysicalTransactionDelegate().begin();
+			assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
+			assertTrue( transactionCoordinator.isSynchronizationRegistered() );
+			SynchronizationCollectorImpl localSync = new SynchronizationCollectorImpl();
+			transactionCoordinator.getLocalSynchronizations().registerSynchronization( localSync );
+
+			jdbcSession.getTransactionCoordinator().getPhysicalTransactionDelegate().commit();
+			assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
+			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
+			assertEquals( 1, localSync.getBeforeCompletionCount() );
+			assertEquals( 1, localSync.getSuccessfulCompletionCount() );
+			assertEquals( 0, localSync.getFailedCompletionCount() );
+		}
+		finally {
+			jdbcSession.close();
+		}
+	}
+
+	@Test
+	public void basicCmtUsageTest() throws Exception {
 		final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
 		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
 
-		jdbcSession.getTransactionCoordinator().getPhysicalTransactionDelegate().begin();
+		tm.begin();
+
 		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 
-		jdbcSession.getTransactionCoordinator().getPhysicalTransactionDelegate().commit();
-		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
+		final JdbcSession jdbcSession = buildJdbcSession();
+		final TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) jdbcSession.getTransactionCoordinator();
+
+		try {
+			assertTrue( transactionCoordinator.isSynchronizationRegistered() );
+
+			SynchronizationCollectorImpl localSync = new SynchronizationCollectorImpl();
+			transactionCoordinator.getLocalSynchronizations().registerSynchronization( localSync );
+
+			tm.commit();
+			assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
+			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
+			assertEquals( 1, localSync.getBeforeCompletionCount() );
+			assertEquals( 1, localSync.getSuccessfulCompletionCount() );
+			assertEquals( 0, localSync.getFailedCompletionCount() );
+		}
+		finally {
+			jdbcSession.close();
+		}
 	}
 
 

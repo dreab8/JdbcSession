@@ -10,7 +10,11 @@ import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.synchronization.internal.RegisteredSynchronization;
+import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackCoordinatorNonTrackingImpl;
+import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackCoordinatorTrackingImpl;
 import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackTarget;
+import org.hibernate.resource.transaction.synchronization.spi.SynchronizationCallbackCoordinator;
 
 import org.jboss.logging.Logger;
 
@@ -28,30 +32,81 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 	private final JtaPlatform jtaPlatform;
 	private final boolean autoJoinTransactions;
 	private final boolean preferUserTransactions;
+	private final boolean performJtaThreadTracking;
 
+	private boolean synchronizationRegistered;
+	private SynchronizationCallbackCoordinator callbackCoordinator;
 	private AbstractPhysicalTransactionDelegate physicalTransactionDelegate;
 
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
-	private boolean synchronizationRegistered;
 
 	public TransactionCoordinatorJtaImpl(
 			JdbcSessionImplementor jdbcSession,
 			JtaPlatform jtaPlatform,
 			boolean autoJoinTransactions,
-			boolean preferUserTransactions) {
+			boolean preferUserTransactions,
+			boolean performJtaThreadTracking) {
 		this.jdbcSession = jdbcSession;
 		this.jtaPlatform = jtaPlatform;
 		this.autoJoinTransactions = autoJoinTransactions;
 		this.preferUserTransactions = preferUserTransactions;
-	}
+		this.performJtaThreadTracking = performJtaThreadTracking;
 
-	private void prepare() {
 		synchronizationRegistered = false;
 
 		if ( autoJoinTransactions ) {
-			// todo : implement
+			attemptToJoinJtaTransaction();
 		}
+	}
+
+	private void attemptToJoinJtaTransaction() {
+		if ( synchronizationRegistered ) {
+			// already registered
+			return;
+		}
+
+		// todo : still need to handle JPA notion of explicit joining
+
+		joinJtaTransaction();
+	}
+
+
+	private void joinJtaTransaction() {
+		if ( synchronizationRegistered ) {
+			throw new TransactionException( "Hibernate RegisteredSynchronization is already registered for this coordinator" );
+		}
+
+		// Can we resister a synchronization
+		if ( !jtaPlatform.canRegisterSynchronization() ) {
+			log.trace( "JTA platform says we cannot currently resister synchronization; skipping" );
+			return;
+		}
+
+		jtaPlatform.registerSynchronization( new RegisteredSynchronization( getSynchronizationCallbackCoordinator() ) );
+		getSynchronizationCallbackCoordinator().synchronizationRegistered();
+		synchronizationRegistered = true;
+		log.debug( "Hibernate RegisteredSynchronization successfully registered with JTA platform" );
+	}
+
+	public SynchronizationCallbackCoordinator getSynchronizationCallbackCoordinator() {
+		if ( callbackCoordinator == null ) {
+			callbackCoordinator = performJtaThreadTracking
+					? new SynchronizationCallbackCoordinatorTrackingImpl( this )
+					: new SynchronizationCallbackCoordinatorNonTrackingImpl( this );
+		}
+		return callbackCoordinator;
+	}
+
+	/**
+	 * Is the RegisteredSynchronization used by Hibernate for unified JTA Synchronization callbacks registered for this
+	 * coordinator?
+	 *
+	 * @return {@code true} indicates that a RegisteredSynchronization is currently registered for this coordinator;
+	 * {@code false} indicates it is not (yet) registered.
+	 */
+	public boolean isSynchronizationRegistered() {
+		return synchronizationRegistered;
 	}
 
 	@Override
@@ -140,7 +195,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		final int statusToSend =  successful ? Status.STATUS_COMMITTED : Status.STATUS_UNKNOWN;
 		synchronizationRegistry.notifySynchronizationsAfterTransactionCompletion( statusToSend );
 
-		prepare();
+		synchronizationRegistered = false;
 	}
 
 
@@ -160,7 +215,9 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		@Override
 		protected void doBegin() {
 			try {
+				log.trace( "Calling TransactionManager#begin" );
 				transactionManager.begin();
+				log.trace( "Called TransactionManager#begin" );
 			}
 			catch (Exception e) {
 				throw new TransactionException( "JTA TransactionManager#begin failed", e );
@@ -168,9 +225,17 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		}
 
 		@Override
+		protected void afterBegin() {
+			super.afterBegin();
+			TransactionCoordinatorJtaImpl.this.joinJtaTransaction();
+		}
+
+		@Override
 		protected void doCommit() {
 			try {
+				log.trace( "Calling TransactionManager#commit" );
 				transactionManager.commit();
+				log.trace( "Called TransactionManager#commit" );
 			}
 			catch (Exception e) {
 				throw new TransactionException( "JTA TransactionManager#commit failed", e );
@@ -180,7 +245,9 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		@Override
 		protected void doRollback() {
 			try {
+				log.trace( "Calling TransactionManager#rollback" );
 				transactionManager.rollback();
+				log.trace( "Called TransactionManager#rollback" );
 			}
 			catch (Exception e) {
 				throw new TransactionException( "JTA TransactionManager#rollback failed", e );
@@ -202,7 +269,9 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		@Override
 		protected void doBegin() {
 			try {
+				log.trace( "Calling UserTransaction#begin" );
 				userTransaction.begin();
+				log.trace( "Called UserTransaction#begin" );
 			}
 			catch (Exception e) {
 				throw new TransactionException( "JTA UserTransaction#begin failed", e );
@@ -210,9 +279,17 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		}
 
 		@Override
+		protected void afterBegin() {
+			super.afterBegin();
+			TransactionCoordinatorJtaImpl.this.joinJtaTransaction();
+		}
+
+		@Override
 		protected void doCommit() {
 			try {
+				log.trace( "Calling UserTransaction#commit" );
 				userTransaction.commit();
+				log.trace( "Called UserTransaction#commit" );
 			}
 			catch (Exception e) {
 				throw new TransactionException( "JTA UserTransaction#commit failed", e );
@@ -222,7 +299,9 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		@Override
 		protected void doRollback() {
 			try {
+				log.trace( "Calling UserTransaction#rollback" );
 				userTransaction.rollback();
+				log.trace( "Called UserTransaction#rollback" );
 			}
 			catch (Exception e) {
 				throw new TransactionException( "JTA UserTransaction#rollback failed", e );

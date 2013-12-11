@@ -58,7 +58,7 @@ public class SynchronizationCallbackCoordinatorTrackingImpl extends Synchronizat
 		// 		2) after "after completion" handling is finished.
 		//
 		// Here we use that to "clear out" all 'delayed after-completion" state.  The registrationThreadId will
-		// "lazily" be re-populated on the next pulse call to allow for the potential of the next Session transaction
+		// "lazily" be re-populated on the next synchronizationRegistered call to allow for the potential of the next Session transaction
 		// occurring on a different thread (though that transaction would need to completely operate on that thread).
 		delayedCompletionHandling = false;
 		registrationThreadId = NO_THREAD_ID;
@@ -92,8 +92,8 @@ public class SynchronizationCallbackCoordinatorTrackingImpl extends Synchronizat
 	}
 
 	@Override
-	public void pulse() {
-		// If this is the first call to pulse since an earlier call to reset, capture the current thread id
+	public void synchronizationRegistered() {
+		// If this is the first call to synchronizationRegistered since an earlier call to reset, capture the current thread id
 		if ( registrationThreadId == NO_THREAD_ID ) {
 			registrationThreadId = Thread.currentThread().getId();
 		}

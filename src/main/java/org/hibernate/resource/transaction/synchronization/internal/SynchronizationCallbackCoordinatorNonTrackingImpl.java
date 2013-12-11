@@ -50,7 +50,7 @@ public class SynchronizationCallbackCoordinatorNonTrackingImpl implements Synchr
 	}
 
 	@Override
-	public void pulse() {
+	public void synchronizationRegistered() {
 		// Nothing to do here
 	}
 
