@@ -66,17 +66,24 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 		// nothing to do here
 	}
 
-	private void afterBegin() {
-		log.trace( "TransactionCoordinatorJdbcImpl#afterBegin" );
+	@Override
+	public SynchronizationRegistry getLocalSynchronizations() {
+		return synchronizationRegistry;
 	}
 
-	private void beforeCompletion() {
-		log.trace( "TransactionCoordinatorJdbcImpl#beforeCompletion" );
+
+	// PhysicalTransactionDelegate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	private void afterBeginCallback() {
+		log.trace( "TransactionCoordinatorJdbcImpl#afterBeginCallback" );
+	}
+	private void beforeCompletionCallback() {
+		log.trace( "TransactionCoordinatorJdbcImpl#beforeCompletionCallback" );
 		synchronizationRegistry.notifySynchronizationsBeforeTransactionCompletion();
 	}
 
-	private void afterCompletion(boolean successful) {
-		log.tracef( "TransactionCoordinatorJdbcImpl#afterCompletion(%s)", successful );
+	private void afterCompletionCallback(boolean successful) {
+		log.tracef( "TransactionCoordinatorJdbcImpl#afterCompletionCallback(%s)", successful );
 		final int statusToSend =  successful ? Status.STATUS_COMMITTED : Status.STATUS_UNKNOWN;
 		synchronizationRegistry.notifySynchronizationsAfterTransactionCompletion( statusToSend );
 
@@ -92,67 +99,53 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 		physicalTransactionDelegate = null;
 	}
 
-	@Override
-	public SynchronizationRegistry getLocalSynchronizations() {
-		return synchronizationRegistry;
-	}
 
 	/**
 	 * The delegate bridging between the local (application facing) transaction and the "physical" notion of a
 	 * transaction via the JDBC Connection.
 	 */
-	public class PhysicalTransactionDelegateImpl implements PhysicalTransactionDelegate {
+	public class PhysicalTransactionDelegateImpl extends AbstractPhysicalTransactionDelegate {
 		private final PhysicalJdbcTransaction physicalJdbcTransaction;
-		private boolean valid = true;
 
 		public PhysicalTransactionDelegateImpl(PhysicalJdbcTransaction physicalJdbcTransaction) {
+			super();
 			this.physicalJdbcTransaction = physicalJdbcTransaction;
 		}
 
-		private void invalidate() {
-			valid = false;
-		}
-
 		@Override
-		public void begin() {
-			errorIfInvalid();
-
+		protected void doBegin() {
 			// initiate the transaction start with the JDBC Connection
 			physicalJdbcTransaction.begin();
-			// initiate any transaction-related 'after begin' processing
-			TransactionCoordinatorJdbcImpl.this.afterBegin();
-		}
-
-		private void errorIfInvalid() {
-			if ( !valid ) {
-				throw new IllegalStateException( "Physical-transaction delegate is no longer valid" );
-			}
 		}
 
 		@Override
-		public void commit() {
-			errorIfInvalid();
+		protected void afterBegin() {
+			super.afterBegin();
+			TransactionCoordinatorJdbcImpl.this.afterBeginCallback();
+		}
 
-			// initiate any transaction-related 'before completion' processing (flushes, synchronization notifications, etc)
-			TransactionCoordinatorJdbcImpl.this.beforeCompletion();
+		@Override
+		protected void beforeCompletion() {
+			super.beforeCompletion();
+			TransactionCoordinatorJdbcImpl.this.beforeCompletionCallback();
+		}
+
+		@Override
+		protected void doCommit() {
 			// initiate the transaction completion with the JDBC Connection
 			physicalJdbcTransaction.commit();
-			// initiate any transaction-related 'after completion' processing (closing, synchronization notifications, etc)
-			TransactionCoordinatorJdbcImpl.this.afterCompletion( true );
-
-			// NOTE : that the above is very naive currently wrt exception handling
 		}
 
 		@Override
-		public void rollback() {
-			errorIfInvalid();
+		protected void afterCompletion(boolean successful) {
+			super.afterCompletion( successful );
+			TransactionCoordinatorJdbcImpl.this.afterCompletionCallback( successful );
+		}
 
-			// following the JTA spec, we do not perform 'before completion' on rollbacks...
-
+		@Override
+		protected void doRollback() {
 			// initiate the transaction completion with the JDBC Connection
 			physicalJdbcTransaction.rollback();
-			// initiate any transaction-related 'after completion' processing (closing, synchronization notifications, etc)
-			TransactionCoordinatorJdbcImpl.this.afterCompletion( false );
 		}
 	}
 }

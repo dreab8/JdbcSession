@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Steve Ebersole
  */
-public abstract class AbstractBasicUsageTest {
+public abstract class AbstractBasicJdbcUsageTest {
 	protected abstract Connection getConnection();
 	protected abstract JdbcSession getJdbcSession();
 

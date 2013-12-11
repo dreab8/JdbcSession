@@ -36,7 +36,7 @@ import org.hibernate.resource.transaction.SynchronizationRegistry;
  * @author Steve Ebersole
  */
 public class SynchronizationRegistryStandardImpl implements SynchronizationRegistry {
-	private static final CoreMessageLogger LOG = CoreLogging.messageLogger( SynchronizationRegistryStandardImpl.class );
+	private static final CoreMessageLogger log = CoreLogging.messageLogger( SynchronizationRegistryStandardImpl.class );
 
 	private LinkedHashSet<Synchronization> synchronizations;
 
@@ -52,19 +52,21 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 
 		boolean added = synchronizations.add( synchronization );
 		if ( !added ) {
-			LOG.synchronizationAlreadyRegistered( synchronization );
+			log.synchronizationAlreadyRegistered( synchronization );
 		}
 	}
 
 	@Override
 	public void notifySynchronizationsBeforeTransactionCompletion() {
+		log.trace( "SynchronizationRegistryStandardImpl.notifySynchronizationsBeforeTransactionCompletion" );
+
 		if ( synchronizations != null ) {
 			for ( Synchronization synchronization : synchronizations ) {
 				try {
 					synchronization.beforeCompletion();
 				}
 				catch ( Throwable t ) {
-					LOG.synchronizationFailed( synchronization, t );
+					log.synchronizationFailed( synchronization, t );
 				}
 			}
 		}
@@ -72,13 +74,15 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 
 	@Override
 	public void notifySynchronizationsAfterTransactionCompletion(int status) {
+		log.tracef( "SynchronizationRegistryStandardImpl.notifySynchronizationsAfterTransactionCompletion(%s)", status );
+
 		if ( synchronizations != null ) {
 			for ( Synchronization synchronization : synchronizations ) {
 				try {
 					synchronization.afterCompletion( status );
 				}
 				catch ( Throwable t ) {
-					LOG.synchronizationFailed( synchronization, t );
+					log.synchronizationFailed( synchronization, t );
 				}
 			}
 			clearSynchronizations();
@@ -89,6 +93,8 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 	 * Package-protected access to clear registered synchronizations.
 	 */
 	void clearSynchronizations() {
+		log.debug( "Clearing local Synchronizations" );
+
 		if ( synchronizations != null ) {
 			synchronizations.clear();
 		}

@@ -45,6 +45,7 @@ dependencies {
 
     testRuntime 'log4j:log4j:1.2.17'
     testRuntime 'com.h2database:h2:1.2.145'
+	testRuntime 'org.jboss.jbossts:jbossjta:4.16.4.Final'
 
     asciidoclet 'org.asciidoctor:asciidoclet:0.+'
 }
