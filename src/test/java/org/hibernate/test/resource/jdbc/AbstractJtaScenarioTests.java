@@ -54,7 +54,9 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Steve Ebersole
  */
-public class BasicJtaUsageTest {
+public abstract class AbstractJtaScenarioTests {
+	protected abstract boolean preferUserTransactions();
+
 	private ConnectionProviderJtaAwareImpl connectionProvider;
 
 	@Before
@@ -75,6 +77,10 @@ public class BasicJtaUsageTest {
 	}
 
 	private JdbcSession buildJdbcSession() {
+		return buildJdbcSession( true );
+	}
+
+	private JdbcSession buildJdbcSession(final boolean autoJoin) {
 		return  new JdbcSessionImpl(
 				JdbcSessionContextStandardTestingImpl.INSTANCE,
 				new LogicalConnectionManagedImpl(
@@ -97,10 +103,8 @@ public class BasicJtaUsageTest {
 						return new TransactionCoordinatorJtaImpl(
 								jdbcSession,
 								JtaPlatformStandardTestingImpl.INSTANCE,
-								// do auto join
-								true,
-								// do not prefer UserTransaction (over TransactionManager)
-								false,
+								autoJoin,
+								preferUserTransactions(),
 								// do not perform JTA thread tracking
 								false
 						);
@@ -168,5 +172,70 @@ public class BasicJtaUsageTest {
 		}
 	}
 
+	@Test
+	public void explicitJoiningTest() throws Exception {
+		final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
+		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
 
+		tm.begin();
+
+		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
+
+		final JdbcSession jdbcSession = buildJdbcSession( false );
+		final TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) jdbcSession.getTransactionCoordinator();
+
+		try {
+			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
+			transactionCoordinator.explicitJoin();
+			assertTrue( transactionCoordinator.isSynchronizationRegistered() );
+
+			SynchronizationCollectorImpl localSync = new SynchronizationCollectorImpl();
+			transactionCoordinator.getLocalSynchronizations().registerSynchronization( localSync );
+
+			tm.commit();
+			assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
+			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
+			assertEquals( 1, localSync.getBeforeCompletionCount() );
+			assertEquals( 1, localSync.getSuccessfulCompletionCount() );
+			assertEquals( 0, localSync.getFailedCompletionCount() );
+		}
+		finally {
+			jdbcSession.close();
+		}
+	}
+
+	@Test
+	public void jpaJoiningTest() throws Exception {
+		final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
+		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
+
+		final JdbcSession jdbcSession = buildJdbcSession( false );
+		final TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) jdbcSession.getTransactionCoordinator();
+
+		try {
+
+			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
+
+			tm.begin();
+
+			assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
+			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
+
+			transactionCoordinator.explicitJoin();
+			assertTrue( transactionCoordinator.isSynchronizationRegistered() );
+
+			SynchronizationCollectorImpl localSync = new SynchronizationCollectorImpl();
+			transactionCoordinator.getLocalSynchronizations().registerSynchronization( localSync );
+
+			tm.commit();
+			assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
+			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
+			assertEquals( 1, localSync.getBeforeCompletionCount() );
+			assertEquals( 1, localSync.getSuccessfulCompletionCount() );
+			assertEquals( 0, localSync.getFailedCompletionCount() );
+		}
+		finally {
+			jdbcSession.close();
+		}
+	}
 }

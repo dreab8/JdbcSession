@@ -62,6 +62,11 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 	}
 
 	@Override
+	public void explicitJoin() {
+		// nothing to do here
+	}
+
+	@Override
 	public void pulse() {
 		// nothing to do here
 	}

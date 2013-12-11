@@ -55,38 +55,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 
 		synchronizationRegistered = false;
 
-		if ( autoJoinTransactions ) {
-			attemptToJoinJtaTransaction();
-		}
-	}
-
-	private void attemptToJoinJtaTransaction() {
-		if ( synchronizationRegistered ) {
-			// already registered
-			return;
-		}
-
-		// todo : still need to handle JPA notion of explicit joining
-
-		joinJtaTransaction();
-	}
-
-
-	private void joinJtaTransaction() {
-		if ( synchronizationRegistered ) {
-			throw new TransactionException( "Hibernate RegisteredSynchronization is already registered for this coordinator" );
-		}
-
-		// Can we resister a synchronization
-		if ( !jtaPlatform.canRegisterSynchronization() ) {
-			log.trace( "JTA platform says we cannot currently resister synchronization; skipping" );
-			return;
-		}
-
-		jtaPlatform.registerSynchronization( new RegisteredSynchronization( getSynchronizationCallbackCoordinator() ) );
-		getSynchronizationCallbackCoordinator().synchronizationRegistered();
-		synchronizationRegistered = true;
-		log.debug( "Hibernate RegisteredSynchronization successfully registered with JTA platform" );
+		pulse();
 	}
 
 	public SynchronizationCallbackCoordinator getSynchronizationCallbackCoordinator() {
@@ -96,6 +65,41 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 					: new SynchronizationCallbackCoordinatorNonTrackingImpl( this );
 		}
 		return callbackCoordinator;
+	}
+
+	@Override
+	public void pulse() {
+		if ( !autoJoinTransactions ) {
+			return;
+		}
+
+		if ( synchronizationRegistered ) {
+			return;
+		}
+
+		// Can we resister a synchronization according to the JtaPlatform?
+		if ( !jtaPlatform.canRegisterSynchronization() ) {
+			log.trace( "JTA platform says we cannot currently resister synchronization; skipping" );
+			return;
+		}
+
+		joinJtaTransaction();
+	}
+
+	private void joinJtaTransaction() {
+		if ( synchronizationRegistered ) {
+			throw new TransactionException( "Hibernate RegisteredSynchronization is already registered for this coordinator" );
+		}
+
+		jtaPlatform.registerSynchronization( new RegisteredSynchronization( getSynchronizationCallbackCoordinator() ) );
+		getSynchronizationCallbackCoordinator().synchronizationRegistered();
+		synchronizationRegistered = true;
+		log.debug( "Hibernate RegisteredSynchronization successfully registered with JTA platform" );
+	}
+
+	@Override
+	public void explicitJoin() {
+		joinJtaTransaction();
 	}
 
 	/**
@@ -164,12 +168,6 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		}
 
 		throw new TransactionException( "Could not locate TransactionManager nor UserTransaction" );
-	}
-
-
-	@Override
-	public void pulse() {
-		//To change body of implemented methods use File | Settings | File Templates.
 	}
 
 	@Override
