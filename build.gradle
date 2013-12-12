@@ -1,12 +1,15 @@
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 apply plugin: 'java'
+
 apply plugin: "jacoco"
-apply plugin: 'pmd'
-apply plugin: 'findbugs'
 apply plugin: 'checkstyle'
+apply plugin: 'findbugs'
+apply plugin: 'pmd'
 apply plugin: 'build-dashboard'
 apply plugin: 'project-report'
+
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
 
 task wrapper(type: Wrapper) {
     gradleVersion = '1.9'
@@ -67,11 +70,12 @@ javadoc {
 // 		1) this is mainly intended for CI environment
 //		2) we generally want to see the report
 checkstyle {
-	sourceSets = [ project.sourceSets.main ]
 	showViolations = false
 	ignoreFailures = true
 }
 findbugs {
-	sourceSets = [ project.sourceSets.main, project.sourceSets.test ]
+	ignoreFailures = true
+}
+pmd {
 	ignoreFailures = true
 }
