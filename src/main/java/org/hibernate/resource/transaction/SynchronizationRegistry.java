@@ -36,19 +36,8 @@ public interface SynchronizationRegistry extends Serializable {
 	 * Register a {@link Synchronization} callback for this transaction.
 	 *
 	 * @param synchronization The synchronization callback to register.
+	 *
+	 * @throws NullSynchronizationException if the synchronization is {@code null}
 	 */
 	void registerSynchronization(Synchronization synchronization);
-
-	/**
-	 * Delegates the {@link Synchronization#beforeCompletion} call to each registered Synchronization
-	 */
-	void notifySynchronizationsBeforeTransactionCompletion();
-
-	/**
-	 * Delegates the {@link Synchronization#afterCompletion} call to each registered Synchronization.  Will also
-	 * clear the registered Synchronizations after all have been notified.
-	 *
-	 * @param status The transaction status, per {@link javax.transaction.Status} constants
-	 */
-	void notifySynchronizationsAfterTransactionCompletion(int status);
 }

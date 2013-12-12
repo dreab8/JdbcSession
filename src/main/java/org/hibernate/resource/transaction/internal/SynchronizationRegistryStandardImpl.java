@@ -28,14 +28,15 @@ import javax.transaction.Synchronization;
 
 import org.hibernate.internal.CoreLogging;
 import org.hibernate.internal.CoreMessageLogger;
-import org.hibernate.resource.transaction.SynchronizationRegistry;
+import org.hibernate.resource.transaction.NullSynchronizationException;
+import org.hibernate.resource.transaction.spi.SynchronizationRegistryImplementor;
 
 /**
  * The standard implementation of the SynchronizationRegistry contract
  *
  * @author Steve Ebersole
  */
-public class SynchronizationRegistryStandardImpl implements SynchronizationRegistry {
+public class SynchronizationRegistryStandardImpl implements SynchronizationRegistryImplementor {
 	private static final CoreMessageLogger log = CoreLogging.messageLogger( SynchronizationRegistryStandardImpl.class );
 
 	private LinkedHashSet<Synchronization> synchronizations;
@@ -65,7 +66,7 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 				try {
 					synchronization.beforeCompletion();
 				}
-				catch ( Throwable t ) {
+				catch (Throwable t) {
 					log.synchronizationFailed( synchronization, t );
 				}
 			}
@@ -74,14 +75,17 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 
 	@Override
 	public void notifySynchronizationsAfterTransactionCompletion(int status) {
-		log.tracef( "SynchronizationRegistryStandardImpl.notifySynchronizationsAfterTransactionCompletion(%s)", status );
+		log.tracef(
+				"SynchronizationRegistryStandardImpl.notifySynchronizationsAfterTransactionCompletion(%s)",
+				status
+		);
 
 		if ( synchronizations != null ) {
 			for ( Synchronization synchronization : synchronizations ) {
 				try {
 					synchronization.afterCompletion( status );
 				}
-				catch ( Throwable t ) {
+				catch (Throwable t) {
 					log.synchronizationFailed( synchronization, t );
 				}
 			}
@@ -89,10 +93,8 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 		}
 	}
 
-	/**
-	 * Package-protected access to clear registered synchronizations.
-	 */
-	void clearSynchronizations() {
+	@Override
+	public void clearSynchronizations() {
 		log.debug( "Clearing local Synchronizations" );
 
 		if ( synchronizations != null ) {
