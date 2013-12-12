@@ -61,3 +61,17 @@ javadoc {
     options.docletpath = configurations.asciidoclet.files.asType(List)
     options.doclet = 'org.asciidoctor.Asciidoclet'
 }
+
+// Report configs ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// we ignore failures here as:
+// 		1) this is mainly intended for CI environment
+//		2) we generally want to see the report
+checkstyle {
+	sourceSets = [ project.sourceSets.main ]
+	showViolations = false
+	ignoreFailures = true
+}
+findbugs {
+	sourceSets = [ project.sourceSets.main, project.sourceSets.test ]
+	ignoreFailures = true
+}
