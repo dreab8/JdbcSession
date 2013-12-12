@@ -2,6 +2,7 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'java'
 apply plugin: "jacoco"
+apply plugin: 'pmd'
 apply plugin: 'findbugs'
 apply plugin: 'checkstyle'
 apply plugin: 'build-dashboard'
