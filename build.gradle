@@ -72,6 +72,7 @@ javadoc {
 checkstyle {
 	showViolations = false
 	ignoreFailures = true
+	sourceSets = [project.sourceSets.main]
 }
 findbugs {
 	ignoreFailures = true

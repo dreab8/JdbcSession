@@ -8,8 +8,12 @@ proposal ;)
 
 ## Granularity of the JDBC abstraction API
 
-First and foremost is the API we want to expose from a JdbcSession.  I did 2 approaches to compare/contract styles.
-The first approach (org.hibernate.resource2.jdbc package) largely follows what we have in Hibernate today; a very granular
+First and foremost is the API we want to expose from a JdbcSession.  I initially proofed 2 approaches to
+compare/contrast API styles.
+
+### JDBC-light API
+
+The first approach largely follows what we have in Hibernate today: a very granular,
 low-level API.  The client of this API is expected to make a lot of decisions, make a lot of "little" calls based on
 those decisions and do a lot of error handling.  In many ways what we have is a *very* thin wrapper over JDBC.  For
 example, using JDBC directly we would have code like:
@@ -77,7 +81,10 @@ finally {
 
 Still very similar feeling code.
 
-A very different feel can be seen in second approach (org.hibernate.resource.jdbc package):
+
+### Operation API
+
+A very different feel can be seen in second approach:
 
 ```java
 return jdbcSession.accept(
@@ -138,6 +145,15 @@ example executing a query via Statement and getting back a Result set is a valid
 do that.  But on the plus side, all variances in the general structure for handling the different categorizations
 can be centralized; today they are duplicated across the code base.
 
+Another way to look at solving the concern over the number of methods would be to define just a single method:
+
+```java
+	public <T> T accept(Operation<T> operation);
+```
+
+and have the JdbcSession implementation decode/interpret the operation based on type checks.  This is especially
+useful when we consider the potential goal of becoming "Storage tech agnostic" (see below).
+
 
 ## Transaction handling
 
@@ -165,7 +181,6 @@ synergy here between JdbcSession and TransactionCoordinator: the JdbcSession man
 the TransactionCoordinator has access to the JdbcSession.  This leads to a nice flow of "events" between the two of
 them.  Let's take a closer look at the specifics of that flow in regards to the JDBC and JTA env use-cases...
 
-_BTW, this is unified between both "JDBC API granularity" approaches_
 _TODO: Would it somehow be possible to support type simultaneously?  Maybe by passing some kind of argument when beginning a transaction?_
 
 ### JDBC case
@@ -240,4 +255,27 @@ UserTransaction/TransactionManager calls_
 
 
 
+## Storage tech agnostic?
 
+Another possible goal here could be to hide the type of storage (JDBC, OGM, etc) used behind this contract.  In this
+case, JdbcSession would need to become a more general DataStoreSession (?) with JdbcDataStoreSession as a
+specialization for JDBC interaction.  DataStoreSession would need to be defined completely store-technology agnostic.
+Probably it would not need to expose the concept of a "connection" (the usage of a connection should ultimately be
+fairly contained within the DataStoreSession and its direct delegates).
+
+That makes Operation the common currency between Persisters, etc and the various concrete DataStoreSession
+
+This would require quite a bit of reorganization.  But overall something like:
+
+```java
+package org.hibernate.resource;
+public interface DataStoreSession {
+    public boolean isOpen();
+    public void close();
+    public boolean isReadyToSerialize();
+	public TransactionCoordinator getTransactionCoordinator();
+	public <T> T accept(Operation<T> operation);
+}
+```
+
+Just a brain-storm.  I have no idea if it ultimately helps dev for other storage techs (OGM) or not.

@@ -131,6 +131,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 				}
 			}
 			catch (Exception ignore) {
+				log.debug( "Error attempting to use UserTransaction for PhysicalTransactionDelegate : " + ignore.getMessage() );
 			}
 
 			log.debug( "Could not locate UserTransaction, attempting to use TransactionManager instead" );
@@ -142,6 +143,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 				}
 			}
 			catch (Exception ignore) {
+				log.debug( "Error attempting to use TransactionManager for PhysicalTransactionDelegate : " + ignore.getMessage() );
 			}
 		}
 		else {
@@ -153,6 +155,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 				}
 			}
 			catch (Exception ignore) {
+				log.debug( "Error attempting to use TransactionManager for PhysicalTransactionDelegate : " + ignore.getMessage() );
 			}
 
 			log.debug( "Could not locate TransactionManager, attempting to use UserTransaction instead" );
@@ -164,6 +167,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 				}
 			}
 			catch (Exception ignore) {
+				log.debug( "Error attempting to use UserTransaction for PhysicalTransactionDelegate : " + ignore.getMessage() );
 			}
 		}
 

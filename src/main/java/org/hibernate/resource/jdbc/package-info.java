@@ -21,24 +21,8 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.synchronization.spi;
-
-import javax.transaction.Synchronization;
 
 /**
- * Manages funneling JTA Synchronization callbacks back into the Hibernate transaction engine.
- *
- * @author Steve Ebersole
+ * Defines the resource-level JDBC capabilities of Hibernate.
  */
-public interface SynchronizationCallbackCoordinator extends Synchronization {
-	/**
-	 * Called by the TransactionCoordinator when it registers the Synchronization with the JTA system
-	 */
-	public void synchronizationRegistered();
-
-	/**
-	 * Called by the TransactionCoordinator to allow the SynchronizationCallbackCoordinator to process any
-	 * after-completion handling that it may have delayed due to thread affinity
-	 */
-	public void processAnyDelayedAfterCompletion();
-}
+package org.hibernate.resource.jdbc;

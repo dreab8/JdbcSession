@@ -36,7 +36,8 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 
 	@Override
 	public boolean hasRegisteredResources() {
-		return false;  //To change body of implemented methods use File | Settings | File Templates.
+		// todo : implement
+		return false;
 	}
 
 	@Override
@@ -210,6 +211,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	public void release(Blob blob) {
 		if ( blobs == null ) {
 			log.debug( "Request to release Blob, but appears no Blobs have ever been registered" );
+			return;
 		}
 		blobs.remove( blob );
 	}
@@ -218,6 +220,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	public void register(Clob clob) {
 		if ( clobs == null ) {
 			clobs = new ArrayList<Clob>();
+			return;
 		}
 		clobs.add( clob );
 	}
@@ -226,6 +229,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	public void release(Clob clob) {
 		if ( clobs == null ) {
 			log.debug( "Request to release Clob, but appears no Clobs have ever been registered" );
+			return;
 		}
 		clobs.remove( clob );
 	}

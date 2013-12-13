@@ -78,7 +78,7 @@ public interface JdbcSession {
 	 * @param operation The operation to perform
 	 * @param <T> The operation result type
 	 *
-	 * @return The operation result, see {@link org.hibernate.resource2.jdbc.Operation#perform}
+	 * @return The operation result, see {@link Operation#perform}
 	 */
 	public <T> T accept(Operation<T> operation);
 

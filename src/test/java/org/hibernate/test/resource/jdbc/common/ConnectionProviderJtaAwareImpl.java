@@ -42,6 +42,8 @@ import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.Stoppable;
 
+import org.jboss.logging.Logger;
+
 /**
  * A {@link javax.sql.DataSource} implementation intended for testing Hibernate/JTA interaction.  In that limited scope we
  * only ever have one single resource (the database connection) so we do not at all care about full-blown XA
@@ -51,6 +53,8 @@ import org.hibernate.service.spi.Stoppable;
  * @author Jonathan Halliday
  */
 public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Configurable, Stoppable {
+	private static final Logger log = Logger.getLogger( ConnectionProviderJtaAwareImpl.class );
+
 	private static final String CONNECTION_KEY = "_database_connection";
 
 	private DriverManagerConnectionProviderImpl delegate;
@@ -171,7 +175,7 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Confi
 			delegate.closeConnection( connection );
 		}
 		catch (SQLException e) {
-			System.err.println( "!!!Error trying to close JDBC connection from delist callbacks!!!" );
+			log.error( "Error trying to close JDBC connection from delist callbacks!!!" );
 		}
 	}
 
@@ -207,6 +211,7 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Confi
 					pool.delist( connection );
 				}
 				catch (Exception ignore) {
+					log.debug( "Unable to delist connection on commit : " + ignore.getMessage() );
 				}
 			}
 		}
@@ -225,6 +230,7 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Confi
 					pool.delist( connection );
 				}
 				catch (Exception ignore) {
+					log.debug( "Unable to delist connection on rollback : " + ignore.getMessage() );
 				}
 			}
 		}

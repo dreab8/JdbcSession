@@ -80,6 +80,7 @@ public class JdbcSessionImpl implements JdbcSessionImplementor {
 
 	@Override
 	public <T> T accept(Operation<T> operation) {
-		return null;  //To change body of implemented methods use File | Settings | File Templates.
+		// todo : implement
+		return null;
 	}
 }
