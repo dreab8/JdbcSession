@@ -138,10 +138,8 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Confi
 			nonEnlistedConnections.remove( conn );
 			delegate.closeConnection( conn );
 		}
-		else {
-			// do nothing.  part of the enlistment contract here is that the XAResource wrapper
-			// takes that responsibility.
-		}
+		// do nothing.  part of the enlistment contract here is that the XAResource wrapper
+		// takes that responsibility.
 	}
 
 	@Override

@@ -248,6 +248,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 		// todo : just store them in clobs?
 		if ( nclobs == null ) {
 			log.debug( "Request to release NClob, but appears no NClobs have ever been registered" );
+			return;
 		}
 		nclobs.remove( nclob );
 	}
