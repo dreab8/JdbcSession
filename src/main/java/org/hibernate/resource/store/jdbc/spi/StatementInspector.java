@@ -21,8 +21,21 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
+package org.hibernate.resource.store.jdbc.spi;
 
 /**
- * Internal implementation details for the resource-level JDBC capabilities of Hibernate.
+ * Contract to allow inspection (and swapping) of SQL to be prepared
+ *
+ * @author Steve Ebersole
  */
-package org.hibernate.resource.jdbc.internal;
+public interface StatementInspector {
+	/**
+	 * Inspect the given SQL, possibly returning a different SQL to be used instead.  Note that returning {@code null}
+	 * is interpreted as returning the same SQL as was passed.
+	 *
+	 * @param sql The SQL to inspect
+	 *
+	 * @return The SQL to use; may be {@code null}
+	 */
+	public String inspect(String sql);
+}

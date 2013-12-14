@@ -21,38 +21,13 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction;
+package org.hibernate.resource.store.jdbc.spi;
+
+import org.hibernate.resource.store.jdbc.JdbcSession;
 
 /**
- * Models the coordination of all transaction related flows.
- *
  * @author Steve Ebersole
  */
-public interface TransactionCoordinator {
-
-	/**
-	 * Indicates an explicit request to join a transaction.  This is mainly intended to handle the JPA requirement
-	 * around {@link javax.persistence.EntityManager#joinTransaction()}, and generally speaking only has an impact in
-	 * JTA environments
-	 */
-	public void explicitJoin();
-
-	/**
-	 * Used by owner of the JdbcSession as a means to indicate that implicit joining should be done if needed.
-	 */
-	public void pulse();
-
-	/**
-	 * Get the PhysicalTransactionDelegate for this TransactionCoordinator for use by the local transaction
-	 *
-	 * @return The PhysicalTransactionDelegate
-	 */
-	public PhysicalTransactionDelegate getPhysicalTransactionDelegate();
-
-	/**
-	 * Get access to the local registry of Synchronization instances
-	 *
-	 * @return The local Synchronization registry
-	 */
-	public SynchronizationRegistry getLocalSynchronizations();
+public interface JdbcSessionImplementor extends JdbcSession {
+	// maybe move getLogicalConnection here?
 }

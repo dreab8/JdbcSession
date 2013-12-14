@@ -25,4 +25,4 @@
 /**
  * Extended SPI contracts for the resource-level JDBC capabilities of Hibernate.
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.store.jdbc.spi;

@@ -1,4 +1,4 @@
-package org.hibernate.resource.jdbc.internal;
+package org.hibernate.resource.store.jdbc.internal;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -6,10 +6,10 @@ import java.sql.SQLException;
 import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.ResourceClosedException;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
-import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
-import org.hibernate.resource.jdbc.spi.JdbcObserver;
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
-import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
+import org.hibernate.resource.store.jdbc.spi.JdbcConnectionAccess;
+import org.hibernate.resource.store.jdbc.spi.JdbcObserver;
+import org.hibernate.resource.store.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.store.jdbc.spi.LogicalConnectionImplementor;
 
 import org.jboss.logging.Logger;
 

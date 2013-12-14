@@ -25,9 +25,9 @@ package org.hibernate.resource.transaction.internal;
 
 import javax.transaction.Status;
 
-import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
-import org.hibernate.resource.jdbc.spi.PhysicalJdbcTransaction;
 import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
+import org.hibernate.resource.transaction.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 
@@ -38,16 +38,22 @@ import org.jboss.logging.Logger;
  *
  * @author Steve Ebersole
  */
-public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
-	private static final Logger log = Logger.getLogger( TransactionCoordinatorJdbcImpl.class );
+public class TransactionCoordinatorResourceLocalImpl implements TransactionCoordinator {
+	private static final Logger log = Logger.getLogger( TransactionCoordinatorResourceLocalImpl.class );
 
-	private final JdbcSessionImplementor jdbcSession;
+	private final ResourceLocalTransactionCoordinatorOwner owner;
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
 	private PhysicalTransactionDelegateImpl physicalTransactionDelegate;
 
-	public TransactionCoordinatorJdbcImpl(JdbcSessionImplementor jdbcSession) {
-		this.jdbcSession = jdbcSession;
+	/**
+	 * Construct a TransactionCoordinatorResourceLocalImpl instance.  package-protected to ensure access goes through
+	 * builder.
+	 *
+	 * @param owner The owner
+	 */
+	TransactionCoordinatorResourceLocalImpl(ResourceLocalTransactionCoordinatorOwner owner) {
+		this.owner = owner;
 	}
 
 	@Override
@@ -56,7 +62,7 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 		// coordinator.  We lazily build it as we invalidate each delegate after each transaction (a delegate is
 		// valid for just one transaction)
 		if ( physicalTransactionDelegate == null ) {
-			physicalTransactionDelegate = new PhysicalTransactionDelegateImpl( jdbcSession.getPhysicalJdbcTransaction() );
+			physicalTransactionDelegate = new PhysicalTransactionDelegateImpl( owner.getResourceLocalTransaction() );
 		}
 		return physicalTransactionDelegate;
 	}
@@ -80,17 +86,20 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 	// PhysicalTransactionDelegate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	private void afterBeginCallback() {
-		log.trace( "TransactionCoordinatorJdbcImpl#afterBeginCallback" );
+		log.trace( "TransactionCoordinatorResourceLocalImpl#afterBeginCallback" );
 	}
 	private void beforeCompletionCallback() {
-		log.trace( "TransactionCoordinatorJdbcImpl#beforeCompletionCallback" );
+		log.trace( "TransactionCoordinatorResourceLocalImpl#beforeCompletionCallback" );
+		owner.beforeTransactionCompletion();
 		synchronizationRegistry.notifySynchronizationsBeforeTransactionCompletion();
 	}
 
 	private void afterCompletionCallback(boolean successful) {
-		log.tracef( "TransactionCoordinatorJdbcImpl#afterCompletionCallback(%s)", successful );
+		log.tracef( "TransactionCoordinatorResourceLocalImpl#afterCompletionCallback(%s)", successful );
 		final int statusToSend =  successful ? Status.STATUS_COMMITTED : Status.STATUS_UNKNOWN;
 		synchronizationRegistry.notifySynchronizationsAfterTransactionCompletion( statusToSend );
+
+		owner.afterTransactionCompletion( successful );
 
 		invalidateDelegate();
 	}
@@ -110,47 +119,47 @@ public class TransactionCoordinatorJdbcImpl implements TransactionCoordinator {
 	 * transaction via the JDBC Connection.
 	 */
 	public class PhysicalTransactionDelegateImpl extends AbstractPhysicalTransactionDelegate {
-		private final PhysicalJdbcTransaction physicalJdbcTransaction;
+		private final ResourceLocalTransaction resourceLocalTransaction;
 
-		public PhysicalTransactionDelegateImpl(PhysicalJdbcTransaction physicalJdbcTransaction) {
+		public PhysicalTransactionDelegateImpl(ResourceLocalTransaction resourceLocalTransaction) {
 			super();
-			this.physicalJdbcTransaction = physicalJdbcTransaction;
+			this.resourceLocalTransaction = resourceLocalTransaction;
 		}
 
 		@Override
 		protected void doBegin() {
 			// initiate the transaction start with the JDBC Connection
-			physicalJdbcTransaction.begin();
+			resourceLocalTransaction.begin();
 		}
 
 		@Override
 		protected void afterBegin() {
 			super.afterBegin();
-			TransactionCoordinatorJdbcImpl.this.afterBeginCallback();
+			TransactionCoordinatorResourceLocalImpl.this.afterBeginCallback();
 		}
 
 		@Override
 		protected void beforeCompletion() {
 			super.beforeCompletion();
-			TransactionCoordinatorJdbcImpl.this.beforeCompletionCallback();
+			TransactionCoordinatorResourceLocalImpl.this.beforeCompletionCallback();
 		}
 
 		@Override
 		protected void doCommit() {
 			// initiate the transaction completion with the JDBC Connection
-			physicalJdbcTransaction.commit();
+			resourceLocalTransaction.commit();
 		}
 
 		@Override
 		protected void afterCompletion(boolean successful) {
 			super.afterCompletion( successful );
-			TransactionCoordinatorJdbcImpl.this.afterCompletionCallback( successful );
+			TransactionCoordinatorResourceLocalImpl.this.afterCompletionCallback( successful );
 		}
 
 		@Override
 		protected void doRollback() {
 			// initiate the transaction completion with the JDBC Connection
-			physicalJdbcTransaction.rollback();
+			resourceLocalTransaction.rollback();
 		}
 	}
 }

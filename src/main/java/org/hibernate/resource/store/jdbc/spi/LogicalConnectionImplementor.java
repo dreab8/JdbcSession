@@ -21,11 +21,11 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.store.jdbc.spi;
 
 import java.sql.Connection;
 
-import org.hibernate.resource.jdbc.LogicalConnection;
+import org.hibernate.resource.store.jdbc.LogicalConnection;
 
 /**
  * @author Steve Ebersole

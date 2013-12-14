@@ -21,8 +21,19 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
+package org.hibernate.resource.transaction;
 
 /**
- * Defines the resource-level JDBC capabilities of Hibernate.
+ * A builder of TransactionCoordinator instances intended for use in resource-local mode (non-JTA transactions local
+ * to the underlying  data store).
+ * <p/>
+ * NOTE : Ideally I'd love to specialize the {@link #buildTransactionCoordinator(TransactionCoordinatorOwner)}
+ * method here to only accept TransactionCoordinatorOwner arguments that are specifically
+ * {@link org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner} instances.  Not sure how to
+ * best achieve that.  For now we just cast and let the exception happen, but directing the user via the contract
+ * would be MUCH preferable.
+ *
+ * @author Steve Ebersole
  */
-package org.hibernate.resource.jdbc;
+public interface TransactionCoordinatorResourceLocalBuilder extends TransactionCoordinatorBuilder {
+}

@@ -1,4 +1,4 @@
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.store.jdbc.spi;
 
 import java.io.Serializable;
 import java.sql.Connection;

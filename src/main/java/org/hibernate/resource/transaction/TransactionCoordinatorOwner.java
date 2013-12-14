@@ -21,21 +21,37 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.transaction;
 
 /**
- * Contract to allow inspection (and swapping) of SQL to be prepared
+ * Models an owner of a TransactionCoordinator.  Mainly used in 2 ways:<ul>
+ *     <li>
+ *         First to allow the coordinator to determine if its owner is still active (open, etc).
+ *     </li>
+ *     <li>
+ *         Second is to allow the coordinator to dispatch before and after completion events to the owner
+ *     </li>
+ * </ul>
  *
  * @author Steve Ebersole
  */
-public interface StatementInspector {
+public interface TransactionCoordinatorOwner {
 	/**
-	 * Inspect the given SQL, possibly returning a different SQL to be used instead.  Note that returning {@code null}
-	 * is interpreted as returning the same SQL as was passed.
+	 * Is the TransactionCoordinator owner considered active?
 	 *
-	 * @param sql The SQL to inspect
-	 *
-	 * @return The SQL to use; may be {@code null}
+	 * @return {@code true} indicates the owner is still active; {@code false} indicates it is not.
 	 */
-	public String inspect(String sql);
+	public boolean isActive();
+
+	/**
+	 * A before-completion callback from the coordinator to its owner.
+	 */
+	public void beforeTransactionCompletion();
+
+	/**
+	 * An after-completion callback from the coordinator to its owner.
+	 *
+	 * @param successful Was the transaction successful?
+	 */
+	public void afterTransactionCompletion(boolean successful);
 }

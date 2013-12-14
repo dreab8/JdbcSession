@@ -30,13 +30,11 @@ import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.cfg.AvailableSettings;
-import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
-import org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl;
-import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
-import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
-import org.hibernate.resource.jdbc.spi.TransactionCoordinatorBuilder;
-import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.store.jdbc.JdbcSession;
+import org.hibernate.resource.store.jdbc.internal.JdbcSessionImpl;
+import org.hibernate.resource.store.jdbc.internal.LogicalConnectionManagedImpl;
+import org.hibernate.resource.store.jdbc.spi.JdbcConnectionAccess;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaImpl;
 
 import org.hibernate.test.resource.jdbc.common.ConnectionProviderJtaAwareImpl;
@@ -97,19 +95,11 @@ public abstract class AbstractJtaScenarioTests {
 						},
 						JdbcSessionContextStandardTestingImpl.INSTANCE
 				),
-				new TransactionCoordinatorBuilder() {
-					@Override
-					public TransactionCoordinator buildTransactionCoordinator(JdbcSessionImplementor jdbcSession) {
-						return new TransactionCoordinatorJtaImpl(
-								jdbcSession,
-								JtaPlatformStandardTestingImpl.INSTANCE,
-								autoJoin,
-								preferUserTransactions(),
-								// do not perform JTA thread tracking
-								false
-						);
-					}
-				}
+				TransactionCoordinatorBuilderFactory.INSTANCE.forJta()
+						.setJtaPlatform( JtaPlatformStandardTestingImpl.INSTANCE )
+						.setAutoJoinTransactions( autoJoin )
+						.setPreferUserTransactions( preferUserTransactions() )
+						.setPerformJtaThreadTracking( false )
 		);
 	}
 

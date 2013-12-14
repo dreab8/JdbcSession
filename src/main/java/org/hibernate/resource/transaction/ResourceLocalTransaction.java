@@ -24,35 +24,26 @@
 package org.hibernate.resource.transaction;
 
 /**
- * Models the coordination of all transaction related flows.
+ * Models access to the resource transaction of the underlying data store.  Most data stores Hibernate deals with
+ * (JDBC e.g.) do not define an actual transaction object; this object stands in for that underlying transaction
+ * concept.  And if the underlying data store does happen to define an actual transaction object, this would simply
+ * delegate to that one.  Encapsulation! Polymorphism!  FTW! ;)
  *
  * @author Steve Ebersole
  */
-public interface TransactionCoordinator {
+public interface ResourceLocalTransaction {
+	/**
+	 * Begin the resource transaction
+	 */
+	public void begin();
 
 	/**
-	 * Indicates an explicit request to join a transaction.  This is mainly intended to handle the JPA requirement
-	 * around {@link javax.persistence.EntityManager#joinTransaction()}, and generally speaking only has an impact in
-	 * JTA environments
+	 * Commit the resource transaction
 	 */
-	public void explicitJoin();
+	public void commit();
 
 	/**
-	 * Used by owner of the JdbcSession as a means to indicate that implicit joining should be done if needed.
+	 * Rollback the resource transaction
 	 */
-	public void pulse();
-
-	/**
-	 * Get the PhysicalTransactionDelegate for this TransactionCoordinator for use by the local transaction
-	 *
-	 * @return The PhysicalTransactionDelegate
-	 */
-	public PhysicalTransactionDelegate getPhysicalTransactionDelegate();
-
-	/**
-	 * Get access to the local registry of Synchronization instances
-	 *
-	 * @return The local Synchronization registry
-	 */
-	public SynchronizationRegistry getLocalSynchronizations();
+	public void rollback();
 }

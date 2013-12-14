@@ -1,4 +1,4 @@
-package org.hibernate.resource.jdbc.internal;
+package org.hibernate.resource.store.jdbc.internal;
 
 import java.sql.Blob;
 import java.sql.Clob;
@@ -17,7 +17,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.JDBCException;
 import org.hibernate.internal.CoreLogging;
 import org.hibernate.internal.CoreMessageLogger;
-import org.hibernate.resource.jdbc.ResourceRegistry;
+import org.hibernate.resource.store.jdbc.ResourceRegistry;
 
 /**
  * @author Steve Ebersole

@@ -28,14 +28,11 @@ import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
-import org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl;
-import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
-import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
-import org.hibernate.resource.jdbc.spi.TransactionCoordinatorBuilder;
-import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.internal.TransactionCoordinatorJdbcImpl;
+import org.hibernate.resource.store.jdbc.JdbcSession;
+import org.hibernate.resource.store.jdbc.internal.JdbcSessionImpl;
+import org.hibernate.resource.store.jdbc.internal.LogicalConnectionManagedImpl;
+import org.hibernate.resource.store.jdbc.spi.JdbcConnectionAccess;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 
 import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
 import org.junit.After;
@@ -83,12 +80,7 @@ public class BasicJdbcUsageTestWithConnectionPooling extends AbstractBasicJdbcUs
 						},
 						JdbcSessionContextStandardTestingImpl.INSTANCE
 				),
-				new TransactionCoordinatorBuilder() {
-					@Override
-					public TransactionCoordinator buildTransactionCoordinator(JdbcSessionImplementor jdbcSession) {
-						return new TransactionCoordinatorJdbcImpl( jdbcSession );
-					}
-				}
+				TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal()
 		);
 	}
 

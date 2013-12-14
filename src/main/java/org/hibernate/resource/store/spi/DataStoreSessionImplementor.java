@@ -21,15 +21,22 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.store.spi;
+
+import org.hibernate.resource.store.DataStoreSession;
+import org.hibernate.resource.transaction.ResourceLocalTransaction;
 
 /**
- * Provides access to manage "transactionality" via the JDBC Connection
+ * SPI contract for DataStoreSession.
  *
  * @author Steve Ebersole
  */
-public interface PhysicalJdbcTransaction {
-	public void begin();
-	public void commit();
-	public void rollback();
+public interface DataStoreSessionImplementor extends DataStoreSession {
+	/**
+	 * Provides access to the resource transaction of this data store, which is then used by the TransactionCoordinator
+	 * to manage transactions against the data store when not using JTA.
+	 *
+	 * @return The resource transaction for this data store session
+	 */
+	public ResourceLocalTransaction getResourceTransaction();
 }

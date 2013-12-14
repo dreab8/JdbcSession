@@ -21,24 +21,8 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
 
 /**
- * @author Steve Ebersole
+ * Internal implementation details for the resource-level JDBC capabilities of Hibernate.
  */
-public interface JdbcObserver {
-	public void jdbcConnectionAcquisitionStart();
-	public void jdbcConnectionAcquisitionEnd();
-
-	public void jdbcConnectionReleaseStart();
-	public void jdbcConnectionReleaseEnd();
-
-	public void jdbcPrepareStatementStart();
-	public void jdbcPrepareStatementEnd();
-
-	public void jdbcExecuteStatementStart();
-	public void jdbcExecuteStatementEnd();
-
-	public void jdbcExecuteBatchStart();
-	public void jdbcExecuteBatchEnd();
-}
+package org.hibernate.resource.store.jdbc.internal;

@@ -1,4 +1,4 @@
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.store.jdbc.spi;
 
 import org.hibernate.resource.transaction.TransactionCoordinator;
 

@@ -27,13 +27,14 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.util.Properties;
 
-import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
-import org.hibernate.resource.jdbc.internal.LogicalConnectionProvidedImpl;
-import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
-import org.hibernate.resource.jdbc.spi.TransactionCoordinatorBuilder;
+import org.hibernate.resource.store.jdbc.JdbcSession;
+import org.hibernate.resource.store.jdbc.internal.JdbcSessionImpl;
+import org.hibernate.resource.store.jdbc.internal.LogicalConnectionProvidedImpl;
+import org.hibernate.resource.store.jdbc.spi.JdbcSessionImplementor;
+import org.hibernate.resource.store.jdbc.spi.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.internal.TransactionCoordinatorJdbcImpl;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
+import org.hibernate.resource.transaction.internal.TransactionCoordinatorResourceLocalImpl;
 
 import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
 import org.junit.After;
@@ -69,12 +70,7 @@ public class BasicJdbcUsageTestWithProvidedConnections extends AbstractBasicJdbc
 		jdbcSession = new JdbcSessionImpl(
 				JdbcSessionContextStandardTestingImpl.INSTANCE,
 				new LogicalConnectionProvidedImpl( jdbcConnection ),
-				new TransactionCoordinatorBuilder() {
-					@Override
-					public TransactionCoordinator buildTransactionCoordinator(JdbcSessionImplementor jdbcSession) {
-						return new TransactionCoordinatorJdbcImpl( jdbcSession );
-					}
-				}
+				TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal()
 		);
 	}
 

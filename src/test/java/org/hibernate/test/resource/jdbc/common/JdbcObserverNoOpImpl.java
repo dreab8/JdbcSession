@@ -23,7 +23,7 @@
  */
 package org.hibernate.test.resource.jdbc.common;
 
-import org.hibernate.resource.jdbc.spi.JdbcObserver;
+import org.hibernate.resource.store.jdbc.spi.JdbcObserver;
 
 /**
  * @author Steve Ebersole

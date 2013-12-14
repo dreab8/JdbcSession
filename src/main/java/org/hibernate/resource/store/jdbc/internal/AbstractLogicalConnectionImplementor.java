@@ -1,13 +1,13 @@
-package org.hibernate.resource.jdbc.internal;
+package org.hibernate.resource.store.jdbc.internal;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.hibernate.ResourceClosedException;
 import org.hibernate.TransactionException;
-import org.hibernate.resource.jdbc.ResourceRegistry;
-import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
-import org.hibernate.resource.jdbc.spi.PhysicalJdbcTransaction;
+import org.hibernate.resource.store.jdbc.ResourceRegistry;
+import org.hibernate.resource.store.jdbc.spi.LogicalConnectionImplementor;
+import org.hibernate.resource.store.jdbc.spi.PhysicalJdbcTransaction;
 
 import org.jboss.logging.Logger;
 

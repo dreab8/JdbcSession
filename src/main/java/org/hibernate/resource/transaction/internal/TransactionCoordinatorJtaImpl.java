@@ -6,10 +6,10 @@ import javax.transaction.UserTransaction;
 
 import org.hibernate.TransactionException;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
 import org.hibernate.resource.transaction.synchronization.internal.RegisteredSynchronization;
 import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackCoordinatorNonTrackingImpl;
 import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackCoordinatorTrackingImpl;
@@ -28,7 +28,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 
 	// NOTE : WORK-IN-PROGRESS
 
-	private final JdbcSessionImplementor jdbcSession;
+	private final TransactionCoordinatorOwner owner;
 	private final JtaPlatform jtaPlatform;
 	private final boolean autoJoinTransactions;
 	private final boolean preferUserTransactions;
@@ -40,14 +40,23 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
-
-	public TransactionCoordinatorJtaImpl(
-			JdbcSessionImplementor jdbcSession,
+	/**
+	 * Construct a TransactionCoordinatorJtaImpl instance.  package-protected to ensure access goes through
+	 * builder.
+	 *
+	 * @param owner The owner
+	 * @param jtaPlatform The JtaPlatform to use
+	 * @param autoJoinTransactions Should JTA transactions be auto-joined?  Or should we wait for explicit join calls?
+	 * @param preferUserTransactions Should we prefer using UserTransaction, as opposed to TransactionManager?
+	 * @param performJtaThreadTracking Should we perform thread tracking?
+	 */
+	TransactionCoordinatorJtaImpl(
+			TransactionCoordinatorOwner owner,
 			JtaPlatform jtaPlatform,
 			boolean autoJoinTransactions,
 			boolean preferUserTransactions,
 			boolean performJtaThreadTracking) {
-		this.jdbcSession = jdbcSession;
+		this.owner = owner;
 		this.jtaPlatform = jtaPlatform;
 		this.autoJoinTransactions = autoJoinTransactions;
 		this.preferUserTransactions = preferUserTransactions;
@@ -184,11 +193,12 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 
 	@Override
 	public boolean isActive() {
-		return jdbcSession.isOpen();
+		return owner.isActive();
 	}
 
 	@Override
 	public void beforeCompletion() {
+		owner.beforeTransactionCompletion();
 		synchronizationRegistry.notifySynchronizationsBeforeTransactionCompletion();
 	}
 
@@ -196,6 +206,8 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 	public void afterCompletion(boolean successful) {
 		final int statusToSend =  successful ? Status.STATUS_COMMITTED : Status.STATUS_UNKNOWN;
 		synchronizationRegistry.notifySynchronizationsAfterTransactionCompletion( statusToSend );
+
+		owner.afterTransactionCompletion( successful );
 
 		synchronizationRegistered = false;
 	}

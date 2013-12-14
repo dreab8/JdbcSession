@@ -21,20 +21,18 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc;
+package org.hibernate.resource.transaction;
 
-import java.sql.SQLException;
+import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 
 /**
- * Much like {@link org.hibernate.resource2.jdbc.Work}, but with access to JdbcSession
+ * A builder of TransactionCoordinator instances intended for use in JTA environments.
  *
  * @author Steve Ebersole
  */
-public interface Operation<T> {
-	/**
-	 * Perform the encapsulated operation using the given JdbcSession
-	 *
-	 * @param jdbcSession The JdbcSession
-	 */
-	public T perform(JdbcSession jdbcSession) throws SQLException;
+public interface TransactionCoordinatorJtaBuilder extends TransactionCoordinatorBuilder {
+	public TransactionCoordinatorJtaBuilder setJtaPlatform(JtaPlatform jtaPlatform);
+	public TransactionCoordinatorJtaBuilder setAutoJoinTransactions(boolean autoJoinTransactions);
+	public TransactionCoordinatorJtaBuilder setPreferUserTransactions(boolean preferUserTransactions);
+	public TransactionCoordinatorJtaBuilder setPerformJtaThreadTracking(boolean performJtaThreadTracking);
 }

@@ -1,20 +1,21 @@
-package org.hibernate.resource.jdbc.internal;
+package org.hibernate.resource.store.jdbc.internal;
 
-import org.hibernate.resource.jdbc.LogicalConnection;
-import org.hibernate.resource.jdbc.Operation;
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
-import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
-import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
-import org.hibernate.resource.jdbc.spi.PhysicalJdbcTransaction;
-import org.hibernate.resource.jdbc.spi.TransactionCoordinatorBuilder;
+import org.hibernate.resource.store.Operation;
+import org.hibernate.resource.store.jdbc.LogicalConnection;
+import org.hibernate.resource.store.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.store.jdbc.spi.JdbcSessionImplementor;
+import org.hibernate.resource.store.jdbc.spi.LogicalConnectionImplementor;
+import org.hibernate.resource.transaction.ResourceLocalTransaction;
 import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
 
 import org.jboss.logging.Logger;
 
 /**
  * @author Steve Ebersole
  */
-public class JdbcSessionImpl implements JdbcSessionImplementor {
+public class JdbcSessionImpl implements JdbcSessionImplementor, ResourceLocalTransactionCoordinatorOwner {
 	private static final Logger log = Logger.getLogger( JdbcSessionImpl.class );
 
 	private final JdbcSessionContext context;
@@ -30,16 +31,6 @@ public class JdbcSessionImpl implements JdbcSessionImplementor {
 		this.context = context;
 		this.logicalConnection = logicalConnection;
 		this.transactionCoordinator = transactionCoordinatorBuilder.buildTransactionCoordinator( this );
-	}
-
-	@Override
-	public JdbcSessionContext getJdbcSessionContext() {
-		return context;
-	}
-
-	@Override
-	public PhysicalJdbcTransaction getPhysicalJdbcTransaction() {
-		return logicalConnection.getPhysicalJdbcTransaction();
 	}
 
 	@Override
@@ -82,5 +73,32 @@ public class JdbcSessionImpl implements JdbcSessionImplementor {
 	public <T> T accept(Operation<T> operation) {
 		// todo : implement
 		return null;
+	}
+
+
+	// ResourceLocalTransactionCoordinatorOwner impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	@Override
+	public ResourceLocalTransaction getResourceLocalTransaction() {
+		return logicalConnection.getPhysicalJdbcTransaction();
+	}
+
+	@Override
+	public boolean isActive() {
+		return isOpen();
+	}
+
+	@Override
+	public void beforeTransactionCompletion() {
+		// todo : implement
+		// for now, just log...
+		log.trace( "JdbcSessionImpl#beforeTransactionCompletion" );
+	}
+
+	@Override
+	public void afterTransactionCompletion(boolean successful) {
+		// todo : implement
+		// for now, just log...
+		log.tracef( "JdbcSessionImpl#afterTransactionCompletion(%s)", successful );
 	}
 }

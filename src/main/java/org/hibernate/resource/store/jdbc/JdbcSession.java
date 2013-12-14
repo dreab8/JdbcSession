@@ -21,38 +21,22 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction;
+package org.hibernate.resource.store.jdbc;
+
+import org.hibernate.resource.store.DataStoreSession;
 
 /**
- * Models the coordination of all transaction related flows.
+ * Models the context of a JDBC Connection and transaction.
  *
  * @author Steve Ebersole
  */
-public interface TransactionCoordinator {
-
+public interface JdbcSession extends DataStoreSession {
 	/**
-	 * Indicates an explicit request to join a transaction.  This is mainly intended to handle the JPA requirement
-	 * around {@link javax.persistence.EntityManager#joinTransaction()}, and generally speaking only has an impact in
-	 * JTA environments
-	 */
-	public void explicitJoin();
-
-	/**
-	 * Used by owner of the JdbcSession as a means to indicate that implicit joining should be done if needed.
-	 */
-	public void pulse();
-
-	/**
-	 * Get the PhysicalTransactionDelegate for this TransactionCoordinator for use by the local transaction
+	 * Get the logical connection to the database represented by this JdbcSession
 	 *
-	 * @return The PhysicalTransactionDelegate
-	 */
-	public PhysicalTransactionDelegate getPhysicalTransactionDelegate();
-
-	/**
-	 * Get access to the local registry of Synchronization instances
+	 * @return The logical JDBC connection.
 	 *
-	 * @return The local Synchronization registry
+	 * @throws org.hibernate.ResourceClosedException if the JdbcSession is closed
 	 */
-	public SynchronizationRegistry getLocalSynchronizations();
+	public LogicalConnection getLogicalConnection();
 }

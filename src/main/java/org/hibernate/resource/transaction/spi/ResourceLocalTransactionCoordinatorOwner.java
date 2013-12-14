@@ -21,14 +21,22 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.transaction.spi;
 
-import org.hibernate.resource.jdbc.JdbcSession;
+import org.hibernate.resource.transaction.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
 
 /**
+ * Specialization of the TransactionCoordinatorOwner contract for use in building resource-local
+ * TransactionCoordinator instances.
+ *
  * @author Steve Ebersole
  */
-public interface JdbcSessionImplementor extends JdbcSession {
-	public JdbcSessionContext getJdbcSessionContext();
-	public PhysicalJdbcTransaction getPhysicalJdbcTransaction();
+public interface ResourceLocalTransactionCoordinatorOwner extends TransactionCoordinatorOwner {
+	/**
+	 * Provides access to the resource local transaction for use by the coordinator
+	 *
+	 * @return The resource-local transaction
+	 */
+	public ResourceLocalTransaction getResourceLocalTransaction();
 }

@@ -21,12 +21,12 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.internal;
+package org.hibernate.resource.store.jdbc.internal;
 
 import java.sql.Connection;
 
-import org.hibernate.resource.jdbc.LogicalConnection;
-import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
+import org.hibernate.resource.store.jdbc.LogicalConnection;
+import org.hibernate.resource.store.jdbc.spi.LogicalConnectionImplementor;
 
 import org.jboss.logging.Logger;
 

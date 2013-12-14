@@ -26,9 +26,9 @@ package org.hibernate.test.resource.jdbc.common;
 import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.engine.jdbc.spi.SqlStatementLogger;
-import org.hibernate.resource.jdbc.spi.JdbcObserver;
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
-import org.hibernate.resource.jdbc.spi.StatementInspector;
+import org.hibernate.resource.store.jdbc.spi.JdbcObserver;
+import org.hibernate.resource.store.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.store.jdbc.spi.StatementInspector;
 
 /**
  * @author Steve Ebersole

@@ -2,7 +2,7 @@ package org.hibernate.test.resource.jdbc;
 
 import java.sql.Connection;
 
-import org.hibernate.resource.jdbc.JdbcSession;
+import org.hibernate.resource.store.jdbc.JdbcSession;
 
 import org.junit.Test;
 

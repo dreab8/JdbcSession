@@ -23,36 +23,37 @@
  */
 package org.hibernate.resource.transaction;
 
+import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaBuilderImpl;
+import org.hibernate.resource.transaction.internal.TransactionCoordinatorResourceLocalBuilderImpl;
+
 /**
- * Models the coordination of all transaction related flows.
- *
  * @author Steve Ebersole
  */
-public interface TransactionCoordinator {
-
+public class TransactionCoordinatorBuilderFactory {
 	/**
-	 * Indicates an explicit request to join a transaction.  This is mainly intended to handle the JPA requirement
-	 * around {@link javax.persistence.EntityManager#joinTransaction()}, and generally speaking only has an impact in
-	 * JTA environments
+	 * Singleton access
 	 */
-	public void explicitJoin();
+	public static final TransactionCoordinatorBuilderFactory INSTANCE = new TransactionCoordinatorBuilderFactory();
+
+	private TransactionCoordinatorBuilderFactory() {
+	}
 
 	/**
-	 * Used by owner of the JdbcSession as a means to indicate that implicit joining should be done if needed.
-	 */
-	public void pulse();
-
-	/**
-	 * Get the PhysicalTransactionDelegate for this TransactionCoordinator for use by the local transaction
+	 * Obtain a TransactionCoordinatorBuilder specific to resource-local environments
 	 *
-	 * @return The PhysicalTransactionDelegate
+	 * @return The resource-local specific TransactionCoordinatorBuilder
 	 */
-	public PhysicalTransactionDelegate getPhysicalTransactionDelegate();
+	public TransactionCoordinatorResourceLocalBuilder forResourceLocal() {
+		return new TransactionCoordinatorResourceLocalBuilderImpl();
+	}
 
 	/**
-	 * Get access to the local registry of Synchronization instances
+	 * Obtain a TransactionCoordinatorBuilder specific to JTA environments
 	 *
-	 * @return The local Synchronization registry
+	 * @return The JTA specific TransactionCoordinatorBuilder
 	 */
-	public SynchronizationRegistry getLocalSynchronizations();
+	public TransactionCoordinatorJtaBuilder forJta() {
+		return new TransactionCoordinatorJtaBuilderImpl();
+	}
+
 }
