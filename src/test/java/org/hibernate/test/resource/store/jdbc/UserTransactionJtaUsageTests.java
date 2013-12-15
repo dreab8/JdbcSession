@@ -21,21 +21,14 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc.common;
-
-import org.hibernate.resource.store.jdbc.spi.StatementInspector;
+package org.hibernate.test.resource.store.jdbc;
 
 /**
  * @author Steve Ebersole
  */
-public class StatementInspectorNoOpImpl implements StatementInspector {
-	/**
-	 * Singleton access
-	 */
-	public static final StatementInspectorNoOpImpl INSTANCE = new StatementInspectorNoOpImpl();
-
+public class UserTransactionJtaUsageTests extends AbstractJtaScenarioTests {
 	@Override
-	public String inspect(String sql) {
-		return sql;
+	protected boolean preferUserTransactions() {
+		return true;
 	}
 }

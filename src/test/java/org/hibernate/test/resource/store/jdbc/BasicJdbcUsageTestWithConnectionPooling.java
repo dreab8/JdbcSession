@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc;
+package org.hibernate.test.resource.store.jdbc;
 
 import java.sql.Connection;
 import java.sql.Driver;
@@ -34,7 +34,7 @@ import org.hibernate.resource.store.jdbc.internal.LogicalConnectionManagedImpl;
 import org.hibernate.resource.store.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 
-import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
+import org.hibernate.test.resource.store.jdbc.common.JdbcSessionContextStandardTestingImpl;
 import org.junit.After;
 import org.junit.Before;
 

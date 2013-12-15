@@ -21,26 +21,56 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc.common;
+package org.hibernate.test.resource.store.jdbc.common;
 
-import java.util.Map;
-
-import org.hibernate.cfg.AvailableSettings;
-import org.hibernate.cfg.Environment;
+import org.hibernate.resource.store.jdbc.spi.JdbcObserver;
 
 /**
  * @author Steve Ebersole
  */
-public final class TestingJtaBootstrap {
-	public static final TestingJtaBootstrap INSTANCE = new TestingJtaBootstrap();
+public class JdbcObserverNoOpImpl implements JdbcObserver {
+	/**
+	 * Singleton access
+	 */
+	public static final JdbcObserverNoOpImpl INSTANCE = new JdbcObserverNoOpImpl();
 
-	@SuppressWarnings("unchecked")
-	public static void prepare(Map configValues) {
-		configValues.put( AvailableSettings.JTA_PLATFORM, JtaPlatformStandardTestingImpl.INSTANCE );
-		configValues.put( Environment.CONNECTION_PROVIDER, ConnectionProviderJtaAwareImpl.class.getName() );
-		configValues.put( "javax.persistence.transactionType", "JTA" );
+	@Override
+	public void jdbcConnectionAcquisitionStart() {
 	}
 
-	private TestingJtaBootstrap() {
+	@Override
+	public void jdbcConnectionAcquisitionEnd() {
+	}
+
+	@Override
+	public void jdbcConnectionReleaseStart() {
+	}
+
+	@Override
+	public void jdbcConnectionReleaseEnd() {
+	}
+
+	@Override
+	public void jdbcPrepareStatementStart() {
+	}
+
+	@Override
+	public void jdbcPrepareStatementEnd() {
+	}
+
+	@Override
+	public void jdbcExecuteStatementStart() {
+	}
+
+	@Override
+	public void jdbcExecuteStatementEnd() {
+	}
+
+	@Override
+	public void jdbcExecuteBatchStart() {
+	}
+
+	@Override
+	public void jdbcExecuteBatchEnd() {
 	}
 }

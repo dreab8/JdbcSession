@@ -21,43 +21,33 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc.common;
+package org.hibernate.test.resource.common;
 
-import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
 /**
  * @author Steve Ebersole
  */
-public class SynchronizationCollectorImpl implements Synchronization {
-	private int beforeCompletionCount;
-	private int successfulCompletionCount;
-	private int failedCompletionCount;
+public class SynchronizationErrorImpl implements Synchronization {
+	private final boolean errorOnBefore;
+	private final boolean errorOnAfter;
+
+	public SynchronizationErrorImpl(boolean errorOnBefore, boolean errorOnAfter) {
+		this.errorOnBefore = errorOnBefore;
+		this.errorOnAfter = errorOnAfter;
+	}
 
 	@Override
 	public void beforeCompletion() {
-		beforeCompletionCount++;
+		if ( errorOnBefore ) {
+			throw new RuntimeException( "throwing requested error on beforeCompletion" );
+		}
 	}
 
 	@Override
 	public void afterCompletion(int status) {
-		if ( status == Status.STATUS_COMMITTED ) {
-			successfulCompletionCount++;
+		if ( errorOnAfter ) {
+			throw new RuntimeException( "throwing requested error on afterCompletion" );
 		}
-		else {
-			failedCompletionCount++;
-		}
-	}
-
-	public int getBeforeCompletionCount() {
-		return beforeCompletionCount;
-	}
-
-	public int getSuccessfulCompletionCount() {
-		return successfulCompletionCount;
-	}
-
-	public int getFailedCompletionCount() {
-		return failedCompletionCount;
 	}
 }

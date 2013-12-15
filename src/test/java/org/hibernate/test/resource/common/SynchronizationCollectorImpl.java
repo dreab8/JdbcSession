@@ -21,14 +21,49 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc;
+package org.hibernate.test.resource.common;
+
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
 
 /**
  * @author Steve Ebersole
  */
-public class TransactionManagerJtaUsageTests extends AbstractJtaScenarioTests {
+public class SynchronizationCollectorImpl implements Synchronization {
+	private int beforeCompletionCount;
+	private int successfulCompletionCount;
+	private int failedCompletionCount;
+
 	@Override
-	protected boolean preferUserTransactions() {
-		return false;
+	public void beforeCompletion() {
+		beforeCompletionCount++;
+	}
+
+	@Override
+	public void afterCompletion(int status) {
+		if ( status == Status.STATUS_COMMITTED ) {
+			successfulCompletionCount++;
+		}
+		else {
+			failedCompletionCount++;
+		}
+	}
+
+	public int getBeforeCompletionCount() {
+		return beforeCompletionCount;
+	}
+
+	public int getSuccessfulCompletionCount() {
+		return successfulCompletionCount;
+	}
+
+	public int getFailedCompletionCount() {
+		return failedCompletionCount;
+	}
+
+	public void reset() {
+		beforeCompletionCount = 0;
+		successfulCompletionCount = 0;
+		failedCompletionCount = 0;
 	}
 }

@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc;
+package org.hibernate.test.resource.store.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -37,10 +37,10 @@ import org.hibernate.resource.store.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaImpl;
 
-import org.hibernate.test.resource.jdbc.common.ConnectionProviderJtaAwareImpl;
-import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
-import org.hibernate.test.resource.jdbc.common.JtaPlatformStandardTestingImpl;
-import org.hibernate.test.resource.jdbc.common.SynchronizationCollectorImpl;
+import org.hibernate.test.resource.store.jdbc.common.ConnectionProviderJtaAwareImpl;
+import org.hibernate.test.resource.store.jdbc.common.JdbcSessionContextStandardTestingImpl;
+import org.hibernate.test.resource.store.jdbc.common.JtaPlatformStandardTestingImpl;
+import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

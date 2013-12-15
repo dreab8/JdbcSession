@@ -1,4 +1,4 @@
-package org.hibernate.test.resource.jdbc;
+package org.hibernate.test.resource.store.jdbc;
 
 import java.sql.Connection;
 

@@ -29,6 +29,7 @@ import javax.transaction.Synchronization;
 import org.hibernate.internal.CoreLogging;
 import org.hibernate.internal.CoreMessageLogger;
 import org.hibernate.resource.transaction.NullSynchronizationException;
+import org.hibernate.resource.transaction.UserSynchronizationException;
 import org.hibernate.resource.transaction.spi.SynchronizationRegistryImplementor;
 
 /**
@@ -40,6 +41,15 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 	private static final CoreMessageLogger log = CoreLogging.messageLogger( SynchronizationRegistryStandardImpl.class );
 
 	private LinkedHashSet<Synchronization> synchronizations;
+
+	/**
+	 * Intended for test access
+	 *
+	 * @return The number of Synchronizations registered
+	 */
+	public int getNumberOfRegisteredSynchronizations() {
+		return synchronizations == null ? 0 : synchronizations.size();
+	}
 
 	@Override
 	public void registerSynchronization(Synchronization synchronization) {
@@ -68,6 +78,10 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 				}
 				catch (Throwable t) {
 					log.synchronizationFailed( synchronization, t );
+					throw new UserSynchronizationException(
+							"Exception calling user Synchronization (beforeCompletion): " + synchronization.getClass().getName(),
+							t
+					);
 				}
 			}
 		}
@@ -81,15 +95,23 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 		);
 
 		if ( synchronizations != null ) {
-			for ( Synchronization synchronization : synchronizations ) {
-				try {
-					synchronization.afterCompletion( status );
-				}
-				catch (Throwable t) {
-					log.synchronizationFailed( synchronization, t );
+			try {
+				for ( Synchronization synchronization : synchronizations ) {
+					try {
+						synchronization.afterCompletion( status );
+					}
+					catch (Throwable t) {
+						log.synchronizationFailed( synchronization, t );
+						throw new UserSynchronizationException(
+								"Exception calling user Synchronization (afterCompletion): " + synchronization.getClass().getName(),
+								t
+						);
+					}
 				}
 			}
-			clearSynchronizations();
+			finally {
+				clearSynchronizations();
+			}
 		}
 	}
 

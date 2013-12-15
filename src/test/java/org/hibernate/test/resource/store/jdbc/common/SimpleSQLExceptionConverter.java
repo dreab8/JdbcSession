@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc.common;
+package org.hibernate.test.resource.store.jdbc.common;
 
 import java.sql.SQLException;
 

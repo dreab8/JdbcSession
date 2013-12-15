@@ -21,14 +21,17 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc;
+package org.hibernate.resource.transaction;
+
+import org.hibernate.HibernateException;
 
 /**
+ * Wraps an exception thrown from a "user synchronization" (one registered in the SynchronizationRegistry).
+ *
  * @author Steve Ebersole
  */
-public class UserTransactionJtaUsageTests extends AbstractJtaScenarioTests {
-	@Override
-	protected boolean preferUserTransactions() {
-		return true;
+public class UserSynchronizationException extends HibernateException {
+	public UserSynchronizationException(String message, Throwable cause) {
+		super( message, cause );
 	}
 }
