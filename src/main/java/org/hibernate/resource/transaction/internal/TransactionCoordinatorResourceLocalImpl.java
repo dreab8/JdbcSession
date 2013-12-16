@@ -25,15 +25,14 @@ package org.hibernate.resource.transaction.internal;
 
 import javax.transaction.Status;
 
+import org.hibernate.internal.CoreMessageLogger;
 import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
 import org.hibernate.resource.transaction.ResourceLocalTransaction;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
 
-import org.jboss.logging.Logger;
-
-import static org.hibernate.internal.CoreLogging.logger;
+import static org.hibernate.internal.CoreLogging.messageLogger;
 
 /**
  * An implementation of TransactionCoordinator based on managing a transaction through the data-store
@@ -44,7 +43,7 @@ import static org.hibernate.internal.CoreLogging.logger;
  * @see org.hibernate.resource.transaction.ResourceLocalTransaction
  */
 public class TransactionCoordinatorResourceLocalImpl implements TransactionCoordinator {
-	private static final Logger log = logger( TransactionCoordinatorResourceLocalImpl.class );
+	private static final CoreMessageLogger log = messageLogger( TransactionCoordinatorResourceLocalImpl.class );
 
 	private final ResourceLocalTransactionCoordinatorOwner owner;
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
@@ -74,7 +73,14 @@ public class TransactionCoordinatorResourceLocalImpl implements TransactionCoord
 
 	@Override
 	public void explicitJoin() {
-		// nothing to do here
+		// nothing to do here, but log a warning
+		log.callingJoinTransactionOnNonJtaEntityManager();
+	}
+
+	@Override
+	public boolean isJoined() {
+		log.debug( "Calling TransactionCoordinator#isJoined in resource-local mode always returns false" );
+		return false;
 	}
 
 	@Override

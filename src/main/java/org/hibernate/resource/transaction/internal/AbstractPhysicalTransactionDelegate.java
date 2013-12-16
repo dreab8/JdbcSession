@@ -44,6 +44,10 @@ public abstract class AbstractPhysicalTransactionDelegate implements PhysicalTra
 		invalid = true;
 	}
 
+	public boolean isValid() {
+		return !invalid;
+	}
+
 	@Override
 	public void begin() {
 		errorIfInvalid();
@@ -52,7 +56,7 @@ public abstract class AbstractPhysicalTransactionDelegate implements PhysicalTra
 		afterBegin();
 	}
 
-	private void errorIfInvalid() {
+	protected void errorIfInvalid() {
 		if ( invalid ) {
 			throw new IllegalStateException( "Physical-transaction delegate is no longer valid" );
 		}

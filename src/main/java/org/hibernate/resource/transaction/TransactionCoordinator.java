@@ -29,13 +29,20 @@ package org.hibernate.resource.transaction;
  * @author Steve Ebersole
  */
 public interface TransactionCoordinator {
-
 	/**
 	 * Indicates an explicit request to join a transaction.  This is mainly intended to handle the JPA requirement
 	 * around {@link javax.persistence.EntityManager#joinTransaction()}, and generally speaking only has an impact in
 	 * JTA environments
 	 */
 	public void explicitJoin();
+
+	/**
+	 * Determine if there is an active transaction that this coordinator is already joined to.
+	 *
+	 * @return {@code true} if there is an active transaction this coordinator is already joined to; {@code false}
+	 * otherwise.
+	 */
+	public boolean isJoined();
 
 	/**
 	 * Used by owner of the JdbcSession as a means to indicate that implicit joining should be done if needed.

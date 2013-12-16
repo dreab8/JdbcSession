@@ -95,6 +95,10 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		joinJtaTransaction();
 	}
 
+	/**
+	 * Join to the JTA transaction.  Note that the underlying meaning of joining in JTA environments is to register the
+	 * RegisteredSynchronization with the JTA system
+	 */
 	private void joinJtaTransaction() {
 		if ( synchronizationRegistered ) {
 			throw new TransactionException( "Hibernate RegisteredSynchronization is already registered for this coordinator" );
@@ -108,7 +112,17 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 
 	@Override
 	public void explicitJoin() {
+		if ( synchronizationRegistered ) {
+			log.debug( "JTA transaction was already joined (RegisteredSynchronization already registered)" );
+			return;
+		}
+
 		joinJtaTransaction();
+	}
+
+	@Override
+	public boolean isJoined() {
+		return synchronizationRegistered;
 	}
 
 	/**
