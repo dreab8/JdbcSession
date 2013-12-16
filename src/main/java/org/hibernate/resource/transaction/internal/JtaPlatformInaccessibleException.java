@@ -21,28 +21,19 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.store.jdbc.common;
+package org.hibernate.resource.transaction.internal;
 
-import java.util.Map;
-
-import org.hibernate.cfg.AvailableSettings;
-import org.hibernate.cfg.Environment;
-
-import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
+import org.hibernate.HibernateException;
 
 /**
  * @author Steve Ebersole
  */
-public final class TestingJtaBootstrap {
-	public static final TestingJtaBootstrap INSTANCE = new TestingJtaBootstrap();
-
-	@SuppressWarnings("unchecked")
-	public static void prepare(Map configValues) {
-		configValues.put( AvailableSettings.JTA_PLATFORM, JtaPlatformStandardTestingImpl.INSTANCE );
-		configValues.put( Environment.CONNECTION_PROVIDER, ConnectionProviderJtaAwareImpl.class.getName() );
-		configValues.put( "javax.persistence.transactionType", "JTA" );
+public class JtaPlatformInaccessibleException extends HibernateException {
+	public JtaPlatformInaccessibleException(String message) {
+		super( message );
 	}
 
-	private TestingJtaBootstrap() {
+	public JtaPlatformInaccessibleException(String message, Throwable cause) {
+		super( message, cause );
 	}
 }

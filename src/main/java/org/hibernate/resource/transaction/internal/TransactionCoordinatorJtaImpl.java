@@ -180,7 +180,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 			}
 		}
 
-		throw new TransactionException( "Could not locate TransactionManager nor UserTransaction" );
+		throw new JtaPlatformInaccessibleException( "Could not locate TransactionManager nor UserTransaction" );
 	}
 
 	@Override

@@ -39,7 +39,7 @@ import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaImpl
 
 import org.hibernate.test.resource.store.jdbc.common.ConnectionProviderJtaAwareImpl;
 import org.hibernate.test.resource.store.jdbc.common.JdbcSessionContextStandardTestingImpl;
-import org.hibernate.test.resource.store.jdbc.common.JtaPlatformStandardTestingImpl;
+import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
 import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
 import org.junit.After;
 import org.junit.Before;

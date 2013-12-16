@@ -42,6 +42,8 @@ import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.service.spi.Configurable;
 import org.hibernate.service.spi.Stoppable;
 
+import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
+
 import org.jboss.logging.Logger;
 
 /**
