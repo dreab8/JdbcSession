@@ -31,8 +31,47 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
  * @author Steve Ebersole
  */
 public interface TransactionCoordinatorJtaBuilder extends TransactionCoordinatorBuilder {
+	/**
+	 * Specifies the JtaPlatform to use.
+	 *
+	 * @param jtaPlatform The JtaPlatform to use.
+	 *
+	 * @return {@code this}, for method chaining
+	 */
 	public TransactionCoordinatorJtaBuilder setJtaPlatform(JtaPlatform jtaPlatform);
+
+	/**
+	 * Should JTA transactions be automatically joined?  Or should we wait for (JPA-style) explicit joining?  The
+	 * default is to auto-join ({@code true}).
+	 *
+	 * @param autoJoinTransactions {@code true} (default) indicates that JTA transactions should be auto joined;
+	 * {@code false} indicated we should wait for an explicit join
+	 *
+	 * @return {@code this}, for method chaining
+	 */
 	public TransactionCoordinatorJtaBuilder setAutoJoinTransactions(boolean autoJoinTransactions);
+
+	/**
+	 * Should we prefer to use UserTransactions (over TransactionManager) for managing transactions (mainly for calling
+	 * begin, commit, rollback)?  We will try both, this controls which to check first.  The default is to prefer
+	 * accessing the TransactionManager
+	 *
+	 * @param preferUserTransactions {@code true} indicates to look for UserTransactions first; {@code false} (the
+	 * default) indicates to looks for the TransactionManager first,
+	 *
+	 * @return {@code this}, for method chaining
+	 */
 	public TransactionCoordinatorJtaBuilder setPreferUserTransactions(boolean preferUserTransactions);
+
+	/**
+	 * Should we track threads in order to protect against the JTA system calling us from a different thread?  This
+	 * might often be the case for JTA systems which implement timeout rollbacks from separate "reaper" threads.  The
+	 * default is to track threads.
+	 *
+	 * @param performJtaThreadTracking {@code true} (the default) indicates that the thread should be tracked;
+	 * {@code false} indicates it should not.
+	 *
+	 * @return {@code this}, for method chaining
+	 */
 	public TransactionCoordinatorJtaBuilder setPerformJtaThreadTracking(boolean performJtaThreadTracking);
 }

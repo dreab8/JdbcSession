@@ -29,13 +29,15 @@ import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
 
 /**
-* @author Steve Ebersole
-*/
+ * Concrete builder for JTA-based TransactionCoordinator instances.
+ *
+ * @author Steve Ebersole
+ */
 public class TransactionCoordinatorJtaBuilderImpl implements TransactionCoordinatorJtaBuilder {
 	private JtaPlatform jtaPlatform;
 	private boolean autoJoinTransactions = true;
 	private boolean preferUserTransactions;
-	private boolean performJtaThreadTracking;
+	private boolean performJtaThreadTracking = true;
 
 	@Override
 	public TransactionCoordinatorJtaBuilder setJtaPlatform(JtaPlatform jtaPlatform) {

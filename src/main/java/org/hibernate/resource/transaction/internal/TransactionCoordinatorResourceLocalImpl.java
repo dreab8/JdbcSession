@@ -27,19 +27,24 @@ import javax.transaction.Status;
 
 import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
 import org.hibernate.resource.transaction.ResourceLocalTransaction;
-import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
 
 import org.jboss.logging.Logger;
 
+import static org.hibernate.internal.CoreLogging.logger;
+
 /**
- * An implementation of TransactionCoordinator based on managing a transaction through the JDBC Connection
+ * An implementation of TransactionCoordinator based on managing a transaction through the data-store
+ * specific ResourceLocalTransaction.
  *
  * @author Steve Ebersole
+ *
+ * @see org.hibernate.resource.transaction.ResourceLocalTransaction
  */
 public class TransactionCoordinatorResourceLocalImpl implements TransactionCoordinator {
-	private static final Logger log = Logger.getLogger( TransactionCoordinatorResourceLocalImpl.class );
+	private static final Logger log = logger( TransactionCoordinatorResourceLocalImpl.class );
 
 	private final ResourceLocalTransactionCoordinatorOwner owner;
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();

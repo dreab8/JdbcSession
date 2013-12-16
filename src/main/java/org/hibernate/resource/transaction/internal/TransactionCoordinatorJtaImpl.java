@@ -18,15 +18,15 @@ import org.hibernate.resource.transaction.synchronization.spi.SynchronizationCal
 
 import org.jboss.logging.Logger;
 
+import static org.hibernate.internal.CoreLogging.logger;
+
 /**
  * An implementation of TransactionCoordinator based on managing a transaction through the JTA API (either TM or UT)
  *
  * @author Steve Ebersole
  */
 public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, SynchronizationCallbackTarget {
-	private static final Logger log = Logger.getLogger( TransactionCoordinatorJtaImpl.class );
-
-	// NOTE : WORK-IN-PROGRESS
+	private static final Logger log = logger( TransactionCoordinatorJtaImpl.class );
 
 	private final TransactionCoordinatorOwner owner;
 	private final JtaPlatform jtaPlatform;
@@ -131,56 +131,66 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 	}
 
 	private AbstractPhysicalTransactionDelegate makePhysicalTransactionDelegate() {
+		AbstractPhysicalTransactionDelegate delegate;
+
 		if ( preferUserTransactions ) {
-			// The user has requested that we prefer using UserTransaction over TransactionManager
-			try {
-				final UserTransaction userTransaction = jtaPlatform.retrieveUserTransaction();
-				if ( userTransaction != null ) {
-					return new UserTransactionDelegateImpl( userTransaction );
-				}
-			}
-			catch (Exception ignore) {
-				log.debug( "Error attempting to use UserTransaction for PhysicalTransactionDelegate : " + ignore.getMessage() );
-			}
+			delegate = makeUserTransactionDelegate();
 
-			log.debug( "Could not locate UserTransaction, attempting to use TransactionManager instead" );
-
-			try {
-				final TransactionManager transactionManager = jtaPlatform.retrieveTransactionManager();
-				if ( transactionManager != null ) {
-					return new TransactionManagerDelegateImpl( transactionManager );
-				}
-			}
-			catch (Exception ignore) {
-				log.debug( "Error attempting to use TransactionManager for PhysicalTransactionDelegate : " + ignore.getMessage() );
+			if ( delegate == null ) {
+				log.debug( "Unable to access UserTransaction, attempting to use TransactionManager instead" );
+				delegate = makeTransactionManagerDelegate();
 			}
 		}
 		else {
-			// Otherwise, prefer using TransactionManager over UserTransaction
-			try {
-				final TransactionManager transactionManager = jtaPlatform.retrieveTransactionManager();
-				if ( transactionManager != null ) {
-					return new TransactionManagerDelegateImpl( transactionManager );
-				}
-			}
-			catch (Exception ignore) {
-				log.debug( "Error attempting to use TransactionManager for PhysicalTransactionDelegate : " + ignore.getMessage() );
-			}
+			delegate = makeTransactionManagerDelegate();
 
-			log.debug( "Could not locate TransactionManager, attempting to use UserTransaction instead" );
-
-			try {
-				final UserTransaction userTransaction = jtaPlatform.retrieveUserTransaction();
-				if ( userTransaction != null ) {
-					return new UserTransactionDelegateImpl( userTransaction );
-				}
-			}
-			catch (Exception ignore) {
-				log.debug( "Error attempting to use UserTransaction for PhysicalTransactionDelegate : " + ignore.getMessage() );
+			if ( delegate == null ) {
+				log.debug( "Unable to access TransactionManager, attempting to use UserTransaction instead" );
+				delegate = makeUserTransactionDelegate();
 			}
 		}
 
-		throw new JtaPlatformInaccessibleException( "Could not locate TransactionManager nor UserTransaction" );
+		if ( delegate == null ) {
+			throw new JtaPlatformInaccessibleException(
+					"Unable to access TransactionManager or UserTransaction to make physical transaction delegate"
+			);
+		}
+
+		return delegate;
+	}
+
+	private UserTransactionDelegateImpl makeUserTransactionDelegate() {
+		try {
+			final UserTransaction userTransaction = jtaPlatform.retrieveUserTransaction();
+			if ( userTransaction == null ) {
+				log.debug( "JtaPlatform#retrieveUserTransaction returned null" );
+			}
+			else {
+				return new UserTransactionDelegateImpl( userTransaction );
+			}
+		}
+		catch (Exception ignore) {
+			log.debugf( "JtaPlatform#retrieveUserTransaction threw an exception [%s]", ignore.getMessage() );
+		}
+
+		return null;
+	}
+
+	private TransactionManagerDelegateImpl makeTransactionManagerDelegate() {
+		try {
+			final TransactionManager transactionManager = jtaPlatform.retrieveTransactionManager();
+			if ( transactionManager == null ) {
+				log.debug( "JtaPlatform#retrieveTransactionManager returned null" );
+			}
+			else {
+				return new TransactionManagerDelegateImpl( transactionManager );
+			}
+		}
+		catch (Exception ignore) {
+			log.debugf( "JtaPlatform#retrieveTransactionManager threw an exception [%s]", ignore.getMessage() );
+		}
+
+		return null;
 	}
 
 	@Override

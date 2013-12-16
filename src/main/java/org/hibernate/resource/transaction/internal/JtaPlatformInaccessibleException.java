@@ -26,6 +26,8 @@ package org.hibernate.resource.transaction.internal;
 import org.hibernate.HibernateException;
 
 /**
+ * Indicates problems accessing TransactionManager or UserTransaction through the JtaPlatform
+ *
  * @author Steve Ebersole
  */
 public class JtaPlatformInaccessibleException extends HibernateException {

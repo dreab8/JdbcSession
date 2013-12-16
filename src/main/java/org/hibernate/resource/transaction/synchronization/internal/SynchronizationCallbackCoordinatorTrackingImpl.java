@@ -25,8 +25,9 @@ package org.hibernate.resource.transaction.synchronization.internal;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
-import org.hibernate.internal.CoreLogging;
 import org.hibernate.internal.CoreMessageLogger;
+
+import static org.hibernate.internal.CoreLogging.messageLogger;
 
 /**
  * Extension of SynchronizationCallbackCoordinatorNonTrackingImpl that adds checking of whether a rollback comes from
@@ -36,9 +37,7 @@ import org.hibernate.internal.CoreMessageLogger;
  * @author Brett Meyer
  */
 public class SynchronizationCallbackCoordinatorTrackingImpl extends SynchronizationCallbackCoordinatorNonTrackingImpl {
-	private static final CoreMessageLogger log = CoreLogging.messageLogger(
-			SynchronizationCallbackCoordinatorTrackingImpl.class
-	);
+	private static final CoreMessageLogger log = messageLogger( SynchronizationCallbackCoordinatorTrackingImpl.class );
 
 	// magic number :(
 	private static final long NO_THREAD_ID = Long.MIN_VALUE;
@@ -81,7 +80,8 @@ public class SynchronizationCallbackCoordinatorTrackingImpl extends Synchronizat
 				// check for it in SessionImpl. See HHH-7910.
 				delayedCompletionHandling = true;
 
-//				log.rollbackFromBackgroundThread( status );
+				// todo : update code to use message logger
+				//log.rollbackFromBackgroundThread( status );
 				log.warn( "Rollback from background thread (update code to use message logger)" );
 				return;
 			}

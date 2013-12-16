@@ -28,8 +28,8 @@ import javax.transaction.Synchronization;
 
 import org.hibernate.internal.CoreLogging;
 import org.hibernate.internal.CoreMessageLogger;
+import org.hibernate.resource.transaction.LocalSynchronizationException;
 import org.hibernate.resource.transaction.NullSynchronizationException;
-import org.hibernate.resource.transaction.UserSynchronizationException;
 import org.hibernate.resource.transaction.spi.SynchronizationRegistryImplementor;
 
 /**
@@ -78,7 +78,7 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 				}
 				catch (Throwable t) {
 					log.synchronizationFailed( synchronization, t );
-					throw new UserSynchronizationException(
+					throw new LocalSynchronizationException(
 							"Exception calling user Synchronization (beforeCompletion): " + synchronization.getClass().getName(),
 							t
 					);
@@ -102,7 +102,7 @@ public class SynchronizationRegistryStandardImpl implements SynchronizationRegis
 					}
 					catch (Throwable t) {
 						log.synchronizationFailed( synchronization, t );
-						throw new UserSynchronizationException(
+						throw new LocalSynchronizationException(
 								"Exception calling user Synchronization (afterCompletion): " + synchronization.getClass().getName(),
 								t
 						);

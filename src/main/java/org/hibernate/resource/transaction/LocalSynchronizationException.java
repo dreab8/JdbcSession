@@ -26,12 +26,12 @@ package org.hibernate.resource.transaction;
 import org.hibernate.HibernateException;
 
 /**
- * Wraps an exception thrown from a "user synchronization" (one registered in the SynchronizationRegistry).
+ * Wraps an exception thrown from a "local synchronization" (one registered in the SynchronizationRegistry).
  *
  * @author Steve Ebersole
  */
-public class UserSynchronizationException extends HibernateException {
-	public UserSynchronizationException(String message, Throwable cause) {
+public class LocalSynchronizationException extends HibernateException {
+	public LocalSynchronizationException(String message, Throwable cause) {
 		super( message, cause );
 	}
 }

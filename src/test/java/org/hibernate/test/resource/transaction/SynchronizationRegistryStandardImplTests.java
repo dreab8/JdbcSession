@@ -27,7 +27,7 @@ import javax.transaction.Status;
 import javax.transaction.Synchronization;
 
 import org.hibernate.resource.transaction.NullSynchronizationException;
-import org.hibernate.resource.transaction.UserSynchronizationException;
+import org.hibernate.resource.transaction.LocalSynchronizationException;
 import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
 
 import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
@@ -110,13 +110,13 @@ public class SynchronizationRegistryStandardImplTests {
 		registry.registerSynchronization( synchronization );
 		try {
 			registry.notifySynchronizationsBeforeTransactionCompletion();
-			fail( "Expecting UserSynchronizationException, but call succeeded" );
+			fail( "Expecting LocalSynchronizationException, but call succeeded" );
 		}
-		catch (UserSynchronizationException expected) {
+		catch (LocalSynchronizationException expected) {
 			// expected
 		}
 		catch (Exception e) {
-			fail( "Was expecting UserSynchronizationException, but got " + e.getClass().getName() );
+			fail( "Was expecting LocalSynchronizationException, but got " + e.getClass().getName() );
 		}
 
 
@@ -127,13 +127,13 @@ public class SynchronizationRegistryStandardImplTests {
 		registry.registerSynchronization( synchronization );
 		try {
 			registry.notifySynchronizationsAfterTransactionCompletion( Status.STATUS_COMMITTED );
-			fail( "Expecting UserSynchronizationException, but call succeeded" );
+			fail( "Expecting LocalSynchronizationException, but call succeeded" );
 		}
-		catch (UserSynchronizationException expected) {
+		catch (LocalSynchronizationException expected) {
 			// expected
 		}
 		catch (Exception e) {
-			fail( "Was expecting UserSynchronizationException, but got " + e.getClass().getName() );
+			fail( "Was expecting LocalSynchronizationException, but got " + e.getClass().getName() );
 		}
 
 	}

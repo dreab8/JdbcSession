@@ -29,6 +29,8 @@ import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
 import org.hibernate.resource.transaction.TransactionCoordinatorResourceLocalBuilder;
 
 /**
+ * Concrete builder for resource-local TransactionCoordinator instances.
+ *
  * @author Steve Ebersole
  */
 public class TransactionCoordinatorResourceLocalBuilderImpl implements TransactionCoordinatorResourceLocalBuilder {

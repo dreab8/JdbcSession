@@ -35,6 +35,9 @@ public class TransactionCoordinatorBuilderFactory {
 	 */
 	public static final TransactionCoordinatorBuilderFactory INSTANCE = new TransactionCoordinatorBuilderFactory();
 
+	/**
+	 * Private constructor for the factory
+	 */
 	private TransactionCoordinatorBuilderFactory() {
 	}
 

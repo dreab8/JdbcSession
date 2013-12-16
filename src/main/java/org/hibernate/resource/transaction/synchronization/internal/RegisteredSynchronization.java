@@ -25,10 +25,11 @@ package org.hibernate.resource.transaction.synchronization.internal;
 
 import javax.transaction.Synchronization;
 
-import org.hibernate.internal.CoreLogging;
 import org.hibernate.resource.transaction.synchronization.spi.SynchronizationCallbackCoordinator;
 
 import org.jboss.logging.Logger;
+
+import static org.hibernate.internal.CoreLogging.logger;
 
 /**
  * The JTA {@link javax.transaction.Synchronization} Hibernate registers when needed for JTA callbacks.
@@ -40,7 +41,7 @@ import org.jboss.logging.Logger;
  * @author Steve Ebersole
  */
 public class RegisteredSynchronization implements Synchronization {
-	private static final Logger log = CoreLogging.logger( RegisteredSynchronization.class );
+	private static final Logger log = logger( RegisteredSynchronization.class );
 
 	private final SynchronizationCallbackCoordinator synchronizationCallbackCoordinator;
 
