@@ -29,7 +29,5 @@ package org.hibernate.resource.transaction;
  * @author Steve Ebersole
  */
 public interface TransactionCoordinatorBuilder {
-
-
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner);
 }

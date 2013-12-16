@@ -24,19 +24,12 @@
 package org.hibernate.resource.store.spi;
 
 import org.hibernate.resource.store.DataStoreSession;
-import org.hibernate.resource.transaction.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
 
 /**
  * SPI contract for DataStoreSession.
  *
  * @author Steve Ebersole
  */
-public interface DataStoreSessionImplementor extends DataStoreSession {
-	/**
-	 * Provides access to the resource transaction of this data store, which is then used by the TransactionCoordinator
-	 * to manage transactions against the data store when not using JTA.
-	 *
-	 * @return The resource transaction for this data store session
-	 */
-	public ResourceLocalTransaction getResourceTransaction();
+public interface DataStoreSessionImplementor extends DataStoreSession, ResourceLocalTransactionCoordinatorOwner {
 }

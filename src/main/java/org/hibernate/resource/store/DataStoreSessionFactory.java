@@ -21,23 +21,33 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.spi;
+package org.hibernate.resource.store;
 
-import org.hibernate.resource.transaction.ResourceLocalTransaction;
-import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
+import java.sql.Connection;
 
 /**
- * Specialization of the TransactionCoordinatorOwner contract for use in building resource-local
- * TransactionCoordinator instances.
+ * Contract for generating DataStoreSession instances.
  *
  * @author Steve Ebersole
  */
-public interface ResourceLocalTransactionCoordinatorOwner extends TransactionCoordinatorOwner {
+public interface DataStoreSessionFactory {
 	/**
-	 * Provides access to the resource local transaction of this data store, which is used by the TransactionCoordinator
-	 * to manage transactions against the data store when not using JTA.
+	 * Create a DataStoreSession using the given owner
 	 *
-	 * @return The resource-local transaction
+	 * @param owner The owner of the created DataStoreSession.
+	 *
+	 * @return The DataStoreSession
 	 */
-	public ResourceLocalTransaction getResourceLocalTransaction();
+	public DataStoreSession create(DataStoreSessionOwner owner);
+
+	/**
+	 * Create a DataStoreSession using the given owner
+	 *
+	 * @param owner The owner of the created DataStoreSession.
+	 * @param jdbcConnection The JDBC Connection (passed to {@link org.hibernate.SessionFactory} while opening a
+	 * Session).  todo : investigate ways to remove this from this contract
+	 *
+	 * @return The DataStoreSession
+	 */
+	public DataStoreSession create(DataStoreSessionOwner owner, Connection jdbcConnection);
 }

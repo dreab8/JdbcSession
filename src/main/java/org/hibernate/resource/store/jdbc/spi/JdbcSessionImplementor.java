@@ -24,10 +24,11 @@
 package org.hibernate.resource.store.jdbc.spi;
 
 import org.hibernate.resource.store.jdbc.JdbcSession;
+import org.hibernate.resource.store.spi.DataStoreSessionImplementor;
 
 /**
  * @author Steve Ebersole
  */
-public interface JdbcSessionImplementor extends JdbcSession {
+public interface JdbcSessionImplementor extends JdbcSession, DataStoreSessionImplementor {
 	// maybe move getLogicalConnection here?
 }

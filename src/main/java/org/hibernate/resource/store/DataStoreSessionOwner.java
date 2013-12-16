@@ -21,23 +21,30 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.spi;
+package org.hibernate.resource.store;
 
-import org.hibernate.resource.transaction.ResourceLocalTransaction;
-import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 
 /**
- * Specialization of the TransactionCoordinatorOwner contract for use in building resource-local
- * TransactionCoordinator instances.
- *
  * @author Steve Ebersole
  */
-public interface ResourceLocalTransactionCoordinatorOwner extends TransactionCoordinatorOwner {
+public interface DataStoreSessionOwner {
 	/**
-	 * Provides access to the resource local transaction of this data store, which is used by the TransactionCoordinator
-	 * to manage transactions against the data store when not using JTA.
+	 * Obtain the builder for TransactionCoordinator instances
 	 *
-	 * @return The resource-local transaction
+	 * @return The TransactionCoordinatorBuilder
 	 */
-	public ResourceLocalTransaction getResourceLocalTransaction();
+	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder();
+
+	/**
+	 * A before-completion callback to the owner.
+	 */
+	public void beforeTransactionCompletion();
+
+	/**
+	 * An after-completion callback to the owner.
+	 *
+	 * @param successful Was the transaction successful?
+	 */
+	public void afterTransactionCompletion(boolean successful);
 }

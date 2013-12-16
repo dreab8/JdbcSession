@@ -21,23 +21,30 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.spi;
+package org.hibernate.test.resource.store.jdbc.common;
 
-import org.hibernate.resource.transaction.ResourceLocalTransaction;
-import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
+import java.sql.Connection;
+import java.sql.SQLException;
+
+import org.hibernate.HibernateException;
+import org.hibernate.resource.store.jdbc.spi.JdbcConnectionAccess;
 
 /**
- * Specialization of the TransactionCoordinatorOwner contract for use in building resource-local
- * TransactionCoordinator instances.
- *
  * @author Steve Ebersole
  */
-public interface ResourceLocalTransactionCoordinatorOwner extends TransactionCoordinatorOwner {
+public class ProvidedOnlyConnectionAccess implements JdbcConnectionAccess {
 	/**
-	 * Provides access to the resource local transaction of this data store, which is used by the TransactionCoordinator
-	 * to manage transactions against the data store when not using JTA.
-	 *
-	 * @return The resource-local transaction
+	 * Singleton access
 	 */
-	public ResourceLocalTransaction getResourceLocalTransaction();
+	public static final ProvidedOnlyConnectionAccess INSTANCE = new ProvidedOnlyConnectionAccess();
+
+	@Override
+	public Connection obtainConnection() throws SQLException {
+		throw new HibernateException( "JDBC Connection should have been provided" );
+	}
+
+	@Override
+	public void releaseConnection(Connection connection) throws SQLException {
+		throw new HibernateException( "JDBC Connection should have been provided" );
+	}
 }
