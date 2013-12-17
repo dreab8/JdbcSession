@@ -35,6 +35,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hibernate.boot.registry.internal.BootstrapServiceRegistryImpl;
 import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.connections.internal.ConnectionProviderInitiator;
 import org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl;
@@ -80,6 +81,7 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Confi
 		connectionSettings.setProperty( Environment.AUTOCOMMIT, "false" );
 
 		delegate = new DriverManagerConnectionProviderImpl();
+		delegate.injectServices( new BootstrapServiceRegistryImpl() );
 		delegate.configure( connectionSettings );
 	}
 
