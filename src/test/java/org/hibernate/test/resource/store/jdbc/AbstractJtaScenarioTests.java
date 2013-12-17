@@ -63,7 +63,7 @@ public abstract class AbstractJtaScenarioTests {
 		props.put( AvailableSettings.DRIVER, "org.h2.Driver" );
 		props.put( AvailableSettings.URL, "jdbc:h2:mem:db1" );
 		props.put( AvailableSettings.USER, "sa" );
-		props.put( AvailableSettings.PASS, "" );
+//		props.put( AvailableSettings.PASS, "" );
 
 		connectionProvider = new ConnectionProviderJtaAwareImpl();
 		connectionProvider.configure( props );
