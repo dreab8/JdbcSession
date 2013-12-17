@@ -34,6 +34,7 @@ import org.hibernate.resource.store.jdbc.internal.LogicalConnectionManagedImpl;
 import org.hibernate.resource.store.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 
+import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 import org.hibernate.test.resource.store.jdbc.common.JdbcSessionContextStandardTestingImpl;
 import org.junit.After;
 import org.junit.Before;
@@ -57,13 +58,7 @@ public class BasicJdbcUsageTestWithConnectionPooling extends AbstractBasicJdbcUs
 
 	@Before
 	public void setUp() throws Exception {
-		final Driver driver = (Driver) Class.forName( "org.h2.Driver" ).newInstance();
-		final String url = "jdbc:h2:mem:db1";
-		Properties connectionProperties = new Properties();
-		connectionProperties.setProperty( "username", "sa" );
-		connectionProperties.setProperty( "password", "" );
-
-		jdbcConnection = driver.connect( url, connectionProperties );
+		jdbcConnection = DatabaseConnectionInfo.INSTANCE.makeConnection();
 
 		jdbcSession = new JdbcSessionImpl(
 				JdbcSessionContextStandardTestingImpl.INSTANCE,

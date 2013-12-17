@@ -28,21 +28,15 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import javax.transaction.SystemException;
 import javax.transaction.Transaction;
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.hibernate.boot.registry.internal.BootstrapServiceRegistryImpl;
-import org.hibernate.cfg.Environment;
-import org.hibernate.engine.jdbc.connections.internal.ConnectionProviderInitiator;
-import org.hibernate.engine.jdbc.connections.internal.DriverManagerConnectionProviderImpl;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
-import org.hibernate.service.spi.Configurable;
-import org.hibernate.service.spi.Stoppable;
 
+import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
 
 import org.jboss.logging.Logger;
@@ -55,35 +49,12 @@ import org.jboss.logging.Logger;
  * @author Steve Ebersole
  * @author Jonathan Halliday
  */
-public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Configurable, Stoppable {
+public class ConnectionProviderJtaAwareImpl implements ConnectionProvider {
 	private static final Logger log = Logger.getLogger( ConnectionProviderJtaAwareImpl.class );
 
 	private static final String CONNECTION_KEY = "_database_connection";
 
-	private DriverManagerConnectionProviderImpl delegate;
-
 	private List<Connection> nonEnlistedConnections = new ArrayList<Connection>();
-
-	@Override
-	public void configure(Map configurationValues) {
-		Properties connectionSettings = new Properties();
-		transferSetting( Environment.DRIVER, configurationValues, connectionSettings );
-		transferSetting( Environment.URL, configurationValues, connectionSettings );
-		transferSetting( Environment.USER, configurationValues, connectionSettings );
-		transferSetting( Environment.PASS, configurationValues, connectionSettings );
-		transferSetting( Environment.ISOLATION, configurationValues, connectionSettings );
-		Properties passThroughSettings = ConnectionProviderInitiator.getConnectionProperties( configurationValues );
-		if ( passThroughSettings != null ) {
-			for ( String setting : passThroughSettings.stringPropertyNames() ) {
-				transferSetting( Environment.CONNECTION_PREFIX + '.' + setting, configurationValues, connectionSettings );
-			}
-		}
-		connectionSettings.setProperty( Environment.AUTOCOMMIT, "false" );
-
-		delegate = new DriverManagerConnectionProviderImpl();
-		delegate.injectServices( new BootstrapServiceRegistryImpl() );
-		delegate.configure( connectionSettings );
-	}
 
 	@SuppressWarnings("unchecked")
 	private static void transferSetting(String settingName, Map source, Map target) {
@@ -94,18 +65,13 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Confi
 	}
 
 	@Override
-	public void stop() {
-		delegate.stop();
-	}
-
-	@Override
 	public Connection getConnection() throws SQLException {
 		Transaction currentTransaction = findCurrentTransaction();
 
 		try {
 			if ( currentTransaction == null ) {
 				// this block handles non enlisted connections ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-				Connection connection = delegate.getConnection();
+				Connection connection = DatabaseConnectionInfo.INSTANCE.makeConnection();
 				nonEnlistedConnections.add( connection );
 				return connection;
 			}
@@ -115,7 +81,7 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Confi
 					CONNECTION_KEY
 			);
 			if ( connection == null ) {
-				connection = delegate.getConnection();
+				connection = DatabaseConnectionInfo.INSTANCE.makeConnection();
 				JtaPlatformStandardTestingImpl.INSTANCE.synchronizationRegistry().putResource( CONNECTION_KEY, connection );
 
 				XAResourceWrapper xaResourceWrapper = new XAResourceWrapper( this, connection );
@@ -140,7 +106,7 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Confi
 
 		if ( nonEnlistedConnections.contains( conn ) ) {
 			nonEnlistedConnections.remove( conn );
-			delegate.closeConnection( conn );
+			conn.close();
 		}
 		// do nothing.  part of the enlistment contract here is that the XAResource wrapper
 		// takes that responsibility.
@@ -162,19 +128,19 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider, Confi
 
 	@Override
 	public boolean isUnwrappableAs(Class unwrapType) {
-		return delegate.isUnwrappableAs( unwrapType );
+		return false;
 	}
 
 	@Override
 	public <T> T unwrap(Class<T> unwrapType) {
-		return delegate.unwrap( unwrapType );
+		return (T) this;
 	}
 
 	private void delist(Connection connection) {
 		// todo : verify the incoming connection is the currently enlisted one?
 		JtaPlatformStandardTestingImpl.INSTANCE.synchronizationRegistry().putResource( CONNECTION_KEY, null );
 		try {
-			delegate.closeConnection( connection );
+			connection.close();
 		}
 		catch (SQLException e) {
 			log.error( "Error trying to close JDBC connection from delist callbacks!!!" );

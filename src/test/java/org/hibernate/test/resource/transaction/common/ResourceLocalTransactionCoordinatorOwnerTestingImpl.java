@@ -32,6 +32,8 @@ import org.hibernate.TransactionException;
 import org.hibernate.resource.transaction.ResourceLocalTransaction;
 import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
 
+import org.hibernate.test.resource.common.DatabaseConnectionInfo;
+
 /**
  * @author Steve Ebersole
  */
@@ -42,13 +44,7 @@ public class ResourceLocalTransactionCoordinatorOwnerTestingImpl
 	private final Connection jdbcConnection;
 
 	public ResourceLocalTransactionCoordinatorOwnerTestingImpl() throws Exception {
-		final Driver driver = (Driver) Class.forName( "org.h2.Driver" ).newInstance();
-		final String url = "jdbc:h2:mem:db1";
-		Properties connectionProperties = new Properties();
-		connectionProperties.setProperty( "username", "sa" );
-		connectionProperties.setProperty( "password", "" );
-
-		jdbcConnection = driver.connect( url, connectionProperties );
+		jdbcConnection = DatabaseConnectionInfo.INSTANCE.makeConnection();
 	}
 
 	public Connection getJdbcConnection() {

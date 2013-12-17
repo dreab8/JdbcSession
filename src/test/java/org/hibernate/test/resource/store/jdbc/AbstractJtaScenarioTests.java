@@ -25,11 +25,9 @@ package org.hibernate.test.resource.store.jdbc;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.HashMap;
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
-import org.hibernate.cfg.AvailableSettings;
 import org.hibernate.resource.store.jdbc.JdbcSession;
 import org.hibernate.resource.store.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.store.jdbc.internal.LogicalConnectionManagedImpl;
@@ -37,11 +35,10 @@ import org.hibernate.resource.store.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaImpl;
 
+import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
 import org.hibernate.test.resource.store.jdbc.common.ConnectionProviderJtaAwareImpl;
 import org.hibernate.test.resource.store.jdbc.common.JdbcSessionContextStandardTestingImpl;
 import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
-import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,19 +56,7 @@ public abstract class AbstractJtaScenarioTests {
 
 	@Before
 	public void setUp() throws Exception {
-		HashMap<String,String> props = new HashMap<String,String>();
-		props.put( AvailableSettings.DRIVER, "org.h2.Driver" );
-		props.put( AvailableSettings.URL, "jdbc:h2:mem:db1" );
-		props.put( AvailableSettings.USER, "sa" );
-//		props.put( AvailableSettings.PASS, "" );
-
 		connectionProvider = new ConnectionProviderJtaAwareImpl();
-		connectionProvider.configure( props );
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		connectionProvider.stop();
 	}
 
 	private JdbcSession buildJdbcSession() {
