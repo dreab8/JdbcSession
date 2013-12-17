@@ -28,6 +28,7 @@ import javax.transaction.TransactionManager;
 
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaImpl;
+import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackCoordinatorTrackingImpl;
 
 import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
 import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
@@ -150,10 +151,12 @@ public abstract class AbstractBasicJtaTestScenarios {
 
 		// begin the transaction
 		tm.begin();
+		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 
 		transactionCoordinator.pulse();
-		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 		// NOTE : because of auto-join
+		assertTrue( transactionCoordinator.isSynchronizationRegistered() );
+		transactionCoordinator.pulse();
 		assertTrue( transactionCoordinator.isSynchronizationRegistered() );
 
 		// create and add a local Synchronization
@@ -179,9 +182,9 @@ public abstract class AbstractBasicJtaTestScenarios {
 
 		// begin the transaction
 		tm.begin();
+		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 
 		final TransactionCoordinatorJtaImpl transactionCoordinator = buildTransactionCoordinator( true );
-		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 		// NOTE : because of auto-join
 		assertTrue( transactionCoordinator.isSynchronizationRegistered() );
 
@@ -300,5 +303,42 @@ public abstract class AbstractBasicJtaTestScenarios {
 		assertEquals( 1, localSync.getBeforeCompletionCount() );
 		assertEquals( 1, localSync.getSuccessfulCompletionCount() );
 		assertEquals( 0, localSync.getFailedCompletionCount() );
+	}
+
+	@Test
+	public void basicThreadCheckingUsage() throws Exception {
+		TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) TransactionCoordinatorBuilderFactory.INSTANCE.forJta()
+				.setJtaPlatform( JtaPlatformStandardTestingImpl.INSTANCE )
+				.setAutoJoinTransactions( true )
+				.setPreferUserTransactions( preferUserTransactions() )
+				.setPerformJtaThreadTracking( true )
+				.buildTransactionCoordinator( owner );
+
+		// pre conditions
+		final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
+		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
+
+		// begin the transaction
+		tm.begin();
+		transactionCoordinator.explicitJoin();
+		assertEquals(
+				SynchronizationCallbackCoordinatorTrackingImpl.class,
+				transactionCoordinator.getSynchronizationCallbackCoordinator().getClass()
+		);
+
+		tm.commit();
+
+
+		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
+		assertFalse( transactionCoordinator.isJoined() );
+
+		tm.begin();
+		transactionCoordinator.explicitJoin();
+		assertEquals(
+				SynchronizationCallbackCoordinatorTrackingImpl.class,
+				transactionCoordinator.getSynchronizationCallbackCoordinator().getClass()
+		);
+
+		tm.rollback();
 	}
 }
