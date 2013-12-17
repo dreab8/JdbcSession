@@ -99,6 +99,7 @@ public class TransactionCoordinatorResourceLocalImpl implements TransactionCoord
 	private void afterBeginCallback() {
 		log.trace( "TransactionCoordinatorResourceLocalImpl#afterBeginCallback" );
 	}
+
 	private void beforeCompletionCallback() {
 		log.trace( "TransactionCoordinatorResourceLocalImpl#beforeCompletionCallback" );
 		owner.beforeTransactionCompletion();
@@ -129,48 +130,44 @@ public class TransactionCoordinatorResourceLocalImpl implements TransactionCoord
 	 * The delegate bridging between the local (application facing) transaction and the "physical" notion of a
 	 * transaction via the JDBC Connection.
 	 */
-	public class PhysicalTransactionDelegateImpl extends AbstractPhysicalTransactionDelegate {
+	public class PhysicalTransactionDelegateImpl implements PhysicalTransactionDelegate {
 		private final ResourceLocalTransaction resourceLocalTransaction;
+		private boolean invalid;
 
 		public PhysicalTransactionDelegateImpl(ResourceLocalTransaction resourceLocalTransaction) {
 			super();
 			this.resourceLocalTransaction = resourceLocalTransaction;
 		}
 
-		@Override
-		protected void doBegin() {
-			// initiate the transaction start with the JDBC Connection
-			resourceLocalTransaction.begin();
+		protected void invalidate() {
+			invalid = true;
 		}
 
 		@Override
-		protected void afterBegin() {
-			super.afterBegin();
+		public void begin() {
+			errorIfInvalid();
+
+			resourceLocalTransaction.begin();
 			TransactionCoordinatorResourceLocalImpl.this.afterBeginCallback();
 		}
 
+		protected void errorIfInvalid() {
+			if ( invalid ) {
+				throw new IllegalStateException( "Physical-transaction delegate is no longer valid" );
+			}
+		}
+
 		@Override
-		protected void beforeCompletion() {
-			super.beforeCompletion();
+		public void commit() {
 			TransactionCoordinatorResourceLocalImpl.this.beforeCompletionCallback();
-		}
-
-		@Override
-		protected void doCommit() {
-			// initiate the transaction completion with the JDBC Connection
 			resourceLocalTransaction.commit();
+			TransactionCoordinatorResourceLocalImpl.this.afterCompletionCallback( true );
 		}
 
 		@Override
-		protected void afterCompletion(boolean successful) {
-			super.afterCompletion( successful );
-			TransactionCoordinatorResourceLocalImpl.this.afterCompletionCallback( successful );
-		}
-
-		@Override
-		protected void doRollback() {
-			// initiate the transaction completion with the JDBC Connection
+		public void rollback() {
 			resourceLocalTransaction.rollback();
+			TransactionCoordinatorResourceLocalImpl.this.afterCompletionCallback( false );
 		}
 	}
 }

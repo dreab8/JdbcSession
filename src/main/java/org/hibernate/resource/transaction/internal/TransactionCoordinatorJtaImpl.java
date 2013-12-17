@@ -36,7 +36,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 
 	private boolean synchronizationRegistered;
 	private SynchronizationCallbackCoordinator callbackCoordinator;
-	private AbstractPhysicalTransactionDelegate physicalTransactionDelegate;
+	private PhysicalTransactionDelegateImpl physicalTransactionDelegate;
 
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
@@ -144,43 +144,43 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		return physicalTransactionDelegate;
 	}
 
-	private AbstractPhysicalTransactionDelegate makePhysicalTransactionDelegate() {
-		AbstractPhysicalTransactionDelegate delegate;
+	private PhysicalTransactionDelegateImpl makePhysicalTransactionDelegate() {
+		JtaTransactionAdapter adapter;
 
 		if ( preferUserTransactions ) {
-			delegate = makeUserTransactionDelegate();
+			adapter = makeUserTransactionAdapter();
 
-			if ( delegate == null ) {
+			if ( adapter == null ) {
 				log.debug( "Unable to access UserTransaction, attempting to use TransactionManager instead" );
-				delegate = makeTransactionManagerDelegate();
+				adapter = makeTransactionManagerAdapter();
 			}
 		}
 		else {
-			delegate = makeTransactionManagerDelegate();
+			adapter = makeTransactionManagerAdapter();
 
-			if ( delegate == null ) {
+			if ( adapter == null ) {
 				log.debug( "Unable to access TransactionManager, attempting to use UserTransaction instead" );
-				delegate = makeUserTransactionDelegate();
+				adapter = makeUserTransactionAdapter();
 			}
 		}
 
-		if ( delegate == null ) {
+		if ( adapter == null ) {
 			throw new JtaPlatformInaccessibleException(
 					"Unable to access TransactionManager or UserTransaction to make physical transaction delegate"
 			);
 		}
 
-		return delegate;
+		return new PhysicalTransactionDelegateImpl( adapter );
 	}
 
-	private UserTransactionDelegateImpl makeUserTransactionDelegate() {
+	private JtaTransactionAdapter makeUserTransactionAdapter() {
 		try {
 			final UserTransaction userTransaction = jtaPlatform.retrieveUserTransaction();
 			if ( userTransaction == null ) {
 				log.debug( "JtaPlatform#retrieveUserTransaction returned null" );
 			}
 			else {
-				return new UserTransactionDelegateImpl( userTransaction );
+				return new JtaTransactionAdapterUserTransactionImpl( userTransaction );
 			}
 		}
 		catch (Exception ignore) {
@@ -190,14 +190,14 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		return null;
 	}
 
-	private TransactionManagerDelegateImpl makeTransactionManagerDelegate() {
+	private JtaTransactionAdapter makeTransactionManagerAdapter() {
 		try {
 			final TransactionManager transactionManager = jtaPlatform.retrieveTransactionManager();
 			if ( transactionManager == null ) {
 				log.debug( "JtaPlatform#retrieveTransactionManager returned null" );
 			}
 			else {
-				return new TransactionManagerDelegateImpl( transactionManager );
+				return new JtaTransactionAdapterTransactionManagerImpl( transactionManager );
 			}
 		}
 		catch (Exception ignore) {
@@ -233,25 +233,34 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 
 		owner.afterTransactionCompletion( successful );
 
+		if ( physicalTransactionDelegate != null ) {
+			physicalTransactionDelegate.invalidate();
+		}
+		physicalTransactionDelegate = null;
 		synchronizationRegistered = false;
 	}
 
 
 	// PhysicalTransactionDelegate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+	public static interface JtaTransactionAdapter {
+		public void begin();
+		public void commit();
+		public void rollback();
+	}
+
 	/**
-	 * Delegate for coordinating with the JTA TransactionManager
+	 * JtaTransactionAdapter for coordinating with the JTA TransactionManager
 	 */
-	public class TransactionManagerDelegateImpl extends AbstractPhysicalTransactionDelegate {
+	public static class JtaTransactionAdapterTransactionManagerImpl implements JtaTransactionAdapter {
 		private final TransactionManager transactionManager;
 
-		public TransactionManagerDelegateImpl(TransactionManager transactionManager) {
-			super();
+		public JtaTransactionAdapterTransactionManagerImpl(TransactionManager transactionManager) {
 			this.transactionManager = transactionManager;
 		}
 
 		@Override
-		protected void doBegin() {
+		public void begin() {
 			try {
 				log.trace( "Calling TransactionManager#begin" );
 				transactionManager.begin();
@@ -263,13 +272,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		}
 
 		@Override
-		protected void afterBegin() {
-			super.afterBegin();
-			TransactionCoordinatorJtaImpl.this.joinJtaTransaction();
-		}
-
-		@Override
-		protected void doCommit() {
+		public void commit() {
 			try {
 				log.trace( "Calling TransactionManager#commit" );
 				transactionManager.commit();
@@ -281,7 +284,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		}
 
 		@Override
-		protected void doRollback() {
+		public void rollback() {
 			try {
 				log.trace( "Calling TransactionManager#rollback" );
 				transactionManager.rollback();
@@ -294,18 +297,17 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 	}
 
 	/**
-	 * Delegate for coordinating with the JTA TransactionManager
+	 * JtaTransactionAdapter for coordinating with the JTA UserTransaction
 	 */
-	public class UserTransactionDelegateImpl extends AbstractPhysicalTransactionDelegate {
+	public static class JtaTransactionAdapterUserTransactionImpl implements JtaTransactionAdapter {
 		private final UserTransaction userTransaction;
 
-		public UserTransactionDelegateImpl(UserTransaction userTransaction) {
-			super();
+		public JtaTransactionAdapterUserTransactionImpl(UserTransaction userTransaction) {
 			this.userTransaction = userTransaction;
 		}
 
 		@Override
-		protected void doBegin() {
+		public void begin() {
 			try {
 				log.trace( "Calling UserTransaction#begin" );
 				userTransaction.begin();
@@ -317,13 +319,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		}
 
 		@Override
-		protected void afterBegin() {
-			super.afterBegin();
-			TransactionCoordinatorJtaImpl.this.joinJtaTransaction();
-		}
-
-		@Override
-		protected void doCommit() {
+		public void commit() {
 			try {
 				log.trace( "Calling UserTransaction#commit" );
 				userTransaction.commit();
@@ -335,7 +331,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 		}
 
 		@Override
-		protected void doRollback() {
+		public void rollback() {
 			try {
 				log.trace( "Calling UserTransaction#rollback" );
 				userTransaction.rollback();
@@ -346,4 +342,50 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 			}
 		}
 	}
+
+	public class PhysicalTransactionDelegateImpl implements PhysicalTransactionDelegate {
+		private final JtaTransactionAdapter jtaTransactionAdapter;
+		private boolean invalid;
+
+		public PhysicalTransactionDelegateImpl(JtaTransactionAdapter jtaTransactionAdapter) {
+			this.jtaTransactionAdapter = jtaTransactionAdapter;
+		}
+
+		protected void invalidate() {
+			invalid = true;
+		}
+
+		@Override
+		public void begin() {
+			errorIfInvalid();
+
+			jtaTransactionAdapter.begin();
+			TransactionCoordinatorJtaImpl.this.joinJtaTransaction();
+		}
+
+		protected void errorIfInvalid() {
+			if ( invalid ) {
+				throw new IllegalStateException( "Physical-transaction delegate is no longer valid" );
+			}
+		}
+
+		@Override
+		public void commit() {
+			errorIfInvalid();
+
+			// we don't have to perform any before/after completion processing here.  We leave that for
+			// the Synchronization callbacks
+			jtaTransactionAdapter.commit();
+		}
+
+		@Override
+		public void rollback() {
+			errorIfInvalid();
+
+			// we don't have to perform any after completion processing here.  We leave that for
+			// the Synchronization callbacks
+			jtaTransactionAdapter.rollback();
+		}
+	}
+
 }
