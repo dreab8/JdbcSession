@@ -32,8 +32,8 @@ import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl;
 import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
-import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaImpl;
+import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilderFactory;
+import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
 
 import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
 import org.hibernate.test.resource.jdbc.common.ConnectionProviderJtaAwareImpl;
@@ -92,7 +92,7 @@ public abstract class AbstractJtaScenarioTests {
 	@Test
 	public void basicBmtUsageTest() throws Exception {
 		final JdbcSession jdbcSession = buildJdbcSession();
-		final TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) jdbcSession.getTransactionCoordinator();
+		final JtaTransactionCoordinatorImpl transactionCoordinator = (JtaTransactionCoordinatorImpl) jdbcSession.getTransactionCoordinator();
 
 		try {
 			final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
@@ -127,7 +127,7 @@ public abstract class AbstractJtaScenarioTests {
 		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 
 		final JdbcSession jdbcSession = buildJdbcSession();
-		final TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) jdbcSession.getTransactionCoordinator();
+		final JtaTransactionCoordinatorImpl transactionCoordinator = (JtaTransactionCoordinatorImpl) jdbcSession.getTransactionCoordinator();
 
 		try {
 			assertTrue( transactionCoordinator.isSynchronizationRegistered() );
@@ -157,7 +157,7 @@ public abstract class AbstractJtaScenarioTests {
 		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 
 		final JdbcSession jdbcSession = buildJdbcSession( false );
-		final TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) jdbcSession.getTransactionCoordinator();
+		final JtaTransactionCoordinatorImpl transactionCoordinator = (JtaTransactionCoordinatorImpl) jdbcSession.getTransactionCoordinator();
 
 		try {
 			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
@@ -185,7 +185,7 @@ public abstract class AbstractJtaScenarioTests {
 		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
 
 		final JdbcSession jdbcSession = buildJdbcSession( false );
-		final TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) jdbcSession.getTransactionCoordinator();
+		final JtaTransactionCoordinatorImpl transactionCoordinator = (JtaTransactionCoordinatorImpl) jdbcSession.getTransactionCoordinator();
 
 		try {
 

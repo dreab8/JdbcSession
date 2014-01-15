@@ -23,7 +23,7 @@
  */
 package org.hibernate.test.resource.transaction.common;
 
-import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
  * @author Steve Ebersole

@@ -21,10 +21,9 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.synchronization.internal;
+package org.hibernate.resource.transaction.backend.jta.internal.synchronization;
 
 import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
-import org.hibernate.resource.transaction.synchronization.spi.SynchronizationCallbackCoordinator;
 
 import org.jboss.logging.Logger;
 

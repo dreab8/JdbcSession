@@ -52,6 +52,8 @@ public interface TransactionCoordinator {
 	/**
 	 * Get the PhysicalTransactionDelegate for this TransactionCoordinator for use by the local transaction
 	 *
+	 * todo : rename this to something like CoordinatorTransactionDelegate?  or TransactionDelegate?
+	 *
 	 * @return The PhysicalTransactionDelegate
 	 */
 	public PhysicalTransactionDelegate getPhysicalTransactionDelegate();

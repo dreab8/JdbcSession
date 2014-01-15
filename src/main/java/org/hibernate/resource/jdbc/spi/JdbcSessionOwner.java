@@ -23,7 +23,7 @@
  */
 package org.hibernate.resource.jdbc.spi;
 
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilder;
 
 /**
  * @author Steve Ebersole

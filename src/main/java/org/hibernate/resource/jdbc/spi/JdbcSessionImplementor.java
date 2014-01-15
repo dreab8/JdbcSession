@@ -24,14 +24,14 @@
 package org.hibernate.resource.jdbc.spi;
 
 import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
 
 /**
  * SPI contract for JdbcSession.
  *
  * @author Steve Ebersole
  */
-public interface JdbcSessionImplementor extends JdbcSession, ResourceLocalTransactionCoordinatorOwner {
+public interface JdbcSessionImplementor extends JdbcSession, ResourceLocalTransactionAccess {
 	/**
 	 * Is the DataStoreSession in a state that would allow it to be serialized?
 	 *

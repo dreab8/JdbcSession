@@ -21,12 +21,14 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction;
+package org.hibernate.resource.transaction.builder;
 
-import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaBuilderImpl;
-import org.hibernate.resource.transaction.internal.TransactionCoordinatorResourceLocalBuilderImpl;
+import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorBuilderImpl;
+import org.hibernate.resource.transaction.backend.local.internal.ResourceLocalTransactionCoordinatorBuilderImpl;
 
 /**
+ * Factory for obtaining instances of standard TransactionCoordinatorBuilder implementations
+ *
  * @author Steve Ebersole
  */
 public class TransactionCoordinatorBuilderFactory {
@@ -47,7 +49,7 @@ public class TransactionCoordinatorBuilderFactory {
 	 * @return The resource-local specific TransactionCoordinatorBuilder
 	 */
 	public TransactionCoordinatorResourceLocalBuilder forResourceLocal() {
-		return new TransactionCoordinatorResourceLocalBuilderImpl();
+		return new ResourceLocalTransactionCoordinatorBuilderImpl();
 	}
 
 	/**
@@ -56,7 +58,7 @@ public class TransactionCoordinatorBuilderFactory {
 	 * @return The JTA specific TransactionCoordinatorBuilder
 	 */
 	public TransactionCoordinatorJtaBuilder forJta() {
-		return new TransactionCoordinatorJtaBuilderImpl();
+		return new JtaTransactionCoordinatorBuilderImpl();
 	}
 
 }

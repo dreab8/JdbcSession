@@ -21,19 +21,19 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.internal;
+package org.hibernate.resource.transaction.backend.jta.internal;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.resource.transaction.TransactionCoordinatorJtaBuilder;
+import org.hibernate.resource.transaction.builder.TransactionCoordinatorJtaBuilder;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
  * Concrete builder for JTA-based TransactionCoordinator instances.
  *
  * @author Steve Ebersole
  */
-public class TransactionCoordinatorJtaBuilderImpl implements TransactionCoordinatorJtaBuilder {
+public class JtaTransactionCoordinatorBuilderImpl implements TransactionCoordinatorJtaBuilder {
 	private JtaPlatform jtaPlatform;
 	private boolean autoJoinTransactions = true;
 	private boolean preferUserTransactions;
@@ -65,7 +65,7 @@ public class TransactionCoordinatorJtaBuilderImpl implements TransactionCoordina
 
 	@Override
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner) {
-		return new TransactionCoordinatorJtaImpl(
+		return new JtaTransactionCoordinatorImpl(
 				owner,
 				jtaPlatform,
 				autoJoinTransactions,

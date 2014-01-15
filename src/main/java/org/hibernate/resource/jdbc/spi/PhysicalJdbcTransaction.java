@@ -23,7 +23,7 @@
  */
 package org.hibernate.resource.jdbc.spi;
 
-import org.hibernate.resource.transaction.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction;
 
 /**
  * Provides access to manage "transactionality" via the JDBC Connection

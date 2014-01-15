@@ -21,19 +21,24 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction;
+package org.hibernate.resource.transaction.backend.jta.internal.synchronization;
+
+import javax.transaction.Synchronization;
 
 /**
- * A builder of TransactionCoordinator instances intended for use in resource-local mode (non-JTA transactions local
- * to the underlying  data store).
- * <p/>
- * NOTE : Ideally I'd love to specialize the {@link #buildTransactionCoordinator(TransactionCoordinatorOwner)}
- * method here to only accept TransactionCoordinatorOwner arguments that are specifically
- * {@link org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner} instances.  Not sure how to
- * best achieve that.  For now we just cast and let the exception happen, but directing the user via the contract
- * would be MUCH preferable.
+ * Manages funneling JTA Synchronization callbacks back into the Hibernate transaction engine.
  *
  * @author Steve Ebersole
  */
-public interface TransactionCoordinatorResourceLocalBuilder extends TransactionCoordinatorBuilder {
+public interface SynchronizationCallbackCoordinator extends Synchronization {
+	/**
+	 * Called by the TransactionCoordinator when it registers the Synchronization with the JTA system
+	 */
+	public void synchronizationRegistered();
+
+	/**
+	 * Called by the TransactionCoordinator to allow the SynchronizationCallbackCoordinator to process any
+	 * after-completion handling that it may have delayed due to thread affinity
+	 */
+	public void processAnyDelayedAfterCompletion();
 }

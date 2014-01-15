@@ -9,17 +9,21 @@ import org.hibernate.resource.jdbc.OperationSpec;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
-import org.hibernate.resource.transaction.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
-import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilder;
+import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 import org.jboss.logging.Logger;
 
 /**
  * @author Steve Ebersole
  */
-public class JdbcSessionImpl implements JdbcSessionImplementor, ResourceLocalTransactionCoordinatorOwner {
+public class JdbcSessionImpl
+		implements JdbcSessionImplementor,
+				   TransactionCoordinatorOwner,
+				   ResourceLocalTransactionAccess {
 	private static final Logger log = Logger.getLogger( JdbcSessionImpl.class );
 
 	private final JdbcSessionContext context;
@@ -96,7 +100,7 @@ public class JdbcSessionImpl implements JdbcSessionImplementor, ResourceLocalTra
 	}
 
 
-	// ResourceLocalTransactionCoordinatorOwner impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	@Override
 	public ResourceLocalTransaction getResourceLocalTransaction() {

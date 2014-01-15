@@ -21,21 +21,40 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.internal;
+package org.hibernate.resource.transaction.backend.local.internal;
 
-import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
+import org.hibernate.HibernateException;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
-import org.hibernate.resource.transaction.TransactionCoordinatorResourceLocalBuilder;
+import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.builder.TransactionCoordinatorResourceLocalBuilder;
 
 /**
  * Concrete builder for resource-local TransactionCoordinator instances.
  *
  * @author Steve Ebersole
  */
-public class TransactionCoordinatorResourceLocalBuilderImpl implements TransactionCoordinatorResourceLocalBuilder {
+public class ResourceLocalTransactionCoordinatorBuilderImpl implements TransactionCoordinatorResourceLocalBuilder {
+	private ResourceLocalTransactionAccess providedResourceLocalTransactionAccess;
+
+	@Override
+	public void setResourceLocalTransactionAccess(ResourceLocalTransactionAccess resourceLocalTransactionAccess) {
+		this.providedResourceLocalTransactionAccess = resourceLocalTransactionAccess;
+	}
+
 	@Override
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner) {
-		return new TransactionCoordinatorResourceLocalImpl( (ResourceLocalTransactionCoordinatorOwner) owner );
+		if ( providedResourceLocalTransactionAccess != null ) {
+			return new ResourceLocalTransactionCoordinatorImpl( owner, providedResourceLocalTransactionAccess );
+		}
+		else {
+			if ( owner instanceof ResourceLocalTransactionAccess ) {
+				return new ResourceLocalTransactionCoordinatorImpl( owner, (ResourceLocalTransactionAccess) owner );
+			}
+		}
+
+		throw new HibernateException(
+				"Could not determine ResourceLocalTransactionAccess to use in building TransactionCoordinator"
+		);
 	}
 }

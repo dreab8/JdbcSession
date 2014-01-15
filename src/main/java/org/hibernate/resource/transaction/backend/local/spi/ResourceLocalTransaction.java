@@ -21,24 +21,29 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.synchronization.spi;
-
-import javax.transaction.Synchronization;
+package org.hibernate.resource.transaction.backend.local.spi;
 
 /**
- * Manages funneling JTA Synchronization callbacks back into the Hibernate transaction engine.
+ * Models access to the resource transaction of the underlying data store.  Most data stores Hibernate deals with
+ * (JDBC e.g.) do not define an actual transaction object; this object stands in for that underlying transaction
+ * concept.  And if the underlying data store does happen to define an actual transaction object, this would simply
+ * delegate to that one.  Encapsulation! Polymorphism!  FTW! ;)
  *
  * @author Steve Ebersole
  */
-public interface SynchronizationCallbackCoordinator extends Synchronization {
+public interface ResourceLocalTransaction {
 	/**
-	 * Called by the TransactionCoordinator when it registers the Synchronization with the JTA system
+	 * Begin the resource transaction
 	 */
-	public void synchronizationRegistered();
+	public void begin();
 
 	/**
-	 * Called by the TransactionCoordinator to allow the SynchronizationCallbackCoordinator to process any
-	 * after-completion handling that it may have delayed due to thread affinity
+	 * Commit the resource transaction
 	 */
-	public void processAnyDelayedAfterCompletion();
+	public void commit();
+
+	/**
+	 * Rollback the resource transaction
+	 */
+	public void rollback();
 }

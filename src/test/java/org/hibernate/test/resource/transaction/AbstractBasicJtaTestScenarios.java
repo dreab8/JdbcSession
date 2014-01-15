@@ -26,9 +26,9 @@ package org.hibernate.test.resource.transaction;
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
-import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaImpl;
-import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackCoordinatorTrackingImpl;
+import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilderFactory;
+import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
+import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinatorTrackingImpl;
 
 import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
 import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
@@ -47,8 +47,8 @@ public abstract class AbstractBasicJtaTestScenarios {
 
 	protected abstract boolean preferUserTransactions();
 
-	public TransactionCoordinatorJtaImpl buildTransactionCoordinator(boolean autoJoin) {
-		return (TransactionCoordinatorJtaImpl) TransactionCoordinatorBuilderFactory.INSTANCE.forJta()
+	public JtaTransactionCoordinatorImpl buildTransactionCoordinator(boolean autoJoin) {
+		return (JtaTransactionCoordinatorImpl) TransactionCoordinatorBuilderFactory.INSTANCE.forJta()
 				.setJtaPlatform( JtaPlatformStandardTestingImpl.INSTANCE )
 				.setAutoJoinTransactions( autoJoin )
 				.setPreferUserTransactions( preferUserTransactions() )
@@ -58,7 +58,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 
 	@Test
 	public void basicBmtUsageTest() throws Exception {
-		final TransactionCoordinatorJtaImpl transactionCoordinator = buildTransactionCoordinator( true );
+		final JtaTransactionCoordinatorImpl transactionCoordinator = buildTransactionCoordinator( true );
 
 		// pre conditions
 		final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
@@ -85,7 +85,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 
 	@Test
 	public void rollbackBmtUsageTest() throws Exception {
-		final TransactionCoordinatorJtaImpl transactionCoordinator = buildTransactionCoordinator( true );
+		final JtaTransactionCoordinatorImpl transactionCoordinator = buildTransactionCoordinator( true );
 
 		// pre conditions
 		final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
@@ -121,7 +121,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 		// begin the transaction
 		tm.begin();
 
-		final TransactionCoordinatorJtaImpl transactionCoordinator = buildTransactionCoordinator( true );
+		final JtaTransactionCoordinatorImpl transactionCoordinator = buildTransactionCoordinator( true );
 		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 		// NOTE : because of auto-join
 		assertTrue( transactionCoordinator.isSynchronizationRegistered() );
@@ -147,7 +147,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 		final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
 		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
 
-		final TransactionCoordinatorJtaImpl transactionCoordinator = buildTransactionCoordinator( true );
+		final JtaTransactionCoordinatorImpl transactionCoordinator = buildTransactionCoordinator( true );
 
 		// begin the transaction
 		tm.begin();
@@ -184,7 +184,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 		tm.begin();
 		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 
-		final TransactionCoordinatorJtaImpl transactionCoordinator = buildTransactionCoordinator( true );
+		final JtaTransactionCoordinatorImpl transactionCoordinator = buildTransactionCoordinator( true );
 		// NOTE : because of auto-join
 		assertTrue( transactionCoordinator.isSynchronizationRegistered() );
 
@@ -209,7 +209,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 		final TransactionManager tm = JtaPlatformStandardTestingImpl.INSTANCE.transactionManager();
 		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
 
-		final TransactionCoordinatorJtaImpl transactionCoordinator = buildTransactionCoordinator( false );
+		final JtaTransactionCoordinatorImpl transactionCoordinator = buildTransactionCoordinator( false );
 
 		// begin the transaction
 		tm.begin();
@@ -247,7 +247,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 
 		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 
-		final TransactionCoordinatorJtaImpl transactionCoordinator = buildTransactionCoordinator( false );
+		final JtaTransactionCoordinatorImpl transactionCoordinator = buildTransactionCoordinator( false );
 		// no auto-join now
 		assertFalse( transactionCoordinator.isSynchronizationRegistered() );
 		transactionCoordinator.explicitJoin();
@@ -279,7 +279,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 
 		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 
-		final TransactionCoordinatorJtaImpl transactionCoordinator = buildTransactionCoordinator( false );
+		final JtaTransactionCoordinatorImpl transactionCoordinator = buildTransactionCoordinator( false );
 		// no auto-join now
 		assertFalse( transactionCoordinator.isJoined() );
 		transactionCoordinator.explicitJoin();
@@ -307,7 +307,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 
 	@Test
 	public void basicThreadCheckingUsage() throws Exception {
-		TransactionCoordinatorJtaImpl transactionCoordinator = (TransactionCoordinatorJtaImpl) TransactionCoordinatorBuilderFactory.INSTANCE.forJta()
+		JtaTransactionCoordinatorImpl transactionCoordinator = (JtaTransactionCoordinatorImpl) TransactionCoordinatorBuilderFactory.INSTANCE.forJta()
 				.setJtaPlatform( JtaPlatformStandardTestingImpl.INSTANCE )
 				.setAutoJoinTransactions( true )
 				.setPreferUserTransactions( preferUserTransactions() )

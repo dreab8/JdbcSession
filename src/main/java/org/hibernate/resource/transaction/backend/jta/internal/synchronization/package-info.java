@@ -21,21 +21,9 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.internal;
-
-import org.hibernate.HibernateException;
 
 /**
- * Indicates problems accessing TransactionManager or UserTransaction through the JtaPlatform
- *
- * @author Steve Ebersole
+ * Internal implementation details for reacting to JTA transaction completion via {@link javax.transaction.Synchronization}
+ * callbacks
  */
-public class JtaPlatformInaccessibleException extends HibernateException {
-	public JtaPlatformInaccessibleException(String message) {
-		super( message );
-	}
-
-	public JtaPlatformInaccessibleException(String message, Throwable cause) {
-		super( message, cause );
-	}
-}
+package org.hibernate.resource.transaction.backend.jta.internal.synchronization;

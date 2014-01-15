@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) 2014, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,23 +21,10 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.spi;
-
-import org.hibernate.resource.transaction.ResourceLocalTransaction;
-import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
 
 /**
- * Specialization of the TransactionCoordinatorOwner contract for use in building resource-local
- * TransactionCoordinator instances.
- *
- * @author Steve Ebersole
+ * Package for building {@link org.hibernate.resource.transaction.TransactionCoordinator} instances.  Revolves
+ * around {@link org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilder} and
+ * {@link org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilderFactory}
  */
-public interface ResourceLocalTransactionCoordinatorOwner extends TransactionCoordinatorOwner {
-	/**
-	 * Provides access to the resource local transaction of this data store, which is used by the TransactionCoordinator
-	 * to manage transactions against the data store when not using JTA.
-	 *
-	 * @return The resource-local transaction
-	 */
-	public ResourceLocalTransaction getResourceLocalTransaction();
-}
+package org.hibernate.resource.transaction.builder;

@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.synchronization.internal;
+package org.hibernate.resource.transaction.backend.jta.internal.synchronization;
 
 /**
  * Defines "inflow" for JTA transactions from the perspective of Hibernate's registered JTA Synchronization
@@ -30,7 +30,7 @@ package org.hibernate.resource.transaction.synchronization.internal;
  * That's a mouthful :)  The way it works is like this...<ul>
  *     <li>
  *         Hibernate will register a JTA {@link javax.transaction.Synchronization} implementation
- *         ({@link org.hibernate.resource.transaction.synchronization.internal.RegisteredSynchronization}) which allows
+ *         ({@link RegisteredSynchronization}) which allows
  *         it to listen for completion of the JTA transaction.
  *     </li>
  *     <li>

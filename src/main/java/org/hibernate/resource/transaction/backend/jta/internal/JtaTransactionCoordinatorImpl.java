@@ -1,4 +1,4 @@
-package org.hibernate.resource.transaction.internal;
+package org.hibernate.resource.transaction.backend.jta.internal;
 
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
@@ -9,12 +9,13 @@ import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorOwner;
-import org.hibernate.resource.transaction.synchronization.internal.RegisteredSynchronization;
-import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackCoordinatorNonTrackingImpl;
-import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackCoordinatorTrackingImpl;
-import org.hibernate.resource.transaction.synchronization.internal.SynchronizationCallbackTarget;
-import org.hibernate.resource.transaction.synchronization.spi.SynchronizationCallbackCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
+import org.hibernate.resource.transaction.backend.jta.internal.synchronization.RegisteredSynchronization;
+import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinatorNonTrackingImpl;
+import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinatorTrackingImpl;
+import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackTarget;
+import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinator;
 
 import org.jboss.logging.Logger;
 
@@ -25,8 +26,8 @@ import static org.hibernate.internal.CoreLogging.logger;
  *
  * @author Steve Ebersole
  */
-public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, SynchronizationCallbackTarget {
-	private static final Logger log = logger( TransactionCoordinatorJtaImpl.class );
+public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, SynchronizationCallbackTarget {
+	private static final Logger log = logger( JtaTransactionCoordinatorImpl.class );
 
 	private final TransactionCoordinatorOwner owner;
 	private final JtaPlatform jtaPlatform;
@@ -41,7 +42,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
 	/**
-	 * Construct a TransactionCoordinatorJtaImpl instance.  package-protected to ensure access goes through
+	 * Construct a JtaTransactionCoordinatorImpl instance.  package-protected to ensure access goes through
 	 * builder.
 	 *
 	 * @param owner The owner
@@ -50,7 +51,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 	 * @param preferUserTransactions Should we prefer using UserTransaction, as opposed to TransactionManager?
 	 * @param performJtaThreadTracking Should we perform thread tracking?
 	 */
-	TransactionCoordinatorJtaImpl(
+	JtaTransactionCoordinatorImpl(
 			TransactionCoordinatorOwner owner,
 			JtaPlatform jtaPlatform,
 			boolean autoJoinTransactions,
@@ -360,7 +361,7 @@ public class TransactionCoordinatorJtaImpl implements TransactionCoordinator, Sy
 			errorIfInvalid();
 
 			jtaTransactionAdapter.begin();
-			TransactionCoordinatorJtaImpl.this.joinJtaTransaction();
+			JtaTransactionCoordinatorImpl.this.joinJtaTransaction();
 		}
 
 		protected void errorIfInvalid() {

@@ -21,29 +21,16 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction;
+package org.hibernate.resource.transaction.builder;
+
+import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 /**
- * Models access to the resource transaction of the underlying data store.  Most data stores Hibernate deals with
- * (JDBC e.g.) do not define an actual transaction object; this object stands in for that underlying transaction
- * concept.  And if the underlying data store does happen to define an actual transaction object, this would simply
- * delegate to that one.  Encapsulation! Polymorphism!  FTW! ;)
+ * Builder for TransactionCoordinator instances
  *
  * @author Steve Ebersole
  */
-public interface ResourceLocalTransaction {
-	/**
-	 * Begin the resource transaction
-	 */
-	public void begin();
-
-	/**
-	 * Commit the resource transaction
-	 */
-	public void commit();
-
-	/**
-	 * Rollback the resource transaction
-	 */
-	public void rollback();
+public interface TransactionCoordinatorBuilder {
+	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner);
 }

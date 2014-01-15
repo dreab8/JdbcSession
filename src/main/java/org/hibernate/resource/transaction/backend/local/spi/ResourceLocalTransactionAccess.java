@@ -21,9 +21,20 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
+package org.hibernate.resource.transaction.backend.local.spi;
 
 /**
- * Internal implementation details for reacting to JTA transaction completion via {@link javax.transaction.Synchronization}
- * callbacks
+ * Provides access to ResourceLocalTransaction (JDBC transaction stand-in) for use in building resource-local
+ * TransactionCoordinator instances.
+ *
+ * @author Steve Ebersole
  */
-package org.hibernate.resource.transaction.synchronization.internal;
+public interface ResourceLocalTransactionAccess {
+	/**
+	 * Provides access to the resource local transaction of this data store, which is used by the TransactionCoordinator
+	 * to manage transactions against the data store when not using JTA.
+	 *
+	 * @return The resource-local transaction
+	 */
+	public ResourceLocalTransaction getResourceLocalTransaction();
+}

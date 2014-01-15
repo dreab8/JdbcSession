@@ -24,14 +24,11 @@
 package org.hibernate.test.resource.transaction;
 
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
-import org.hibernate.resource.transaction.internal.TransactionCoordinatorJtaImpl;
-import org.hibernate.resource.transaction.internal.TransactionCoordinatorResourceLocalImpl;
+import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilderFactory;
+import org.hibernate.resource.transaction.backend.local.internal.ResourceLocalTransactionCoordinatorImpl;
 
 import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
-import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
-import org.hibernate.test.resource.transaction.common.ResourceLocalTransactionCoordinatorOwnerTestingImpl;
-import org.hibernate.test.resource.transaction.common.TransactionCoordinatorOwnerTestingImpl;
+import org.hibernate.test.resource.transaction.common.ResourceLocalTransactionAccessTestingImpl;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -45,11 +42,11 @@ public class BasicResourceLocalTransactionsTest {
 
 	@Test
 	public void basicUsageTest() throws Exception {
-		final ResourceLocalTransactionCoordinatorOwnerTestingImpl owner = new ResourceLocalTransactionCoordinatorOwnerTestingImpl();
+		final ResourceLocalTransactionAccessTestingImpl owner = new ResourceLocalTransactionAccessTestingImpl();
 
 		final TransactionCoordinator tc = TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal()
 				.buildTransactionCoordinator( owner );
-		final TransactionCoordinatorResourceLocalImpl transactionCoordinator = (TransactionCoordinatorResourceLocalImpl) tc;
+		final ResourceLocalTransactionCoordinatorImpl transactionCoordinator = (ResourceLocalTransactionCoordinatorImpl) tc;
 
 		SynchronizationCollectorImpl sync = new SynchronizationCollectorImpl();
 		transactionCoordinator.getLocalSynchronizations().registerSynchronization( sync );

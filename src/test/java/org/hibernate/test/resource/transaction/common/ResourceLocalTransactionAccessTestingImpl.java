@@ -24,26 +24,24 @@
 package org.hibernate.test.resource.transaction.common;
 
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.SQLException;
-import java.util.Properties;
 
 import org.hibernate.TransactionException;
-import org.hibernate.resource.transaction.ResourceLocalTransaction;
-import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
 
 import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 
 /**
  * @author Steve Ebersole
  */
-public class ResourceLocalTransactionCoordinatorOwnerTestingImpl
+public class ResourceLocalTransactionAccessTestingImpl
 		extends TransactionCoordinatorOwnerTestingImpl
-		implements ResourceLocalTransactionCoordinatorOwner, ResourceLocalTransaction {
+		implements ResourceLocalTransactionAccess, ResourceLocalTransaction {
 
 	private final Connection jdbcConnection;
 
-	public ResourceLocalTransactionCoordinatorOwnerTestingImpl() throws Exception {
+	public ResourceLocalTransactionAccessTestingImpl() throws Exception {
 		jdbcConnection = DatabaseConnectionInfo.INSTANCE.makeConnection();
 	}
 

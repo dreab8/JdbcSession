@@ -21,16 +21,18 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.internal;
+package org.hibernate.resource.transaction.backend.local.internal;
 
 import javax.transaction.Status;
 
 import org.hibernate.internal.CoreMessageLogger;
 import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
-import org.hibernate.resource.transaction.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
+import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.spi.ResourceLocalTransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 import static org.hibernate.internal.CoreLogging.messageLogger;
 
@@ -40,23 +42,27 @@ import static org.hibernate.internal.CoreLogging.messageLogger;
  *
  * @author Steve Ebersole
  *
- * @see org.hibernate.resource.transaction.ResourceLocalTransaction
+ * @see org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction
  */
-public class TransactionCoordinatorResourceLocalImpl implements TransactionCoordinator {
-	private static final CoreMessageLogger log = messageLogger( TransactionCoordinatorResourceLocalImpl.class );
+public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoordinator {
+	private static final CoreMessageLogger log = messageLogger( ResourceLocalTransactionCoordinatorImpl.class );
 
-	private final ResourceLocalTransactionCoordinatorOwner owner;
+	private final ResourceLocalTransactionAccess resourceLocalTransactionAccess;
+	private final TransactionCoordinatorOwner owner;
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
 	private PhysicalTransactionDelegateImpl physicalTransactionDelegate;
 
 	/**
-	 * Construct a TransactionCoordinatorResourceLocalImpl instance.  package-protected to ensure access goes through
+	 * Construct a ResourceLocalTransactionCoordinatorImpl instance.  package-protected to ensure access goes through
 	 * builder.
 	 *
 	 * @param owner The owner
 	 */
-	TransactionCoordinatorResourceLocalImpl(ResourceLocalTransactionCoordinatorOwner owner) {
+	ResourceLocalTransactionCoordinatorImpl(
+			TransactionCoordinatorOwner owner,
+		ResourceLocalTransactionAccess resourceLocalTransactionAccess) {
+		this.resourceLocalTransactionAccess = resourceLocalTransactionAccess;
 		this.owner = owner;
 	}
 
@@ -66,7 +72,7 @@ public class TransactionCoordinatorResourceLocalImpl implements TransactionCoord
 		// coordinator.  We lazily build it as we invalidate each delegate after each transaction (a delegate is
 		// valid for just one transaction)
 		if ( physicalTransactionDelegate == null ) {
-			physicalTransactionDelegate = new PhysicalTransactionDelegateImpl( owner.getResourceLocalTransaction() );
+			physicalTransactionDelegate = new PhysicalTransactionDelegateImpl( resourceLocalTransactionAccess.getResourceLocalTransaction() );
 		}
 		return physicalTransactionDelegate;
 	}
@@ -97,17 +103,17 @@ public class TransactionCoordinatorResourceLocalImpl implements TransactionCoord
 	// PhysicalTransactionDelegate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	private void afterBeginCallback() {
-		log.trace( "TransactionCoordinatorResourceLocalImpl#afterBeginCallback" );
+		log.trace( "ResourceLocalTransactionCoordinatorImpl#afterBeginCallback" );
 	}
 
 	private void beforeCompletionCallback() {
-		log.trace( "TransactionCoordinatorResourceLocalImpl#beforeCompletionCallback" );
+		log.trace( "ResourceLocalTransactionCoordinatorImpl#beforeCompletionCallback" );
 		owner.beforeTransactionCompletion();
 		synchronizationRegistry.notifySynchronizationsBeforeTransactionCompletion();
 	}
 
 	private void afterCompletionCallback(boolean successful) {
-		log.tracef( "TransactionCoordinatorResourceLocalImpl#afterCompletionCallback(%s)", successful );
+		log.tracef( "ResourceLocalTransactionCoordinatorImpl#afterCompletionCallback(%s)", successful );
 		final int statusToSend =  successful ? Status.STATUS_COMMITTED : Status.STATUS_UNKNOWN;
 		synchronizationRegistry.notifySynchronizationsAfterTransactionCompletion( statusToSend );
 
@@ -148,7 +154,7 @@ public class TransactionCoordinatorResourceLocalImpl implements TransactionCoord
 			errorIfInvalid();
 
 			resourceLocalTransaction.begin();
-			TransactionCoordinatorResourceLocalImpl.this.afterBeginCallback();
+			ResourceLocalTransactionCoordinatorImpl.this.afterBeginCallback();
 		}
 
 		protected void errorIfInvalid() {
@@ -159,15 +165,15 @@ public class TransactionCoordinatorResourceLocalImpl implements TransactionCoord
 
 		@Override
 		public void commit() {
-			TransactionCoordinatorResourceLocalImpl.this.beforeCompletionCallback();
+			ResourceLocalTransactionCoordinatorImpl.this.beforeCompletionCallback();
 			resourceLocalTransaction.commit();
-			TransactionCoordinatorResourceLocalImpl.this.afterCompletionCallback( true );
+			ResourceLocalTransactionCoordinatorImpl.this.afterCompletionCallback( true );
 		}
 
 		@Override
 		public void rollback() {
 			resourceLocalTransaction.rollback();
-			TransactionCoordinatorResourceLocalImpl.this.afterCompletionCallback( false );
+			ResourceLocalTransactionCoordinatorImpl.this.afterCompletionCallback( false );
 		}
 	}
 }
