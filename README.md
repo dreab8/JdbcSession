@@ -254,28 +254,16 @@ UserTransaction/TransactionManager calls_
         	        * TransactionCoordinatorJtaImpl.afterCompletion() - via SynchronizationCallbackTarget
 
 
+## Possible design refinement...
 
-## Storage tech agnostic?
+Look at a split where we have the "JDBC resource" and the "transactions resource" (with some obvious interplay
+in the "JDBC transaction" case) and then a DatabaseSession that combines them.
 
-Another possible goal here could be to hide the type of storage (JDBC, OGM, etc) used behind this contract.  In this
-case, JdbcSession would need to become a more general DataStoreSession (?) with JdbcDataStoreSession as a
-specialization for JDBC interaction.  DataStoreSession would need to be defined completely store-technology agnostic.
-Probably it would not need to expose the concept of a "connection" (the usage of a connection should ultimately be
-fairly contained within the DataStoreSession and its direct delegates).
+In this way "resources" simply become the low-level ways to interact with things.  Maybe there are other resources also:
 
-That makes Operation the common currency between Persisters, etc and the various concrete DataStoreSession
+* jmx resource
+* jndi resource
+* etc
 
-This would require quite a bit of reorganization.  But overall something like:
-
-```java
-package org.hibernate.resource;
-public interface DataStoreSession {
-    public boolean isOpen();
-    public void close();
-    public boolean isReadyToSerialize();
-	public TransactionCoordinator getTransactionCoordinator();
-	public <T> T accept(Operation<T> operation);
-}
-```
-
-Just a brain-storm.  I have no idea if it ultimately helps dev for other storage techs (OGM) or not.
+Currently org.hibernate.resource.jdbc servers 2 roles: the resource and the "database session" (the combo of
+connection/transaction).
