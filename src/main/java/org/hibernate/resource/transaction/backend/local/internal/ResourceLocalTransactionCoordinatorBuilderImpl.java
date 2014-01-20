@@ -27,7 +27,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
-import org.hibernate.resource.transaction.builder.TransactionCoordinatorResourceLocalBuilder;
+import org.hibernate.resource.transaction.TransactionCoordinatorResourceLocalBuilder;
 
 /**
  * Concrete builder for resource-local TransactionCoordinator instances.

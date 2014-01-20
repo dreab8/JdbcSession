@@ -29,8 +29,8 @@ import java.sql.SQLException;
 import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
-import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilder;
-import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilderFactory;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 
 import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 

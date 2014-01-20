@@ -24,7 +24,7 @@
 package org.hibernate.resource.transaction.backend.jta.internal;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.resource.transaction.builder.TransactionCoordinatorJtaBuilder;
+import org.hibernate.resource.transaction.TransactionCoordinatorJtaBuilder;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 

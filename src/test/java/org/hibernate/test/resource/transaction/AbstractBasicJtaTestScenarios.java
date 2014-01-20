@@ -26,7 +26,7 @@ package org.hibernate.test.resource.transaction;
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
-import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilderFactory;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinatorTrackingImpl;
 

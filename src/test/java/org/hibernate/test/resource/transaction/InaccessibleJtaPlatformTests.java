@@ -24,7 +24,7 @@
 package org.hibernate.test.resource.transaction;
 
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilderFactory;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 import org.hibernate.resource.transaction.backend.jta.internal.JtaPlatformInaccessibleException;
 
 import org.hibernate.test.resource.transaction.common.JtaPlatformInaccessibleImpl;

@@ -28,7 +28,7 @@ import java.sql.Connection;
 import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionProvidedImpl;
-import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilderFactory;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 
 import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;

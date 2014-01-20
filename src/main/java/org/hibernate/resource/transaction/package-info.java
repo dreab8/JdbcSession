@@ -23,6 +23,11 @@
  */
 
 /**
- * Defines the resource-level transaction capabilities of Hibernate.
+ * Defines the resource-level transaction capabilities of Hibernate, which revolves around the
+ * {@link org.hibernate.resource.transaction.TransactionCoordinator} contract.
+ * <p/>
+ * See {@link org.hibernate.resource.transaction.TransactionCoordinatorBuilder} and
+ * {@link org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory} for information on obtaining
+ * {@link org.hibernate.resource.transaction.TransactionCoordinator} instances.
  */
 package org.hibernate.resource.transaction;

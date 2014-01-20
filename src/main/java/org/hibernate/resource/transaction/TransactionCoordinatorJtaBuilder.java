@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.builder;
+package org.hibernate.resource.transaction;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 

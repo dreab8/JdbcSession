@@ -11,7 +11,7 @@ import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.builder.TransactionCoordinatorBuilder;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
