@@ -99,13 +99,13 @@ public abstract class AbstractJtaScenarioTests {
 			assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
 			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
 
-			jdbcSession.getTransactionCoordinator().getPhysicalTransactionDelegate().begin();
+			jdbcSession.getTransactionCoordinator().getTransactionDriverControl().begin();
 			assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 			assertTrue( transactionCoordinator.isSynchronizationRegistered() );
 			SynchronizationCollectorImpl localSync = new SynchronizationCollectorImpl();
 			transactionCoordinator.getLocalSynchronizations().registerSynchronization( localSync );
 
-			jdbcSession.getTransactionCoordinator().getPhysicalTransactionDelegate().commit();
+			jdbcSession.getTransactionCoordinator().getTransactionDriverControl().commit();
 			assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
 			assertFalse( transactionCoordinator.isSynchronizationRegistered() );
 			assertEquals( 1, localSync.getBeforeCompletionCount() );

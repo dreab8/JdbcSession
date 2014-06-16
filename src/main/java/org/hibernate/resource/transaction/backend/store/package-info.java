@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) 2014, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,21 +21,18 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
-
-import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
 
 /**
- * SPI contract for JdbcSession.
- *
- * @author Steve Ebersole
+ * Collectively models the concept of transaction coordination through the
+ * "data store" specific notion of a transaction.  In Hibernate ORM uses this
+ * correlates to the JDBC notion of a transaction, which (unfortunately) is
+ * not modeled by an actual contract.  Instead JDBC models transaction control
+ * via its Connection contract.  Here we use
+ * {@link org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction}
+ * as the encapsulation for conceptual JDBC transaction.  It also helps isolate the
+ * {@link org.hibernate.resource.transaction} and {@link org.hibernate.resource.jdbc}
+ * packages from circularity.  Lastly it does somewhat allow for potentially abstracting
+ * non-JDBC data stores into this transaction handling utilizing its data store specific
+ * transaction mechanism.
  */
-public interface JdbcSessionImplementor extends JdbcSession, DataStoreTransactionAccess {
-	/**
-	 * Is the DataStoreSession in a state that would allow it to be serialized?
-	 *
-	 * @return {@code true} indicates that the DataStoreSession, as is, can be serialized.
-	 */
-	public boolean isReadyToSerialize();
-}
+package org.hibernate.resource.transaction.backend.store;

@@ -25,10 +25,10 @@ package org.hibernate.test.resource.transaction;
 
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
-import org.hibernate.resource.transaction.backend.local.internal.ResourceLocalTransactionCoordinatorImpl;
+import org.hibernate.resource.transaction.backend.store.internal.ResourceLocalTransactionCoordinatorImpl;
 
 import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
-import org.hibernate.test.resource.transaction.common.ResourceLocalTransactionAccessTestingImpl;
+import org.hibernate.test.resource.transaction.common.DataStoreTransactionAccessTestingImpl;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -38,11 +38,11 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author Steve Ebersole
  */
-public class BasicResourceLocalTransactionsTest {
+public class BasicDataStoreTransactionsTest {
 
 	@Test
 	public void basicUsageTest() throws Exception {
-		final ResourceLocalTransactionAccessTestingImpl owner = new ResourceLocalTransactionAccessTestingImpl();
+		final DataStoreTransactionAccessTestingImpl owner = new DataStoreTransactionAccessTestingImpl();
 
 		final TransactionCoordinator tc = TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal()
 				.buildTransactionCoordinator( owner );
@@ -51,13 +51,13 @@ public class BasicResourceLocalTransactionsTest {
 		SynchronizationCollectorImpl sync = new SynchronizationCollectorImpl();
 		transactionCoordinator.getLocalSynchronizations().registerSynchronization( sync );
 
-		transactionCoordinator.getPhysicalTransactionDelegate().begin();
+		transactionCoordinator.getTransactionDriverControl().begin();
 		assertFalse( owner.getJdbcConnection().getAutoCommit() );
 		assertEquals( 0, sync.getBeforeCompletionCount() );
 		assertEquals( 0, sync.getSuccessfulCompletionCount() );
 		assertEquals( 0, sync.getFailedCompletionCount() );
 
-		transactionCoordinator.getPhysicalTransactionDelegate().commit();
+		transactionCoordinator.getTransactionDriverControl().commit();
 		assertEquals( 1, sync.getBeforeCompletionCount() );
 		assertEquals( 1, sync.getSuccessfulCompletionCount() );
 		assertEquals( 0, sync.getFailedCompletionCount() );

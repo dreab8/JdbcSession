@@ -24,7 +24,7 @@
 package org.hibernate.resource.transaction;
 
 import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorBuilderImpl;
-import org.hibernate.resource.transaction.backend.local.internal.ResourceLocalTransactionCoordinatorBuilderImpl;
+import org.hibernate.resource.transaction.backend.store.internal.ResourceLocalTransactionCoordinatorBuilderImpl;
 
 /**
  * Factory for obtaining instances of standard TransactionCoordinatorBuilder implementations

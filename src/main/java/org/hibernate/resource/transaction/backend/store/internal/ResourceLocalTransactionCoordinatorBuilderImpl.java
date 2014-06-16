@@ -21,11 +21,11 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.backend.local.internal;
+package org.hibernate.resource.transaction.backend.store.internal;
 
 import org.hibernate.HibernateException;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 import org.hibernate.resource.transaction.TransactionCoordinatorResourceLocalBuilder;
 
@@ -35,21 +35,21 @@ import org.hibernate.resource.transaction.TransactionCoordinatorResourceLocalBui
  * @author Steve Ebersole
  */
 public class ResourceLocalTransactionCoordinatorBuilderImpl implements TransactionCoordinatorResourceLocalBuilder {
-	private ResourceLocalTransactionAccess providedResourceLocalTransactionAccess;
+	private DataStoreTransactionAccess providedDataStoreTransactionAccess;
 
 	@Override
-	public void setResourceLocalTransactionAccess(ResourceLocalTransactionAccess resourceLocalTransactionAccess) {
-		this.providedResourceLocalTransactionAccess = resourceLocalTransactionAccess;
+	public void setResourceLocalTransactionAccess(DataStoreTransactionAccess dataStoreTransactionAccess) {
+		this.providedDataStoreTransactionAccess = dataStoreTransactionAccess;
 	}
 
 	@Override
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner) {
-		if ( providedResourceLocalTransactionAccess != null ) {
-			return new ResourceLocalTransactionCoordinatorImpl( owner, providedResourceLocalTransactionAccess );
+		if ( providedDataStoreTransactionAccess != null ) {
+			return new ResourceLocalTransactionCoordinatorImpl( owner, providedDataStoreTransactionAccess );
 		}
 		else {
-			if ( owner instanceof ResourceLocalTransactionAccess ) {
-				return new ResourceLocalTransactionCoordinatorImpl( owner, (ResourceLocalTransactionAccess) owner );
+			if ( owner instanceof DataStoreTransactionAccess ) {
+				return new ResourceLocalTransactionCoordinatorImpl( owner, (DataStoreTransactionAccess) owner );
 			}
 		}
 

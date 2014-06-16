@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) 2014, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,21 +21,30 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
-
-import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
+package org.hibernate.resource.transaction.backend.jta.internal;
 
 /**
- * SPI contract for JdbcSession.
+ * Adapter for abstracting the physical means of interacting with JTA transactions.
+ * <p/>
+ * JTA transactions can concretely be interacted with through {@link javax.transaction.UserTransaction}
+ * or {@link javax.transaction.Transaction} depending on environment and situation.  This adapter hides
+ * this difference.
  *
  * @author Steve Ebersole
  */
-public interface JdbcSessionImplementor extends JdbcSession, DataStoreTransactionAccess {
+public interface JtaTransactionAdapter {
 	/**
-	 * Is the DataStoreSession in a state that would allow it to be serialized?
-	 *
-	 * @return {@code true} indicates that the DataStoreSession, as is, can be serialized.
+	 * Call begin on the underlying transaction object
 	 */
-	public boolean isReadyToSerialize();
+	public void begin();
+
+	/**
+	 * Call commit on the underlying transaction object
+	 */
+	public void commit();
+
+	/**
+	 * Call rollback on the underlying transaction object
+	 */
+	public void rollback();
 }

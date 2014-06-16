@@ -23,7 +23,7 @@
  */
 package org.hibernate.resource.transaction;
 
-import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
 
 /**
  * A builder of TransactionCoordinator instances intended for use in resource-local mode (non-JTA transactions local
@@ -31,7 +31,7 @@ import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransac
  * <p/>
  * NOTE : Ideally I'd love to specialize the {@link #buildTransactionCoordinator(org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner)}
  * method here to only accept TransactionCoordinatorOwner arguments that are specifically
- * {@link org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess} instances.  Not sure how to
+ * {@link org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess} instances.  Not sure how to
  * best achieve that.  For now we just cast and let the exception happen, but directing the user via the contract
  * would be MUCH preferable.
  *
@@ -45,7 +45,7 @@ public interface TransactionCoordinatorResourceLocalBuilder extends TransactionC
 	 * An alternative is for the owner passed to {@link #buildTransactionCoordinator} to implement the
 	 * ResourceLocalTransactionAccess contract.
 	 *
-	 * @param resourceLocalTransactionAccess Access
+	 * @param dataStoreTransactionAccess Access
 	 */
-	public void setResourceLocalTransactionAccess(ResourceLocalTransactionAccess resourceLocalTransactionAccess);
+	public void setResourceLocalTransactionAccess(DataStoreTransactionAccess dataStoreTransactionAccess);
 }

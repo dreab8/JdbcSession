@@ -21,26 +21,26 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction;
+package org.hibernate.resource.transaction.backend.store.spi;
 
 /**
- * Models access to the "physical transaction" (from the TransactionCoordinator) for use by the "local transaction"
+ * Models access to the resource transaction of the underlying data store (JDBC).
  *
  * @author Steve Ebersole
  */
-public interface PhysicalTransactionDelegate {
+public interface DataStoreTransaction {
 	/**
-	 * Begin the physical transaction
+	 * Begin the resource transaction
 	 */
 	public void begin();
 
 	/**
-	 * Commit the physical transaction
+	 * Commit the resource transaction
 	 */
 	public void commit();
 
 	/**
-	 * Rollback the physical transaction
+	 * Rollback the resource transaction
 	 */
 	public void rollback();
 }

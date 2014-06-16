@@ -21,14 +21,13 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.backend.local.internal;
+package org.hibernate.resource.transaction.backend.store.internal;
 
 import javax.transaction.Status;
 
 import org.hibernate.internal.CoreMessageLogger;
-import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
-import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction;
-import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
 import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
@@ -42,16 +41,16 @@ import static org.hibernate.internal.CoreLogging.messageLogger;
  *
  * @author Steve Ebersole
  *
- * @see org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction
+ * @see org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction
  */
 public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoordinator {
 	private static final CoreMessageLogger log = messageLogger( ResourceLocalTransactionCoordinatorImpl.class );
 
-	private final ResourceLocalTransactionAccess resourceLocalTransactionAccess;
+	private final DataStoreTransactionAccess dataStoreTransactionAccess;
 	private final TransactionCoordinatorOwner owner;
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
-	private PhysicalTransactionDelegateImpl physicalTransactionDelegate;
+	private TransactionDriverControlImpl physicalTransactionDelegate;
 
 	/**
 	 * Construct a ResourceLocalTransactionCoordinatorImpl instance.  package-protected to ensure access goes through
@@ -61,18 +60,18 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 	 */
 	ResourceLocalTransactionCoordinatorImpl(
 			TransactionCoordinatorOwner owner,
-		ResourceLocalTransactionAccess resourceLocalTransactionAccess) {
-		this.resourceLocalTransactionAccess = resourceLocalTransactionAccess;
+		DataStoreTransactionAccess dataStoreTransactionAccess) {
+		this.dataStoreTransactionAccess = dataStoreTransactionAccess;
 		this.owner = owner;
 	}
 
 	@Override
-	public PhysicalTransactionDelegate getPhysicalTransactionDelegate() {
+	public LocalInflow getTransactionDriverControl() {
 		// Again, this PhysicalTransactionDelegate will act as the bridge from the local transaction back into the
 		// coordinator.  We lazily build it as we invalidate each delegate after each transaction (a delegate is
 		// valid for just one transaction)
 		if ( physicalTransactionDelegate == null ) {
-			physicalTransactionDelegate = new PhysicalTransactionDelegateImpl( resourceLocalTransactionAccess.getResourceLocalTransaction() );
+			physicalTransactionDelegate = new TransactionDriverControlImpl( dataStoreTransactionAccess.getResourceLocalTransaction() );
 		}
 		return physicalTransactionDelegate;
 	}
@@ -136,13 +135,13 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 	 * The delegate bridging between the local (application facing) transaction and the "physical" notion of a
 	 * transaction via the JDBC Connection.
 	 */
-	public class PhysicalTransactionDelegateImpl implements PhysicalTransactionDelegate {
-		private final ResourceLocalTransaction resourceLocalTransaction;
+	public class TransactionDriverControlImpl implements LocalInflow {
+		private final DataStoreTransaction dataStoreTransaction;
 		private boolean invalid;
 
-		public PhysicalTransactionDelegateImpl(ResourceLocalTransaction resourceLocalTransaction) {
+		public TransactionDriverControlImpl(DataStoreTransaction dataStoreTransaction) {
 			super();
-			this.resourceLocalTransaction = resourceLocalTransaction;
+			this.dataStoreTransaction = dataStoreTransaction;
 		}
 
 		protected void invalidate() {
@@ -153,7 +152,7 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 		public void begin() {
 			errorIfInvalid();
 
-			resourceLocalTransaction.begin();
+			dataStoreTransaction.begin();
 			ResourceLocalTransactionCoordinatorImpl.this.afterBeginCallback();
 		}
 
@@ -166,13 +165,13 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 		@Override
 		public void commit() {
 			ResourceLocalTransactionCoordinatorImpl.this.beforeCompletionCallback();
-			resourceLocalTransaction.commit();
+			dataStoreTransaction.commit();
 			ResourceLocalTransactionCoordinatorImpl.this.afterCompletionCallback( true );
 		}
 
 		@Override
 		public void rollback() {
-			resourceLocalTransaction.rollback();
+			dataStoreTransaction.rollback();
 			ResourceLocalTransactionCoordinatorImpl.this.afterCompletionCallback( false );
 		}
 	}

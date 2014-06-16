@@ -6,7 +6,6 @@ import javax.transaction.UserTransaction;
 
 import org.hibernate.TransactionException;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
-import org.hibernate.resource.transaction.PhysicalTransactionDelegate;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
@@ -37,7 +36,7 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 
 	private boolean synchronizationRegistered;
 	private SynchronizationCallbackCoordinator callbackCoordinator;
-	private PhysicalTransactionDelegateImpl physicalTransactionDelegate;
+	private TransactionDriverControlImpl physicalTransactionDelegate;
 
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
@@ -138,14 +137,14 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 	}
 
 	@Override
-	public PhysicalTransactionDelegate getPhysicalTransactionDelegate() {
+	public LocalInflow getTransactionDriverControl() {
 		if ( physicalTransactionDelegate == null ) {
 			physicalTransactionDelegate = makePhysicalTransactionDelegate();
 		}
 		return physicalTransactionDelegate;
 	}
 
-	private PhysicalTransactionDelegateImpl makePhysicalTransactionDelegate() {
+	private TransactionDriverControlImpl makePhysicalTransactionDelegate() {
 		JtaTransactionAdapter adapter;
 
 		if ( preferUserTransactions ) {
@@ -171,7 +170,7 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 			);
 		}
 
-		return new PhysicalTransactionDelegateImpl( adapter );
+		return new TransactionDriverControlImpl( adapter );
 	}
 
 	private JtaTransactionAdapter makeUserTransactionAdapter() {
@@ -242,113 +241,16 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 	}
 
 
-	// PhysicalTransactionDelegate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-	public static interface JtaTransactionAdapter {
-		public void begin();
-		public void commit();
-		public void rollback();
-	}
-
 	/**
-	 * JtaTransactionAdapter for coordinating with the JTA TransactionManager
+	 * Implementation of the LocalInflow for this TransactionCoordinator.  Allows the
+	 * local transaction ({@link org.hibernate.Transaction} to callback into this
+	 * TransactionCoordinator for the purpose of driving the underlying JTA transaction.
 	 */
-	public static class JtaTransactionAdapterTransactionManagerImpl implements JtaTransactionAdapter {
-		private final TransactionManager transactionManager;
-
-		public JtaTransactionAdapterTransactionManagerImpl(TransactionManager transactionManager) {
-			this.transactionManager = transactionManager;
-		}
-
-		@Override
-		public void begin() {
-			try {
-				log.trace( "Calling TransactionManager#begin" );
-				transactionManager.begin();
-				log.trace( "Called TransactionManager#begin" );
-			}
-			catch (Exception e) {
-				throw new TransactionException( "JTA TransactionManager#begin failed", e );
-			}
-		}
-
-		@Override
-		public void commit() {
-			try {
-				log.trace( "Calling TransactionManager#commit" );
-				transactionManager.commit();
-				log.trace( "Called TransactionManager#commit" );
-			}
-			catch (Exception e) {
-				throw new TransactionException( "JTA TransactionManager#commit failed", e );
-			}
-		}
-
-		@Override
-		public void rollback() {
-			try {
-				log.trace( "Calling TransactionManager#rollback" );
-				transactionManager.rollback();
-				log.trace( "Called TransactionManager#rollback" );
-			}
-			catch (Exception e) {
-				throw new TransactionException( "JTA TransactionManager#rollback failed", e );
-			}
-		}
-	}
-
-	/**
-	 * JtaTransactionAdapter for coordinating with the JTA UserTransaction
-	 */
-	public static class JtaTransactionAdapterUserTransactionImpl implements JtaTransactionAdapter {
-		private final UserTransaction userTransaction;
-
-		public JtaTransactionAdapterUserTransactionImpl(UserTransaction userTransaction) {
-			this.userTransaction = userTransaction;
-		}
-
-		@Override
-		public void begin() {
-			try {
-				log.trace( "Calling UserTransaction#begin" );
-				userTransaction.begin();
-				log.trace( "Called UserTransaction#begin" );
-			}
-			catch (Exception e) {
-				throw new TransactionException( "JTA UserTransaction#begin failed", e );
-			}
-		}
-
-		@Override
-		public void commit() {
-			try {
-				log.trace( "Calling UserTransaction#commit" );
-				userTransaction.commit();
-				log.trace( "Called UserTransaction#commit" );
-			}
-			catch (Exception e) {
-				throw new TransactionException( "JTA UserTransaction#commit failed", e );
-			}
-		}
-
-		@Override
-		public void rollback() {
-			try {
-				log.trace( "Calling UserTransaction#rollback" );
-				userTransaction.rollback();
-				log.trace( "Called UserTransaction#rollback" );
-			}
-			catch (Exception e) {
-				throw new TransactionException( "JTA UserTransaction#rollback failed", e );
-			}
-		}
-	}
-
-	public class PhysicalTransactionDelegateImpl implements PhysicalTransactionDelegate {
+	public class TransactionDriverControlImpl implements LocalInflow {
 		private final JtaTransactionAdapter jtaTransactionAdapter;
 		private boolean invalid;
 
-		public PhysicalTransactionDelegateImpl(JtaTransactionAdapter jtaTransactionAdapter) {
+		public TransactionDriverControlImpl(JtaTransactionAdapter jtaTransactionAdapter) {
 			this.jtaTransactionAdapter = jtaTransactionAdapter;
 		}
 

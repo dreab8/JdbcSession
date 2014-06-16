@@ -50,7 +50,7 @@ public class InaccessibleJtaPlatformTests {
 					.setPreferUserTransactions( false )
 					.buildTransactionCoordinator( owner );
 
-			transactionCoordinator.getPhysicalTransactionDelegate().begin();
+			transactionCoordinator.getTransactionDriverControl().begin();
 
 			fail( "Expecting JtaPlatformInaccessibleException, but call succeeded" );
 		}
@@ -70,7 +70,7 @@ public class InaccessibleJtaPlatformTests {
 					.setPreferUserTransactions( false )
 					.buildTransactionCoordinator( owner );
 
-			transactionCoordinator.getPhysicalTransactionDelegate().begin();
+			transactionCoordinator.getTransactionDriverControl().begin();
 
 			fail( "Expecting JtaPlatformInaccessibleException, but call succeeded" );
 		}
@@ -92,7 +92,7 @@ public class InaccessibleJtaPlatformTests {
 					.setPreferUserTransactions( true )
 					.buildTransactionCoordinator( owner );
 
-			transactionCoordinator.getPhysicalTransactionDelegate().begin();
+			transactionCoordinator.getTransactionDriverControl().begin();
 
 			fail( "Expecting JtaPlatformInaccessibleException, but call succeeded" );
 		}
@@ -112,7 +112,7 @@ public class InaccessibleJtaPlatformTests {
 					.setPreferUserTransactions( true )
 					.buildTransactionCoordinator( owner );
 
-			transactionCoordinator.getPhysicalTransactionDelegate().begin();
+			transactionCoordinator.getTransactionDriverControl().begin();
 
 			fail( "Expecting JtaPlatformInaccessibleException, but call succeeded" );
 		}

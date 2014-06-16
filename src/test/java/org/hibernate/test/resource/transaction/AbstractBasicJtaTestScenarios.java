@@ -66,7 +66,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 		assertFalse( transactionCoordinator.isSynchronizationRegistered() );
 
 		// begin the transaction
-		transactionCoordinator.getPhysicalTransactionDelegate().begin();
+		transactionCoordinator.getTransactionDriverControl().begin();
 		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 		assertTrue( transactionCoordinator.isSynchronizationRegistered() );
 
@@ -75,7 +75,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 		transactionCoordinator.getLocalSynchronizations().registerSynchronization( localSync );
 
 		// commit the transaction
-		transactionCoordinator.getPhysicalTransactionDelegate().commit();
+		transactionCoordinator.getTransactionDriverControl().commit();
 		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );
 		assertFalse( transactionCoordinator.isSynchronizationRegistered() );
 		assertEquals( 1, localSync.getBeforeCompletionCount() );
@@ -93,7 +93,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 		assertFalse( transactionCoordinator.isSynchronizationRegistered() );
 
 		// begin the transaction
-		transactionCoordinator.getPhysicalTransactionDelegate().begin();
+		transactionCoordinator.getTransactionDriverControl().begin();
 		assertEquals( Status.STATUS_ACTIVE, tm.getStatus() );
 		assertTrue( transactionCoordinator.isSynchronizationRegistered() );
 
@@ -102,7 +102,7 @@ public abstract class AbstractBasicJtaTestScenarios {
 		transactionCoordinator.getLocalSynchronizations().registerSynchronization( localSync );
 
 		// rollback the transaction
-		transactionCoordinator.getPhysicalTransactionDelegate().rollback();
+		transactionCoordinator.getTransactionDriverControl().rollback();
 
 		// post conditions
 		assertEquals( Status.STATUS_NO_TRANSACTION, tm.getStatus() );

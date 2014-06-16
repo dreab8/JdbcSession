@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) 2014, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,20 +21,25 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.backend.local.spi;
+package org.hibernate.resource.transaction.backend.jta.internal;
+
+import org.jboss.logging.Logger;
+import org.jboss.logging.annotations.MessageLogger;
+import org.jboss.logging.annotations.ValidIdRange;
 
 /**
- * Provides access to ResourceLocalTransaction (JDBC transaction stand-in) for use in building resource-local
- * TransactionCoordinator instances.
+ * Acts as the {@link org.jboss.logging.annotations.MessageLogger} related to
+ * JTA transaction processing
  *
  * @author Steve Ebersole
  */
-public interface ResourceLocalTransactionAccess {
-	/**
-	 * Provides access to the resource local transaction of this data store, which is used by the TransactionCoordinator
-	 * to manage transactions against the data store when not using JTA.
-	 *
-	 * @return The resource-local transaction
-	 */
-	public ResourceLocalTransaction getResourceLocalTransaction();
+@MessageLogger( projectCode = "HHH" )
+@ValidIdRange( min = 10000001, max = 10001000 )
+public interface JtaMessageLogger {
+	public static final JtaMessageLogger INSTANCE = Logger.getMessageLogger(
+			JtaMessageLogger.class,
+			"org.hibernate.orm.txn.backend.jta"
+	);
+
+
 }

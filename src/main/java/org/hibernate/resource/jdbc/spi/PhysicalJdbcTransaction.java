@@ -23,12 +23,12 @@
  */
 package org.hibernate.resource.jdbc.spi;
 
-import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 
 /**
  * Provides access to manage "transactionality" via the JDBC Connection
  *
  * @author Steve Ebersole
  */
-public interface PhysicalJdbcTransaction extends ResourceLocalTransaction {
+public interface PhysicalJdbcTransaction extends DataStoreTransaction {
 }

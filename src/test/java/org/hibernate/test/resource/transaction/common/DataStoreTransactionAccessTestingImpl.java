@@ -27,21 +27,21 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.hibernate.TransactionException;
-import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction;
-import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
 
 import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 
 /**
  * @author Steve Ebersole
  */
-public class ResourceLocalTransactionAccessTestingImpl
+public class DataStoreTransactionAccessTestingImpl
 		extends TransactionCoordinatorOwnerTestingImpl
-		implements ResourceLocalTransactionAccess, ResourceLocalTransaction {
+		implements DataStoreTransactionAccess, DataStoreTransaction {
 
 	private final Connection jdbcConnection;
 
-	public ResourceLocalTransactionAccessTestingImpl() throws Exception {
+	public DataStoreTransactionAccessTestingImpl() throws Exception {
 		jdbcConnection = DatabaseConnectionInfo.INSTANCE.makeConnection();
 	}
 
@@ -50,7 +50,7 @@ public class ResourceLocalTransactionAccessTestingImpl
 	}
 
 	@Override
-	public ResourceLocalTransaction getResourceLocalTransaction() {
+	public DataStoreTransaction getResourceLocalTransaction() {
 		return this;
 	}
 

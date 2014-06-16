@@ -19,9 +19,9 @@ public abstract class AbstractBasicJdbcUsageTest {
 	@Test
 	public void testSimpleTransactionNoWork() throws Exception {
 		assertTrue( getConnection().getAutoCommit() );
-		getJdbcSession().getTransactionCoordinator().getPhysicalTransactionDelegate().begin();
+		getJdbcSession().getTransactionCoordinator().getTransactionDriverControl().begin();
 		assertFalse( getConnection().getAutoCommit() );
-		getJdbcSession().getTransactionCoordinator().getPhysicalTransactionDelegate().commit();
+		getJdbcSession().getTransactionCoordinator().getTransactionDriverControl().commit();
 		assertTrue( getConnection().getAutoCommit() );
 	}
 }

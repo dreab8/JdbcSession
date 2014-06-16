@@ -21,29 +21,20 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.backend.local.spi;
+package org.hibernate.resource.transaction.backend.store.spi;
 
 /**
- * Models access to the resource transaction of the underlying data store.  Most data stores Hibernate deals with
- * (JDBC e.g.) do not define an actual transaction object; this object stands in for that underlying transaction
- * concept.  And if the underlying data store does happen to define an actual transaction object, this would simply
- * delegate to that one.  Encapsulation! Polymorphism!  FTW! ;)
+ * Provides access to DataStoreTransaction (JDBC transaction stand-in) for use in building resource-local
+ * TransactionCoordinator instances.
  *
  * @author Steve Ebersole
  */
-public interface ResourceLocalTransaction {
+public interface DataStoreTransactionAccess {
 	/**
-	 * Begin the resource transaction
+	 * Provides access to the resource local transaction of this data store, which is used by the TransactionCoordinator
+	 * to manage transactions against the data store when not using JTA.
+	 *
+	 * @return The resource-local transaction
 	 */
-	public void begin();
-
-	/**
-	 * Commit the resource transaction
-	 */
-	public void commit();
-
-	/**
-	 * Rollback the resource transaction
-	 */
-	public void rollback();
+	public DataStoreTransaction getResourceLocalTransaction();
 }

@@ -50,13 +50,11 @@ public interface TransactionCoordinator {
 	public void pulse();
 
 	/**
-	 * Get the PhysicalTransactionDelegate for this TransactionCoordinator for use by the local transaction
+	 * Get the delegate used by the local transaction driver to control the underlying transaction
 	 *
-	 * todo : rename this to something like CoordinatorTransactionDelegate?  or TransactionDelegate?
-	 *
-	 * @return The PhysicalTransactionDelegate
+	 * @return The control delegate.
 	 */
-	public PhysicalTransactionDelegate getPhysicalTransactionDelegate();
+	public LocalInflow getTransactionDriverControl();
 
 	/**
 	 * Get access to the local registry of Synchronization instances
@@ -64,4 +62,35 @@ public interface TransactionCoordinator {
 	 * @return The local Synchronization registry
 	 */
 	public SynchronizationRegistry getLocalSynchronizations();
+
+	/**
+	 * Provides the means for "local transactions" (as transaction drivers) to control the
+	 * underlying "physical transaction" currently associated with the TransactionCoordinator.
+	 *
+	 * @author Steve Ebersole
+	 */
+	public interface LocalInflow {
+		/**
+		 * Begin the physical transaction
+		 */
+		public void begin();
+
+		/**
+		 * Commit the physical transaction
+		 */
+		public void commit();
+
+		/**
+		 * Rollback the physical transaction
+		 */
+		public void rollback();
+
+		// todo : org.hibernate.Transaction will need access to register local Synchronizations.
+		//		depending on how we integrate TransactionCoordinator/TransactionDriverControl with
+		//		org.hibernate.Transaction that might be best done by:
+		//			1) exposing registerSynchronization here (if the Transaction is just passed this)
+		//			2) using the exposed TransactionCoordinator#getLocalSynchronizations (if the Transaction is passed the TransactionCoordinator)
+		//
+		//		if
+	}
 }

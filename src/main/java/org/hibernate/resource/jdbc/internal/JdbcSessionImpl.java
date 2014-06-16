@@ -9,10 +9,10 @@ import org.hibernate.resource.jdbc.OperationSpec;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
-import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransaction;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
-import org.hibernate.resource.transaction.backend.local.spi.ResourceLocalTransactionAccess;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 import org.jboss.logging.Logger;
@@ -23,7 +23,7 @@ import org.jboss.logging.Logger;
 public class JdbcSessionImpl
 		implements JdbcSessionImplementor,
 				   TransactionCoordinatorOwner,
-				   ResourceLocalTransactionAccess {
+				   DataStoreTransactionAccess {
 	private static final Logger log = Logger.getLogger( JdbcSessionImpl.class );
 
 	private final JdbcSessionContext context;
@@ -103,7 +103,7 @@ public class JdbcSessionImpl
 	// ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	@Override
-	public ResourceLocalTransaction getResourceLocalTransaction() {
+	public DataStoreTransaction getResourceLocalTransaction() {
 		return logicalConnection.getPhysicalJdbcTransaction();
 	}
 

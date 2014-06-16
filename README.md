@@ -82,13 +82,13 @@ finally {
 Still very similar feeling code.
 
 
-### Operation API
+### Operation (and Operation Spec) API
 
 A very different feel can be seen in second approach:
 
 ```java
 return jdbcSession.accept(
-    new PreparedStatementQueryOperation() {
+    new PreparedStatementQueryOperationSpec() {
         @Override
         public StatementPreparer getStatementPreparer() {
             return new StandardQueryStatementPreparer();
@@ -113,28 +113,28 @@ Here you can visualize the jdbcSession.accept() call as a boundary/scope, which 
 different pieces (delegates) to achieve a whole:
 
 ```java
-public Object accept(PreparedStatementQueryOperation operation) {
+public Object accept(PreparedStatementQueryOperationSpec operationSpec) {
     try {
-        Statement statement = operation.getStatementPreparer().prepare( this );
+        Statement statement = operationSpec.getStatementPreparer().prepare( this );
         try {
-            ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
+            ResultSet resultSet = operationSpec.getStatementExecutor().execute( statement, this );
             try {
-                return operation.getResultSetProcessor().extractResults( resultSet, this );
+                return operationSpec.getResultSetProcessor().extractResults( resultSet, this );
             }
             finally {
-                if ( !operation.holdOpenResources() ) {
+                if ( !operationSpec.holdOpenResources() ) {
                     release( resultSet, statement );
                 }
             }
         }
         finally {
-            if ( !operation.holdOpenResources() ) {
-                release( ps );
+            if ( !operationSpec.holdOpenResources() ) {
+                release( statement );
             }
         }
     }
     finally {
-        afterStatement( !operation.holdOpenResources() );
+        afterStatement( !operationSpec.holdOpenResources() );
     }
 }
 ```
@@ -151,8 +151,9 @@ Another way to look at solving the concern over the number of methods would be t
 	public <T> T accept(Operation<T> operation);
 ```
 
-and have the JdbcSession implementation decode/interpret the operation based on type checks.  This is especially
-useful when we consider the potential goal of becoming "Storage tech agnostic" (see below).
+and have the JdbcSession implementation decode/interpret the operation based on type checks.  This is actually
+the current designated split between "Operation" and "Operation Spec".  Think of an "Operation" like a closure;
+think of a "Operation Spec" as a typed collection of delegates for performing certain types of operations.
 
 
 ## Transaction handling
@@ -165,8 +166,11 @@ existing Hibernate code, _org.hibernate.Transaction_ actually plays both roles w
 concrete implementation of the interface that gets used.  Essentially we now have delegation, rather than sub-classing,
 for transaction driving.
 * A second change is to further split JDBC-based versus JTA-based transaction handling.  Here we have a contract
-called TransactionCoordinator whose overall role is roughly the same as the _org.hibernate.engine.transaction.spi.TransactionCoordinator_
-contract in the current Hibernate code.  However, the way in which that contract is implemented here is much different.  In the existing code, the TransactionCoordinator impl actually handles both JDBC and JTA cases, meaning it is very complex with lots of if statements for the various cases.  The proposed change here is to instead have different implementations specific to JDBC/JTA cases.
+called TransactionCoordinator whose overall role is roughly the same as the
+_org.hibernate.engine.transaction.spi.TransactionCoordinator_ contract in the current Hibernate code.  However, the way
+in which that contract is implemented here is much different.  In the existing code, the TransactionCoordinator impl
+actually handles both JDBC and JTA cases, meaning it is very complex with lots of if statements for the various cases.
+The proposed change here is to instead have different implementations specific to JDBC/JTA cases.
 * For JTA environments, I would love to always drive "transaction reaction" from a Synchronization registered with
 the JTA transaction.  I am just not sure how feasible it is to say this will *always* be an option (e.g., some
 JTA TransactionManagers won't let you register a Synchronization against a transaction that has been marked for
@@ -231,13 +235,13 @@ _Currently there is no concept of a PhysicalJtaTransaction.  This is just a unif
 UserTransaction/TransactionManager calls_
 
 * Transaction.begin() would call
-    * TransactionCoordinatorJtaImpl.PhysicalTransactionInflow.begin(), which would call
+    * TransactionCoordinatorJtaImpl.LocalInflow.begin(), which would call
         * PhysicalJtaTransaction.begin()
         * TransactionCoordinatorJtaImpl.afterBegin()
 
 * Transaction.commit() would call
-    * TransactionCoordinatorJtaImpl.PhysicalTransactionInflow.commit(), which would call
-        * PhysicalJtaTransaction.begin(), which would *lead to*:
+    * TransactionCoordinatorJtaImpl.LocalInflow.commit(), which would call
+        * JtaTransactionAdapter.commit(), which would *lead to*:
             * RegisteredSynchronization.beforeCompletion(), which would call
         	    * SynchronizationCallbackCoordinator.beforeCompletion(), which would call
         	        * TransactionCoordinatorJtaImpl.beforeCompletion() - via SynchronizationCallbackTarget
@@ -246,8 +250,8 @@ UserTransaction/TransactionManager calls_
         	        * TransactionCoordinatorJtaImpl.afterCompletion() - via SynchronizationCallbackTarget
 
 * Transaction.rollback() would call
-    * TransactionCoordinatorJtaImpl.PhysicalTransactionInflow.rollback(), which would call
-        * PhysicalJtaTransaction.rollback(), which would *lead to*:
+    * TransactionCoordinatorJtaImpl.LocalInflow.rollback(), which would call
+        * commit.rollback(), which would *lead to*:
             * _again, note no beforeCompletion callbacks, consistent with JTA spec_
             * RegisteredSynchronization.afterCompletion()
         	    * SynchronizationCallbackCoordinator.afterCompletion(), which would call
@@ -265,5 +269,5 @@ In this way "resources" simply become the low-level ways to interact with things
 * jndi resource
 * etc
 
-Currently org.hibernate.resource.jdbc servers 2 roles: the resource and the "database session" (the combo of
+Currently org.hibernate.resource.jdbc serves 2 roles: the resource and the "database session" (the combo of
 connection/transaction).
