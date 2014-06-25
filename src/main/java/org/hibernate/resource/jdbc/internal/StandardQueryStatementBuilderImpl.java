@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) 2014, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,41 +21,25 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc;
+package org.hibernate.resource.jdbc.internal;
 
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
-import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
-import org.hibernate.resource.jdbc.spi.StatementExecutor;
+
+import java.sql.Statement;
 
 /**
- * @author Steve Ebersole
+ * @author Andrea Boriero
  */
-public interface PreparedStatementQueryOperationSpec<R> extends OperationSpec<R> {
+public class StandardQueryStatementBuilderImpl implements QueryStatementBuilder {
 
-	public QueryStatementBuilder getQueryStatementBuilder();
+	public static final StandardQueryStatementBuilderImpl INSTANCE = new StandardQueryStatementBuilderImpl();
 
-	public StatementExecutor getStatementExecutor();
+	private StandardQueryStatementBuilderImpl() {
+	}
 
-	public ResultSetProcessor getResultSetProcessor();
-
-	public String getSql();
-
-	public int getResultSetType();
-
-	public int getResultSetConcurrency();
-
-	public int getQueryTimeout();
-
-	public int getMaxFieldSize();
-
-	public int getMaxRow();
-
-	public boolean isEscapeProcessing();
-
-	public int getFetchSize();
-
-	public int getFetchDirection();
-
-	public boolean holdOpenResources();
-
+	@Override
+	public Statement buildQueryStatement(String sql, int resultSetType, int resultSetConcurrency) {
+		// todo: implement
+		return null;
+	}
 }

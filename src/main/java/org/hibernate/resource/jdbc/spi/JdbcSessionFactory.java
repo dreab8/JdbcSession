@@ -39,6 +39,9 @@ public class JdbcSessionFactory {
 	 */
 	public static final JdbcSessionFactory INSTANCE = new JdbcSessionFactory();
 
+    private JdbcSessionFactory(){
+    }
+
 	public JdbcSession create(JdbcSessionOwner owner) {
 		final LogicalConnectionManagedImpl logicalConnection = new LogicalConnectionManagedImpl(
 				owner.getJdbcConnectionAccess(),

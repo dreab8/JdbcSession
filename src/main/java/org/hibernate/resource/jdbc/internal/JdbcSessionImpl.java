@@ -1,29 +1,29 @@
 package org.hibernate.resource.jdbc.internal;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+
+import org.jboss.logging.Logger;
 
 import org.hibernate.HibernateException;
 import org.hibernate.resource.jdbc.LogicalConnection;
 import org.hibernate.resource.jdbc.Operation;
-import org.hibernate.resource.jdbc.OperationSpec;
+import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
-import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
-import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
+import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
-
-import org.jboss.logging.Logger;
 
 /**
  * @author Steve Ebersole
  */
 public class JdbcSessionImpl
 		implements JdbcSessionImplementor,
-				   TransactionCoordinatorOwner,
-				   DataStoreTransactionAccess {
+				   TransactionCoordinatorOwner {
 	private static final Logger log = Logger.getLogger( JdbcSessionImpl.class );
 
 	private final JdbcSessionContext context;
@@ -95,12 +95,73 @@ public class JdbcSessionImpl
 	}
 
 	@Override
-	public <R> R accept(OperationSpec<R> operation) {
-		return null;
+	public <R> R accept(PreparedStatementQueryOperationSpec<R> operation) {
+		try {
+			Statement statement = operation.getQueryStatementBuilder().buildQueryStatement(
+					operation.getSql(),
+					operation.getResultSetType(),
+					operation.getResultSetConcurrency()
+			);
+
+			configureStatement( operation, statement );
+			
+			try {
+				ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
+				register(resultSet, statement);
+				try {
+					return operation.getResultSetProcessor().extractResults( resultSet, this );
+				}
+				finally {
+					if ( !operation.holdOpenResources() ) {
+						release( resultSet, statement );
+					}
+				}
+			}
+			finally {
+				if ( !operation.holdOpenResources() ) {
+					release( statement );
+				}
+			}
+		}
+		catch (SQLException e) {
+			throw context.getSqlExceptionHelper().convert( e, "" );
+		}
+		finally {
+			afterStatement( !operation.holdOpenResources() );
+		}
 	}
 
+	private void register(ResultSet resultSet, Statement statement) {
+		logicalConnection.getResourceRegistry().register( resultSet, statement );
+	}
 
-	// ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	private void release(ResultSet resultSet, Statement statement) {
+		if ( resultSet != null ) {
+			logicalConnection.getResourceRegistry().release( resultSet, statement );
+		}
+		else {
+			release( statement );
+		}
+	}
+
+	private void release(Statement statement) {
+		if ( statement != null ) {
+			logicalConnection.getResourceRegistry().release( statement );
+		}
+	}
+
+	private <R> void configureStatement(PreparedStatementQueryOperationSpec<R> operation, Statement statement)
+			throws SQLException {
+		statement.setQueryTimeout( operation.getQueryTimeout() );
+		statement.setFetchSize( operation.getFetchSize() );
+		statement.setFetchDirection( operation.getFetchDirection() );
+	}
+
+	private void afterStatement(boolean holdOpernResources) {
+		// todo : implement
+	}
+
+    // ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	@Override
 	public DataStoreTransaction getResourceLocalTransaction() {

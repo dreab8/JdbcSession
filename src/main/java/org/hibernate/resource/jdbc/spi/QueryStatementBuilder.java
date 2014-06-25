@@ -21,41 +21,13 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc;
+package org.hibernate.resource.jdbc.spi;
 
-import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
-import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
-import org.hibernate.resource.jdbc.spi.StatementExecutor;
+import java.sql.Statement;
 
 /**
- * @author Steve Ebersole
+ * @author Andrea Boriero
  */
-public interface PreparedStatementQueryOperationSpec<R> extends OperationSpec<R> {
-
-	public QueryStatementBuilder getQueryStatementBuilder();
-
-	public StatementExecutor getStatementExecutor();
-
-	public ResultSetProcessor getResultSetProcessor();
-
-	public String getSql();
-
-	public int getResultSetType();
-
-	public int getResultSetConcurrency();
-
-	public int getQueryTimeout();
-
-	public int getMaxFieldSize();
-
-	public int getMaxRow();
-
-	public boolean isEscapeProcessing();
-
-	public int getFetchSize();
-
-	public int getFetchDirection();
-
-	public boolean holdOpenResources();
-
+public interface QueryStatementBuilder {
+	public Statement buildQueryStatement(String sql, int resultSetType, int resultSetConcurrency);
 }

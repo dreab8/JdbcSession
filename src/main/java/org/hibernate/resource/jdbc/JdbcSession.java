@@ -81,5 +81,5 @@ public interface JdbcSession {
 	 *
 	 * @return The operation result
 	 */
-	public <R> R accept(OperationSpec<R> operation);
+	public <R> R accept(PreparedStatementQueryOperationSpec<R> operation);
 }
