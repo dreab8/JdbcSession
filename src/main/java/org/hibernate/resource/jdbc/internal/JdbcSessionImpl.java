@@ -97,18 +97,17 @@ public class JdbcSessionImpl
 	@Override
 	public <R> R accept(PreparedStatementQueryOperationSpec<R> operation) {
 		try {
-			Statement statement = operation.getQueryStatementBuilder().buildQueryStatement(
+			final Statement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 					operation.getSql(),
 					operation.getResultSetType(),
 					operation.getResultSetConcurrency()
 			);
 
-			configureStatement( operation, statement );
-			
 			try {
-				ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
-				register(resultSet, statement);
+				configureStatement( operation, statement );
+				final ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
 				try {
+					register( resultSet, statement );
 					return operation.getResultSetProcessor().extractResults( resultSet, this );
 				}
 				finally {
@@ -136,18 +135,11 @@ public class JdbcSessionImpl
 	}
 
 	private void release(ResultSet resultSet, Statement statement) {
-		if ( resultSet != null ) {
-			logicalConnection.getResourceRegistry().release( resultSet, statement );
-		}
-		else {
-			release( statement );
-		}
+		logicalConnection.getResourceRegistry().release( resultSet, statement );
 	}
 
 	private void release(Statement statement) {
-		if ( statement != null ) {
 			logicalConnection.getResourceRegistry().release( statement );
-		}
 	}
 
 	private <R> void configureStatement(PreparedStatementQueryOperationSpec<R> operation, Statement statement)
