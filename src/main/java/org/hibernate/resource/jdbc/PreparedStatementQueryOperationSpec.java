@@ -23,6 +23,8 @@
  */
 package org.hibernate.resource.jdbc;
 
+import java.sql.ResultSet;
+
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
@@ -40,22 +42,43 @@ public interface PreparedStatementQueryOperationSpec<R> extends OperationSpec<R>
 
 	public String getSql();
 
-	public int getResultSetType();
+	public ResultSetType getResultSetType();
 
-	public int getResultSetConcurrency();
+	public ResultSetConcurrency getResultSetConcurrency();
 
 	public int getQueryTimeout();
 
-	public int getMaxFieldSize();
-
-	public int getMaxRow();
-
-	public boolean isEscapeProcessing();
-
-	public int getFetchSize();
-
-	public int getFetchDirection();
-
 	public boolean holdOpenResources();
+
+	public enum ResultSetConcurrency {
+		READ_ONLY( ResultSet.CONCUR_READ_ONLY ),
+		UPDATABLE( ResultSet.CONCUR_UPDATABLE );
+
+		private final int jdbcConstantValue;
+
+		ResultSetConcurrency(int jdbcConstantValue) {
+			this.jdbcConstantValue = jdbcConstantValue;
+		}
+
+		public int getJdbcConstantValue() {
+			return jdbcConstantValue;
+		}
+	}
+
+	public enum ResultSetType {
+		FORWARD_ONLY( ResultSet.TYPE_FORWARD_ONLY ),
+		SCROLL_INSENSITIVE( ResultSet.TYPE_SCROLL_INSENSITIVE ),
+		SCROLL_SENSITIVE( ResultSet.TYPE_SCROLL_SENSITIVE );
+
+		private final int jdbcConstantValue;
+
+		ResultSetType(int jdbcConstantValue) {
+			this.jdbcConstantValue = jdbcConstantValue;
+		}
+
+		public int getJdbcConstantValue() {
+			return jdbcConstantValue;
+		}
+	}
 
 }

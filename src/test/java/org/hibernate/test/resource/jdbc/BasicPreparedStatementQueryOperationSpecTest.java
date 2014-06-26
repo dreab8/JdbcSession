@@ -43,8 +43,9 @@ import org.junit.Test;
 
 import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.inOrder;
@@ -52,6 +53,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 /**
  * @author Andrea Boriero
  */
@@ -80,7 +82,15 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		when( statementExecutor.execute( any( Statement.class ), eq( (JdbcSessionImpl) jdbcSession ) ) ).thenReturn(
 				resultSet
 		);
-		when( queryStatementBuilder.buildQueryStatement( anyString(), anyInt(), anyInt() ) ).thenReturn( statement );
+		when(
+				queryStatementBuilder.buildQueryStatement(
+						anyString(), any( ResultSetType.class ), any(
+								ResultSetConcurrency.class
+						)
+				)
+		).thenReturn(
+				statement
+		);
 	}
 
 	@After
@@ -97,7 +107,11 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		inorder.verify( operationSpec ).getStatementExecutor();
 		inorder.verify( operationSpec ).getResultSetProcessor();
 
-		verify( queryStatementBuilder ).buildQueryStatement( anyString(), anyInt(), anyInt() );
+		verify( queryStatementBuilder ).buildQueryStatement(
+				anyString(), any( ResultSetType.class ), any(
+						ResultSetConcurrency.class
+				)
+		);
 		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
 		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
 	}
@@ -105,11 +119,9 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	@Test
 	public void buildQueryStatementBuilderMethodIsCalledWithTheExpectedParameters() {
 		String expectedSql = "select * from SomeEntity";
-		int expectedResultSetConcurrency = 0;
-		int expectedResultSetType = 1;
+		ResultSetConcurrency expectedResultSetConcurrency = ResultSetConcurrency.READ_ONLY;
+		ResultSetType expectedResultSetType = ResultSetType.FORWARD_ONLY;
 		mockOperationMethods(
-				UNIMPORTANT_INT_VALUE,
-				UNIMPORTANT_INT_VALUE,
 				UNIMPORTANT_INT_VALUE,
 				expectedSql,
 				expectedResultSetType,
@@ -141,15 +153,16 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	}
 
 	@Test
-	public void resourcesAreReleasedIfHoldResourcesIsFalse(){
+	public void resourcesAreReleasedIfHoldResourcesIsFalse() {
 		setHoldResources( false );
 
 		jdbcSession.accept( operationSpec );
 
 		verify( resourceRegistry ).release( resultSet, statement );
 	}
+
 	@Test
-	public void resourcesAreNOTReleasedIfHoldResourcesIsFalse(){
+	public void resourcesAreNOTReleasedIfHoldResourcesIsFalse() {
 		setHoldResources( true );
 
 		jdbcSession.accept( operationSpec );
@@ -157,21 +170,17 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		verify( resourceRegistry, never() ).release( resultSet, statement );
 	}
 
-	private void setHoldResources(boolean holdResources){
-		when(operationSpec.holdOpenResources()).thenReturn( holdResources  );
+	private void setHoldResources(boolean holdResources) {
+		when( operationSpec.holdOpenResources() ).thenReturn( holdResources );
 	}
 
 	private void mockOperationMethods(
-			int fetchDirection,
 			int queryTimeout,
-			int fetchSize,
 			String sql,
-			int resultSetType,
-			int resultSetConcurrency,
+			ResultSetType resultSetType,
+			ResultSetConcurrency resultSetConcurrency,
 			boolean holdResources) {
-		when( operationSpec.getFetchDirection() ).thenReturn( fetchDirection );
 		when( operationSpec.getQueryTimeout() ).thenReturn( queryTimeout );
-		when( operationSpec.getFetchSize() ).thenReturn( fetchSize );
 		when( operationSpec.getSql() ).thenReturn( sql );
 		when( operationSpec.getResultSetType() ).thenReturn( resultSetType );
 		when( operationSpec.getResultSetConcurrency() ).thenReturn( resultSetConcurrency );

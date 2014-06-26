@@ -139,14 +139,12 @@ public class JdbcSessionImpl
 	}
 
 	private void release(Statement statement) {
-			logicalConnection.getResourceRegistry().release( statement );
+		logicalConnection.getResourceRegistry().release( statement );
 	}
 
 	private <R> void configureStatement(PreparedStatementQueryOperationSpec<R> operation, Statement statement)
 			throws SQLException {
 		statement.setQueryTimeout( operation.getQueryTimeout() );
-		statement.setFetchSize( operation.getFetchSize() );
-		statement.setFetchDirection( operation.getFetchDirection() );
 	}
 
 	private void afterStatement(boolean holdOpernResources) {

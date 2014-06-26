@@ -23,10 +23,13 @@
  */
 package org.hibernate.resource.jdbc.internal;
 
-import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
-
 import java.sql.Statement;
 import java.util.concurrent.Callable;
+
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
+
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
 
 /**
  * @author Andrea Boriero
@@ -45,7 +48,10 @@ public class CallableQueryStatementBuilderImpl implements Callable, QueryStateme
 	}
 
 	@Override
-	public Statement buildQueryStatement(String sql, int resultSetType, int resultSetConcurrency) {
+	public Statement buildQueryStatement(
+			String sql,
+			ResultSetType resultSetType,
+			ResultSetConcurrency resultSetConcurrency) {
 		// todo : implement
 		return null;
 	}

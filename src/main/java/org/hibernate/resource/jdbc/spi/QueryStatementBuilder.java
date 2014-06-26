@@ -25,9 +25,15 @@ package org.hibernate.resource.jdbc.spi;
 
 import java.sql.Statement;
 
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
+
 /**
  * @author Andrea Boriero
  */
 public interface QueryStatementBuilder {
-	public Statement buildQueryStatement(String sql, int resultSetType, int resultSetConcurrency);
+	public Statement buildQueryStatement(
+			String sql,
+			ResultSetType resultSetType,
+			ResultSetConcurrency resultSetConcurrency);
 }
