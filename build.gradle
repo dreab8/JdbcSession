@@ -54,6 +54,7 @@ dependencies {
 
     testCompile 'junit:junit:4.11'
 	testCompile 'org.jboss.jbossts:jbossjta:4.16.4.Final'
+    testCompile 'org.mockito:mockito-all:1.9.5'
 
     testRuntime 'log4j:log4j:1.2.17'
     testRuntime 'com.h2database:h2:1.2.145'

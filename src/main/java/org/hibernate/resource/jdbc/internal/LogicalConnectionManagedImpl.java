@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.ResourceClosedException;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.jdbc.spi.JdbcObserver;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
@@ -32,10 +33,18 @@ public class LogicalConnectionManagedImpl extends AbstractLogicalConnectionImple
 	public LogicalConnectionManagedImpl(
 			JdbcConnectionAccess jdbcConnectionAccess,
 			JdbcSessionContext jdbcSessionContext) {
+		this( jdbcConnectionAccess, jdbcSessionContext, new ResourceRegistryStandardImpl() );
+	}
+
+	public LogicalConnectionManagedImpl(
+			JdbcConnectionAccess jdbcConnectionAccess,
+			JdbcSessionContext jdbcSessionContext,
+			ResourceRegistry resourceRegistry) {
 		this.jdbcConnectionAccess = jdbcConnectionAccess;
 		this.observer = jdbcSessionContext.getObserver();
 		this.sqlExceptionHelper = jdbcSessionContext.getSqlExceptionHelper();
 		this.connectionReleaseMode = jdbcSessionContext.getConnectionReleaseMode();
+		this.resourceRegistry = resourceRegistry;
 
 		if ( jdbcSessionContext.getConnectionAcquisitionMode() == JdbcSessionContext.ConnectionAcquisitionMode.IMMEDIATELY ) {
 			if ( jdbcSessionContext.getConnectionReleaseMode() != ConnectionReleaseMode.ON_CLOSE ) {

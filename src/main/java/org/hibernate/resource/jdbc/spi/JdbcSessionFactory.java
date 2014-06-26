@@ -26,6 +26,7 @@ package org.hibernate.resource.jdbc.spi;
 import java.sql.Connection;
 
 import org.hibernate.resource.jdbc.JdbcSession;
+import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionProvidedImpl;
@@ -56,6 +57,19 @@ public class JdbcSessionFactory {
 
 	public JdbcSession create(JdbcSessionOwner owner, Connection jdbcConnection) {
 		final LogicalConnectionProvidedImpl logicalConnection = new LogicalConnectionProvidedImpl( jdbcConnection );
+		return new JdbcSessionImpl(
+				owner.getJdbcSessionContext(),
+				logicalConnection,
+				owner.getTransactionCoordinatorBuilder()
+		);
+	}
+
+	public JdbcSession create(JdbcSessionOwner owner, ResourceRegistry resourceRegistry) {
+		final LogicalConnectionManagedImpl logicalConnection = new LogicalConnectionManagedImpl(
+				owner.getJdbcConnectionAccess(),
+				owner.getJdbcSessionContext(),
+				resourceRegistry
+		);
 		return new JdbcSessionImpl(
 				owner.getJdbcSessionContext(),
 				logicalConnection,

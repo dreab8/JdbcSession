@@ -1,0 +1,180 @@
+/*
+ * Hibernate, Relational Persistence for Idiomatic Java
+ *
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
+ * indicated by the @author tags or express copyright attribution
+ * statements applied by the authors.  All third-party contributions are
+ * distributed under license by Red Hat Inc.
+ *
+ * This copyrighted material is made available to anyone wishing to use, modify,
+ * copy, or redistribute it subject to the terms and conditions of the GNU
+ * Lesser General Public License, as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+ * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this distribution; if not, write to:
+ * Free Software Foundation, Inc.
+ * 51 Franklin Street, Fifth Floor
+ * Boston, MA  02110-1301  USA
+ */
+package org.hibernate.test.resource.jdbc;
+
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+import org.mockito.InOrder;
+
+import org.hibernate.resource.jdbc.JdbcSession;
+import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
+import org.hibernate.resource.jdbc.ResourceRegistry;
+import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
+import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
+import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
+import org.hibernate.resource.jdbc.spi.StatementExecutor;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+
+import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+/**
+ * @author Andrea Boriero
+ */
+public class BasicPreparedStatementQueryOperationSpecTest {
+
+	private static final int UNIMPORTANT_INT_VALUE = -1;
+
+	private final JdbcSessionOwnerTestingImpl jdbcSessionOwner = new JdbcSessionOwnerTestingImpl();
+	private JdbcSession jdbcSession;
+	private PreparedStatementQueryOperationSpec operationSpec = mock( PreparedStatementQueryOperationSpec.class );
+	private QueryStatementBuilder queryStatementBuilder = mock( QueryStatementBuilder.class );
+	private StatementExecutor statementExecutor = mock( StatementExecutor.class );
+	private ResultSetProcessor resultSetProcessor = mock( ResultSetProcessor.class );
+	private ResourceRegistry resourceRegistry = mock( ResourceRegistry.class );
+	private Statement statement = mock( Statement.class );
+	private ResultSet resultSet = mock( ResultSet.class );
+
+	@Before
+	public void setUp() {
+		jdbcSession = JdbcSessionFactory.INSTANCE.create( jdbcSessionOwner, resourceRegistry );
+
+		when( operationSpec.holdOpenResources() ).thenReturn( false );
+		when( operationSpec.getQueryStatementBuilder() ).thenReturn( queryStatementBuilder );
+		when( operationSpec.getStatementExecutor() ).thenReturn( statementExecutor );
+		when( operationSpec.getResultSetProcessor() ).thenReturn( resultSetProcessor );
+		when( statementExecutor.execute( any( Statement.class ), eq( (JdbcSessionImpl) jdbcSession ) ) ).thenReturn(
+				resultSet
+		);
+		when( queryStatementBuilder.buildQueryStatement( anyString(), anyInt(), anyInt() ) ).thenReturn( statement );
+	}
+
+	@After
+	public void tearDown() {
+		jdbcSession.close();
+	}
+
+	@Test
+	public void operationSpecMethodsAreCalledInRightOrder() {
+		jdbcSession.accept( operationSpec );
+
+		InOrder inorder = inOrder( operationSpec );
+		inorder.verify( operationSpec ).getQueryStatementBuilder();
+		inorder.verify( operationSpec ).getStatementExecutor();
+		inorder.verify( operationSpec ).getResultSetProcessor();
+
+		verify( queryStatementBuilder ).buildQueryStatement( anyString(), anyInt(), anyInt() );
+		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
+		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
+	}
+
+	@Test
+	public void buildQueryStatementBuilderMethodIsCalledWithTheExpectedParameters() {
+		String expectedSql = "select * from SomeEntity";
+		int expectedResultSetConcurrency = 0;
+		int expectedResultSetType = 1;
+		mockOperationMethods(
+				UNIMPORTANT_INT_VALUE,
+				UNIMPORTANT_INT_VALUE,
+				UNIMPORTANT_INT_VALUE,
+				expectedSql,
+				expectedResultSetType,
+				expectedResultSetConcurrency,
+				false
+		);
+
+		jdbcSession.accept( operationSpec );
+
+		verify( queryStatementBuilder ).buildQueryStatement(
+				expectedSql,
+				expectedResultSetType,
+				expectedResultSetConcurrency
+		);
+	}
+
+	@Test
+	public void statementExecutorMethodIsCalledWithTheExpectedParameters() {
+		jdbcSession.accept( operationSpec );
+
+		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
+	}
+
+	@Test
+	public void resultSetProcessorMethodIsCalledWithTheExpectedParameters() {
+		jdbcSession.accept( operationSpec );
+
+		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
+	}
+
+	@Test
+	public void resourcesAreReleasedIfHoldResourcesIsFalse(){
+		setHoldResources( false );
+
+		jdbcSession.accept( operationSpec );
+
+		verify( resourceRegistry ).release( resultSet, statement );
+	}
+	@Test
+	public void resourcesAreNOTReleasedIfHoldResourcesIsFalse(){
+		setHoldResources( true );
+
+		jdbcSession.accept( operationSpec );
+
+		verify( resourceRegistry, never() ).release( resultSet, statement );
+	}
+
+	private void setHoldResources(boolean holdResources){
+		when(operationSpec.holdOpenResources()).thenReturn( holdResources  );
+	}
+
+	private void mockOperationMethods(
+			int fetchDirection,
+			int queryTimeout,
+			int fetchSize,
+			String sql,
+			int resultSetType,
+			int resultSetConcurrency,
+			boolean holdResources) {
+		when( operationSpec.getFetchDirection() ).thenReturn( fetchDirection );
+		when( operationSpec.getQueryTimeout() ).thenReturn( queryTimeout );
+		when( operationSpec.getFetchSize() ).thenReturn( fetchSize );
+		when( operationSpec.getSql() ).thenReturn( sql );
+		when( operationSpec.getResultSetType() ).thenReturn( resultSetType );
+		when( operationSpec.getResultSetConcurrency() ).thenReturn( resultSetConcurrency );
+		setHoldResources( holdResources );
+	}
+}

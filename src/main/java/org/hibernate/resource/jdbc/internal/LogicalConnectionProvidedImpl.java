@@ -26,6 +26,7 @@ package org.hibernate.resource.jdbc.internal;
 import java.sql.Connection;
 
 import org.hibernate.resource.jdbc.LogicalConnection;
+import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 
 import org.jboss.logging.Logger;
@@ -40,6 +41,11 @@ public class LogicalConnectionProvidedImpl extends AbstractLogicalConnectionImpl
 	private final boolean initiallyAutoCommit;
 
 	public LogicalConnectionProvidedImpl(Connection providedConnection) {
+		this( providedConnection, new ResourceRegistryStandardImpl() );
+	}
+
+	public LogicalConnectionProvidedImpl(Connection providedConnection, ResourceRegistry resourceRegistry) {
+		this.resourceRegistry = resourceRegistry;
 		if ( providedConnection == null ) {
 			throw new IllegalArgumentException( "Provided Connection cannot be null" );
 		}

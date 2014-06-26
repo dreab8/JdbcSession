@@ -17,7 +17,7 @@ import org.jboss.logging.Logger;
 public abstract class AbstractLogicalConnectionImplementor implements LogicalConnectionImplementor, PhysicalJdbcTransaction {
 	private static final Logger log = Logger.getLogger( AbstractLogicalConnectionImplementor.class );
 
-	private final ResourceRegistryStandardImpl resourceRegistry = new ResourceRegistryStandardImpl();
+	protected ResourceRegistry resourceRegistry;
 
 	@Override
 	public PhysicalJdbcTransaction getPhysicalJdbcTransaction() {
