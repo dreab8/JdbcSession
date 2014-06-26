@@ -23,6 +23,7 @@
  */
 package org.hibernate.test.resource.jdbc;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -33,6 +34,7 @@ import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
+import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
@@ -84,9 +86,10 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		);
 		when(
 				queryStatementBuilder.buildQueryStatement(
-						anyString(), any( ResultSetType.class ), any(
-								ResultSetConcurrency.class
-						)
+						any( Connection.class ),
+						anyString(),
+						any( ResultSetType.class ),
+						any( ResultSetConcurrency.class )
 				)
 		).thenReturn(
 				statement
@@ -108,9 +111,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		inorder.verify( operationSpec ).getResultSetProcessor();
 
 		verify( queryStatementBuilder ).buildQueryStatement(
-				anyString(), any( ResultSetType.class ), any(
-						ResultSetConcurrency.class
-				)
+				any( Connection.class ), anyString(), any( ResultSetType.class ), any( ResultSetConcurrency.class )
 		);
 		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
 		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
@@ -132,6 +133,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		jdbcSession.accept( operationSpec );
 
 		verify( queryStatementBuilder ).buildQueryStatement(
+				((LogicalConnectionImplementor) jdbcSession.getLogicalConnection()).getPhysicalConnection(),
 				expectedSql,
 				expectedResultSetType,
 				expectedResultSetConcurrency

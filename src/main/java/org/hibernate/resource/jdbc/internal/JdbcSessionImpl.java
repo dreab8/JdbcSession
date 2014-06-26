@@ -98,6 +98,7 @@ public class JdbcSessionImpl
 	public <R> R accept(PreparedStatementQueryOperationSpec<R> operation) {
 		try {
 			final Statement statement = operation.getQueryStatementBuilder().buildQueryStatement(
+					logicalConnection.getPhysicalConnection(),
 					operation.getSql(),
 					operation.getResultSetType(),
 					operation.getResultSetConcurrency()

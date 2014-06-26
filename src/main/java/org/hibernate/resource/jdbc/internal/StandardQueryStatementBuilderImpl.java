@@ -23,6 +23,7 @@
  */
 package org.hibernate.resource.jdbc.internal;
 
+import java.sql.Connection;
 import java.sql.Statement;
 
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
@@ -42,6 +43,7 @@ public class StandardQueryStatementBuilderImpl implements QueryStatementBuilder 
 
 	@Override
 	public Statement buildQueryStatement(
+			Connection connection,
 			String sql,
 			ResultSetType resultSetType,
 			ResultSetConcurrency resultSetConcurrency) {

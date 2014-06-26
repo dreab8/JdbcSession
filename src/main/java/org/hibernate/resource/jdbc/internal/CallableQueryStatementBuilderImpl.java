@@ -23,6 +23,7 @@
  */
 package org.hibernate.resource.jdbc.internal;
 
+import java.sql.Connection;
 import java.sql.Statement;
 import java.util.concurrent.Callable;
 
@@ -49,6 +50,7 @@ public class CallableQueryStatementBuilderImpl implements Callable, QueryStateme
 
 	@Override
 	public Statement buildQueryStatement(
+			Connection connection,
 			String sql,
 			ResultSetType resultSetType,
 			ResultSetConcurrency resultSetConcurrency) {
