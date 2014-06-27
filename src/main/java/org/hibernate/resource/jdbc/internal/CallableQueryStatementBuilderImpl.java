@@ -27,10 +27,8 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.concurrent.Callable;
 
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
-
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
 
 /**
  * @author Andrea Boriero
@@ -51,9 +49,7 @@ public class CallableQueryStatementBuilderImpl implements Callable, QueryStateme
 	@Override
 	public Statement buildQueryStatement(
 			Connection connection,
-			String sql,
-			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency) {
+			String sql, JdbcSessionContext context) {
 		// todo : implement
 		return null;
 	}

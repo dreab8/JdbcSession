@@ -24,12 +24,12 @@
 package org.hibernate.resource.jdbc.internal;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
-
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
 
 /**
  * @author Andrea Boriero
@@ -45,9 +45,13 @@ public class StandardQueryStatementBuilderImpl implements QueryStatementBuilder 
 	public Statement buildQueryStatement(
 			Connection connection,
 			String sql,
-			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency) {
-		// todo: implement
-		return null;
+			JdbcSessionContext context) {
+		try {
+			PreparedStatement statement = connection.prepareStatement( sql );
+			return statement;
+		}
+		catch (SQLException e) {
+			throw context.getSqlExceptionHelper().convert( e, "Unexpected error creating Statement" );
+		}
 	}
 }

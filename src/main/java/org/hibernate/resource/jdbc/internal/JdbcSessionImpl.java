@@ -100,8 +100,7 @@ public class JdbcSessionImpl
 			final Statement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 					logicalConnection.getPhysicalConnection(),
 					operation.getSql(),
-					operation.getResultSetType(),
-					operation.getResultSetConcurrency()
+					context
 			);
 
 			try {

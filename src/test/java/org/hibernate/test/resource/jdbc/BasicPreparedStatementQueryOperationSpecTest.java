@@ -33,6 +33,7 @@ import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
@@ -88,8 +89,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 				queryStatementBuilder.buildQueryStatement(
 						any( Connection.class ),
 						anyString(),
-						any( ResultSetType.class ),
-						any( ResultSetConcurrency.class )
+						any( JdbcSessionContext.class )
 				)
 		).thenReturn(
 				statement
@@ -111,7 +111,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		inorder.verify( operationSpec ).getResultSetProcessor();
 
 		verify( queryStatementBuilder ).buildQueryStatement(
-				any( Connection.class ), anyString(), any( ResultSetType.class ), any( ResultSetConcurrency.class )
+				any( Connection.class ), anyString(), any( JdbcSessionContext.class )
 		);
 		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
 		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
@@ -135,8 +135,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		verify( queryStatementBuilder ).buildQueryStatement(
 				((LogicalConnectionImplementor) jdbcSession.getLogicalConnection()).getPhysicalConnection(),
 				expectedSql,
-				expectedResultSetType,
-				expectedResultSetConcurrency
+				jdbcSessionOwner.getJdbcSessionContext()
 		);
 	}
 

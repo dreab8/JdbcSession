@@ -36,6 +36,5 @@ public interface QueryStatementBuilder {
 	public Statement buildQueryStatement(
 			Connection connection,
 			String sql,
-			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency);
+			JdbcSessionContext context);
 }
