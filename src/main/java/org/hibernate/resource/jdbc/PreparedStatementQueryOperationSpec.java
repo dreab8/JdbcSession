@@ -53,6 +53,10 @@ public interface PreparedStatementQueryOperationSpec<R> extends OperationSpec<R>
 
 	public boolean holdOpenResources();
 
+	public int getOffset();
+
+	public int getLimit();
+
 	public enum ResultSetConcurrency {
 		READ_ONLY( ResultSet.CONCUR_READ_ONLY ),
 		UPDATABLE( ResultSet.CONCUR_UPDATABLE );
