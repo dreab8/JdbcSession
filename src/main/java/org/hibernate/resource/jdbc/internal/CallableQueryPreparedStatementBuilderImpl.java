@@ -25,15 +25,18 @@ package org.hibernate.resource.jdbc.internal;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.util.concurrent.Callable;
+import java.sql.SQLException;
 
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.QueryPreparedStatementBuilder;
 
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
+
 /**
  * @author Andrea Boriero
  */
-public class CallableQueryPreparedStatementBuilderImpl implements Callable, QueryPreparedStatementBuilder {
+public class CallableQueryPreparedStatementBuilderImpl implements QueryPreparedStatementBuilder {
 
 	public static final CallableQueryPreparedStatementBuilderImpl INSTANCE = new CallableQueryPreparedStatementBuilderImpl();
 
@@ -41,16 +44,26 @@ public class CallableQueryPreparedStatementBuilderImpl implements Callable, Quer
 	}
 
 	@Override
-	public Object call() throws Exception {
-		// todo : implement
-		return null;
-	}
-
-	@Override
 	public PreparedStatement buildQueryStatement(
 			Connection connection,
-			String sql, JdbcSessionContext context) {
-		// todo : implement
-		return null;
+			String sql,
+			JdbcSessionContext context,
+			ResultSetType resultSetType,
+			ResultSetConcurrency resultSetConcurrency) {
+		try {
+			if ( resultSetType != null && resultSetConcurrency != null ) {
+				return connection.prepareCall(
+						sql,
+						resultSetType.getJdbcConstantValue(),
+						resultSetConcurrency.getJdbcConstantValue()
+				);
+			}
+			else {
+				return connection.prepareCall( sql );
+			}
+		}
+		catch (SQLException e) {
+			throw context.getSqlExceptionHelper().convert( e, "Unexpected error creating Statement" );
+		}
 	}
 }

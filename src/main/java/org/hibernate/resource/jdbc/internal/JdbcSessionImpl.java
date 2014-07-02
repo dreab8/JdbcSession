@@ -101,7 +101,9 @@ public class JdbcSessionImpl
 			final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 					logicalConnection.getPhysicalConnection(),
 					operation.getSql(),
-					context
+					context,
+					operation.getResultSetType(),
+					operation.getResultSetConcurrency()
 			);
 
 			operation.getParameterBindings().bindParameters( statement );
@@ -154,7 +156,7 @@ public class JdbcSessionImpl
 		// todo : implement
 	}
 
-    // ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+	// ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	@Override
 	public DataStoreTransaction getResourceLocalTransaction() {

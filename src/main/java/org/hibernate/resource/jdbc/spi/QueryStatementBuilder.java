@@ -26,6 +26,9 @@ package org.hibernate.resource.jdbc.spi;
 import java.sql.Connection;
 import java.sql.Statement;
 
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
+
 /**
  * @author Andrea Boriero
  */
@@ -33,5 +36,7 @@ public interface QueryStatementBuilder<R extends Statement> {
 	public R buildQueryStatement(
 			Connection connection,
 			String sql,
-			JdbcSessionContext context);
+			JdbcSessionContext context,
+			ResultSetType resultSetType,
+			ResultSetConcurrency resultSetConcurrency);
 }

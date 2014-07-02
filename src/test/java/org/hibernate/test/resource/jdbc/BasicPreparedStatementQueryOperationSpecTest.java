@@ -93,7 +93,9 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 				queryStatementBuilder.buildQueryStatement(
 						any( Connection.class ),
 						anyString(),
-						any( JdbcSessionContext.class )
+						any( JdbcSessionContext.class ),
+						any( ResultSetType.class ),
+						any( ResultSetConcurrency.class )
 				)
 		).thenReturn(
 				statement
@@ -116,7 +118,11 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		inorder.verify( operationSpec ).getResultSetProcessor();
 
 		verify( queryStatementBuilder ).buildQueryStatement(
-				any( Connection.class ), anyString(), any( JdbcSessionContext.class )
+				any( Connection.class ),
+				anyString(),
+				any( JdbcSessionContext.class ),
+				any( ResultSetType.class ),
+				any( ResultSetConcurrency.class )
 		);
 		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
 		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
@@ -140,7 +146,9 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		verify( queryStatementBuilder ).buildQueryStatement(
 				((LogicalConnectionImplementor) jdbcSession.getLogicalConnection()).getPhysicalConnection(),
 				expectedSql,
-				jdbcSessionOwner.getJdbcSessionContext()
+				jdbcSessionOwner.getJdbcSessionContext(),
+				ResultSetType.FORWARD_ONLY,
+				ResultSetConcurrency.READ_ONLY
 		);
 	}
 

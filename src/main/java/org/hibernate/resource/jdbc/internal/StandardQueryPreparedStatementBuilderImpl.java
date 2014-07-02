@@ -30,6 +30,9 @@ import java.sql.SQLException;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.QueryPreparedStatementBuilder;
 
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
+import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
+
 /**
  * @author Andrea Boriero
  */
@@ -44,9 +47,20 @@ public class StandardQueryPreparedStatementBuilderImpl implements QueryPreparedS
 	public PreparedStatement buildQueryStatement(
 			Connection connection,
 			String sql,
-			JdbcSessionContext context) {
+			JdbcSessionContext context,
+			ResultSetType resultSetType,
+			ResultSetConcurrency resultSetConcurrency) {
 		try {
-			return connection.prepareStatement( sql );
+			if ( resultSetType != null && resultSetConcurrency != null ) {
+				return connection.prepareStatement(
+						sql,
+						resultSetType.getJdbcConstantValue(),
+						resultSetConcurrency.getJdbcConstantValue()
+				);
+			}
+			else {
+				return connection.prepareStatement( sql );
+			}
 		}
 		catch (SQLException e) {
 			throw context.getSqlExceptionHelper().convert( e, "Unexpected error creating Statement" );
