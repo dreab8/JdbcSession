@@ -1,5 +1,6 @@
 package org.hibernate.resource.jdbc.internal;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -97,11 +98,13 @@ public class JdbcSessionImpl
 	@Override
 	public <R> R accept(PreparedStatementQueryOperationSpec<R> operation) {
 		try {
-			final Statement statement = operation.getQueryStatementBuilder().buildQueryStatement(
+			final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 					logicalConnection.getPhysicalConnection(),
 					operation.getSql(),
 					context
 			);
+
+			operation.getParameterBindings().bindParameters( statement );
 
 			try {
 				configureStatement( operation, statement );

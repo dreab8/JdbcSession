@@ -24,6 +24,7 @@
 package org.hibernate.test.resource.jdbc;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
@@ -36,7 +37,8 @@ import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
-import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
+import org.hibernate.resource.jdbc.spi.ParameterBindings;
+import org.hibernate.resource.jdbc.spi.QueryPreparedStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
@@ -67,18 +69,20 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	private final JdbcSessionOwnerTestingImpl jdbcSessionOwner = new JdbcSessionOwnerTestingImpl();
 	private JdbcSession jdbcSession;
 	private PreparedStatementQueryOperationSpec operationSpec = mock( PreparedStatementQueryOperationSpec.class );
-	private QueryStatementBuilder queryStatementBuilder = mock( QueryStatementBuilder.class );
+	private QueryPreparedStatementBuilder queryStatementBuilder = mock( QueryPreparedStatementBuilder.class );
 	private StatementExecutor statementExecutor = mock( StatementExecutor.class );
 	private ResultSetProcessor resultSetProcessor = mock( ResultSetProcessor.class );
 	private ResourceRegistry resourceRegistry = mock( ResourceRegistry.class );
-	private Statement statement = mock( Statement.class );
+	private PreparedStatement statement = mock( PreparedStatement.class );
 	private ResultSet resultSet = mock( ResultSet.class );
+	private ParameterBindings parameterBindings = mock( ParameterBindings.class );
 
 	@Before
 	public void setUp() {
 		jdbcSession = JdbcSessionFactory.INSTANCE.create( jdbcSessionOwner, resourceRegistry );
 
 		when( operationSpec.holdOpenResources() ).thenReturn( false );
+		when( operationSpec.getParameterBindings() ).thenReturn( parameterBindings );
 		when( operationSpec.getQueryStatementBuilder() ).thenReturn( queryStatementBuilder );
 		when( operationSpec.getStatementExecutor() ).thenReturn( statementExecutor );
 		when( operationSpec.getResultSetProcessor() ).thenReturn( resultSetProcessor );
@@ -107,6 +111,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 
 		InOrder inorder = inOrder( operationSpec );
 		inorder.verify( operationSpec ).getQueryStatementBuilder();
+		inorder.verify( operationSpec ).getParameterBindings();
 		inorder.verify( operationSpec ).getStatementExecutor();
 		inorder.verify( operationSpec ).getResultSetProcessor();
 
@@ -169,6 +174,12 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		jdbcSession.accept( operationSpec );
 
 		verify( resourceRegistry, never() ).release( resultSet, statement );
+	}
+
+	@Test
+	public void bindParametersReceiveTheCorrectPreparedStatement() {
+		jdbcSession.accept( operationSpec );
+		verify( parameterBindings ).bindParameters( statement );
 	}
 
 	private void setHoldResources(boolean holdResources) {

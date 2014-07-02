@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2014, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,37 +21,13 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.internal;
+package org.hibernate.resource.jdbc.spi;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
-import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 /**
  * @author Andrea Boriero
  */
-public class StandardQueryStatementBuilderImpl implements QueryStatementBuilder {
-
-	public static final StandardQueryStatementBuilderImpl INSTANCE = new StandardQueryStatementBuilderImpl();
-
-	private StandardQueryStatementBuilderImpl() {
-	}
-
-	@Override
-	public Statement buildQueryStatement(
-			Connection connection,
-			String sql,
-			JdbcSessionContext context) {
-		try {
-			PreparedStatement statement = connection.prepareStatement( sql );
-			return statement;
-		}
-		catch (SQLException e) {
-			throw context.getSqlExceptionHelper().convert( e, "Unexpected error creating Statement" );
-		}
-	}
+public interface ParameterBindings {
+	public void bindParameters(PreparedStatement statement);
 }

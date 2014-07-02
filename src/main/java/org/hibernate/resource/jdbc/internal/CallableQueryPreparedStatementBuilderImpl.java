@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) 2014, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,17 +21,36 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.jdbc.internal;
 
 import java.sql.Connection;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
+import java.util.concurrent.Callable;
+
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.jdbc.spi.QueryPreparedStatementBuilder;
 
 /**
  * @author Andrea Boriero
  */
-public interface QueryStatementBuilder<R extends Statement> {
-	public R buildQueryStatement(
+public class CallableQueryPreparedStatementBuilderImpl implements Callable, QueryPreparedStatementBuilder {
+
+	public static final CallableQueryPreparedStatementBuilderImpl INSTANCE = new CallableQueryPreparedStatementBuilderImpl();
+
+	private CallableQueryPreparedStatementBuilderImpl() {
+	}
+
+	@Override
+	public Object call() throws Exception {
+		// todo : implement
+		return null;
+	}
+
+	@Override
+	public PreparedStatement buildQueryStatement(
 			Connection connection,
-			String sql,
-			JdbcSessionContext context);
+			String sql, JdbcSessionContext context) {
+		// todo : implement
+		return null;
+	}
 }
