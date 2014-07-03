@@ -26,6 +26,7 @@ package org.hibernate.test.resource.jdbc;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.mockito.InOrder;
@@ -34,7 +35,6 @@ import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
@@ -79,7 +79,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	private final ParameterBindings parameterBindings = mock( ParameterBindings.class );
 
 	@Before
-	public void setUp() {
+	public void setUp() throws SQLException {
 		jdbcSession = JdbcSessionFactory.INSTANCE.create( jdbcSessionOwner, resourceRegistry );
 
 		when( operationSpec.holdOpenResources() ).thenReturn( false );
@@ -94,7 +94,6 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 				queryStatementBuilder.buildQueryStatement(
 						any( Connection.class ),
 						anyString(),
-						any( JdbcSessionContext.class ),
 						any( ResultSetType.class ),
 						any( ResultSetConcurrency.class )
 				)
@@ -111,7 +110,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	}
 
 	@Test
-	public void operationSpecMethodsAreCalledInRightOrder() {
+	public void operationSpecMethodsAreCalledInRightOrder() throws SQLException {
 		jdbcSession.accept( operationSpec );
 
 		InOrder inOrder = inOrder( operationSpec );
@@ -123,7 +122,6 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		verify( queryStatementBuilder ).buildQueryStatement(
 				any( Connection.class ),
 				anyString(),
-				any( JdbcSessionContext.class ),
 				any( ResultSetType.class ),
 				any( ResultSetConcurrency.class )
 		);
@@ -157,7 +155,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	}
 
 	@Test
-	public void buildQueryStatementBuilderMethodIsCalledWithTheExpectedParameters() {
+	public void buildQueryStatementBuilderMethodIsCalledWithTheExpectedParameters() throws SQLException {
 		String expectedSql = "select * from SomeEntity";
 		ResultSetConcurrency expectedResultSetConcurrency = ResultSetConcurrency.READ_ONLY;
 		ResultSetType expectedResultSetType = ResultSetType.FORWARD_ONLY;
@@ -174,7 +172,6 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		verify( queryStatementBuilder ).buildQueryStatement(
 				((LogicalConnectionImplementor) jdbcSession.getLogicalConnection()).getPhysicalConnection(),
 				expectedSql,
-				jdbcSessionOwner.getJdbcSessionContext(),
 				ResultSetType.FORWARD_ONLY,
 				ResultSetConcurrency.READ_ONLY
 		);

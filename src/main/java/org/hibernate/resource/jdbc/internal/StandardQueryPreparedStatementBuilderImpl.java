@@ -27,7 +27,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
@@ -47,23 +46,17 @@ public class StandardQueryPreparedStatementBuilderImpl implements QueryStatement
 	public PreparedStatement buildQueryStatement(
 			Connection connection,
 			String sql,
-			JdbcSessionContext context,
 			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency) {
-		try {
-			if ( resultSetType != null && resultSetConcurrency != null ) {
-				return connection.prepareStatement(
-						sql,
-						resultSetType.getJdbcConstantValue(),
-						resultSetConcurrency.getJdbcConstantValue()
-				);
-			}
-			else {
-				return connection.prepareStatement( sql );
-			}
+			ResultSetConcurrency resultSetConcurrency) throws SQLException {
+		if ( resultSetType != null && resultSetConcurrency != null ) {
+			return connection.prepareStatement(
+					sql,
+					resultSetType.getJdbcConstantValue(),
+					resultSetConcurrency.getJdbcConstantValue()
+			);
 		}
-		catch (SQLException e) {
-			throw context.getSqlExceptionHelper().convert( e, "Unexpected error creating Statement" );
+		else {
+			return connection.prepareStatement( sql );
 		}
 	}
 }

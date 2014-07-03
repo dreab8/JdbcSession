@@ -3,12 +3,9 @@ package org.hibernate.test.resource.jdbc.internal;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 import org.junit.Test;
-
-import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
 
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
@@ -19,7 +16,6 @@ public abstract class AbstractQueryPreparedStatementBuilderTest {
 	private Connection connection = mock( Connection.class );
 	protected QueryStatementBuilder queryBuilder;
 	private final String sql = "Select * from item";
-	private final JdbcSessionContext context = JdbcSessionContextStandardTestingImpl.INSTANCE;
 	private ConnectionMethodCallCheck verifier;
 
 	protected interface ConnectionMethodCallCheck {
@@ -38,20 +34,24 @@ public abstract class AbstractQueryPreparedStatementBuilderTest {
 
 	@Test
 	public void prepareCallIsInvokedWithoutResultTypeAndResultConcurrenecy() throws SQLException {
-		queryBuilder.buildQueryStatement( connection, sql, context, null, null );
+		queryBuilder.buildQueryStatement( connection, sql, null, null );
 
 		verifier.verify( connection, sql );
 
 		queryBuilder.buildQueryStatement(
-				connection, sql, context,
-				ResultSetType.FORWARD_ONLY, null
+				connection,
+				sql,
+				ResultSetType.FORWARD_ONLY,
+				null
 		);
 
 		verifier.verify( connection, sql );
 
 		queryBuilder.buildQueryStatement(
-				connection, sql, context,
-				null, ResultSetConcurrency.READ_ONLY
+				connection,
+				sql,
+				null,
+				ResultSetConcurrency.READ_ONLY
 		);
 
 		verifier.verify( connection, sql );
@@ -63,12 +63,13 @@ public abstract class AbstractQueryPreparedStatementBuilderTest {
 		ResultSetConcurrency expectedResultSetConcurrency = ResultSetConcurrency.READ_ONLY;
 
 		queryBuilder.buildQueryStatement(
-				connection, sql, context,
-				expectedResultSetType, expectedResultSetConcurrency
+				connection,
+				sql,
+				expectedResultSetType,
+				expectedResultSetConcurrency
 		);
 
 		verifier.verify( connection, sql, expectedResultSetType, expectedResultSetConcurrency );
-
 	}
 
 }

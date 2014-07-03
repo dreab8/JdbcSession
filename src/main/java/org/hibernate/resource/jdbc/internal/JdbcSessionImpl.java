@@ -102,7 +102,6 @@ public class JdbcSessionImpl
 			final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 					logicalConnection.getPhysicalConnection(),
 					operation.getSql(),
-					context,
 					operation.getResultSetType(),
 					operation.getResultSetConcurrency()
 			);

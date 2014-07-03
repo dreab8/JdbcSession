@@ -24,6 +24,7 @@
 package org.hibernate.resource.jdbc.spi;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
@@ -36,7 +37,6 @@ public interface QueryStatementBuilder<R extends Statement> {
 	public R buildQueryStatement(
 			Connection connection,
 			String sql,
-			JdbcSessionContext context,
 			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency);
+			ResultSetConcurrency resultSetConcurrency) throws SQLException;
 }
