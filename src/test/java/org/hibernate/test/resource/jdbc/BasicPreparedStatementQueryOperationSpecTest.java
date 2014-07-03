@@ -38,7 +38,7 @@ import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
-import org.hibernate.resource.jdbc.spi.QueryPreparedStatementBuilder;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
@@ -66,16 +66,16 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 
 	private static final int UNIMPORTANT_INT_VALUE = -1;
 
-	private final JdbcSessionOwnerTestingImpl jdbcSessionOwner = new JdbcSessionOwnerTestingImpl();
 	private JdbcSession jdbcSession;
-	private PreparedStatementQueryOperationSpec operationSpec = mock( PreparedStatementQueryOperationSpec.class );
-	private QueryPreparedStatementBuilder queryStatementBuilder = mock( QueryPreparedStatementBuilder.class );
-	private StatementExecutor statementExecutor = mock( StatementExecutor.class );
-	private ResultSetProcessor resultSetProcessor = mock( ResultSetProcessor.class );
-	private ResourceRegistry resourceRegistry = mock( ResourceRegistry.class );
-	private PreparedStatement statement = mock( PreparedStatement.class );
-	private ResultSet resultSet = mock( ResultSet.class );
-	private ParameterBindings parameterBindings = mock( ParameterBindings.class );
+	private final JdbcSessionOwnerTestingImpl jdbcSessionOwner = new JdbcSessionOwnerTestingImpl();
+	private final PreparedStatementQueryOperationSpec operationSpec = mock( PreparedStatementQueryOperationSpec.class );
+	private final QueryStatementBuilder queryStatementBuilder = mock( QueryStatementBuilder.class );
+	private final StatementExecutor statementExecutor = mock( StatementExecutor.class );
+	private final ResultSetProcessor resultSetProcessor = mock( ResultSetProcessor.class );
+	private final ResourceRegistry resourceRegistry = mock( ResourceRegistry.class );
+	private final PreparedStatement statement = mock( PreparedStatement.class );
+	private final ResultSet resultSet = mock( ResultSet.class );
+	private final ParameterBindings parameterBindings = mock( ParameterBindings.class );
 
 	@Before
 	public void setUp() {
@@ -104,7 +104,9 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 
 	@After
 	public void tearDown() {
-		jdbcSession.close();
+		if ( jdbcSession != null ) {
+			jdbcSession.close();
+		}
 	}
 
 	@Test

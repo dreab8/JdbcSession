@@ -28,7 +28,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
-import org.hibernate.resource.jdbc.spi.QueryPreparedStatementBuilder;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
@@ -36,7 +36,7 @@ import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.Re
 /**
  * @author Andrea Boriero
  */
-public class StandardQueryPreparedStatementBuilderImpl implements QueryPreparedStatementBuilder {
+public class StandardQueryPreparedStatementBuilderImpl implements QueryStatementBuilder<PreparedStatement> {
 
 	public static final StandardQueryPreparedStatementBuilderImpl INSTANCE = new StandardQueryPreparedStatementBuilderImpl();
 

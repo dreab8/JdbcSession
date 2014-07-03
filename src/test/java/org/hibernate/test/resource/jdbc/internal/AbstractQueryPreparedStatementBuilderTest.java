@@ -4,7 +4,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
-import org.hibernate.resource.jdbc.spi.QueryPreparedStatementBuilder;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 import org.junit.Test;
 
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.mock;
 public abstract class AbstractQueryPreparedStatementBuilderTest {
 
 	private Connection connection = mock( Connection.class );
-	protected QueryPreparedStatementBuilder queryBuilder;
+	protected QueryStatementBuilder queryBuilder;
 	private final String sql = "Select * from item";
 	private final JdbcSessionContext context = JdbcSessionContextStandardTestingImpl.INSTANCE;
 	private ConnectionMethodCallCheck verifier;

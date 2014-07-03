@@ -23,10 +23,11 @@
  */
 package org.hibernate.resource.jdbc;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
-import org.hibernate.resource.jdbc.spi.QueryPreparedStatementBuilder;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
@@ -35,7 +36,7 @@ import org.hibernate.resource.jdbc.spi.StatementExecutor;
  */
 public interface PreparedStatementQueryOperationSpec<R> extends OperationSpec<R> {
 
-	public QueryPreparedStatementBuilder getQueryStatementBuilder();
+	public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder();
 
 	public ParameterBindings getParameterBindings();
 

@@ -23,12 +23,12 @@
  */
 package org.hibernate.resource.jdbc.internal;
 
+import java.sql.CallableStatement;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
-import org.hibernate.resource.jdbc.spi.QueryPreparedStatementBuilder;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
@@ -36,7 +36,7 @@ import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.Re
 /**
  * @author Andrea Boriero
  */
-public class CallableQueryPreparedStatementBuilderImpl implements QueryPreparedStatementBuilder {
+public class CallableQueryPreparedStatementBuilderImpl implements QueryStatementBuilder<CallableStatement> {
 
 	public static final CallableQueryPreparedStatementBuilderImpl INSTANCE = new CallableQueryPreparedStatementBuilderImpl();
 
@@ -44,7 +44,7 @@ public class CallableQueryPreparedStatementBuilderImpl implements QueryPreparedS
 	}
 
 	@Override
-	public PreparedStatement buildQueryStatement(
+	public CallableStatement buildQueryStatement(
 			Connection connection,
 			String sql,
 			JdbcSessionContext context,
