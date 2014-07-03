@@ -14,6 +14,7 @@ import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
+import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
@@ -106,11 +107,13 @@ public class JdbcSessionImpl
 					operation.getResultSetConcurrency()
 			);
 
-			operation.getParameterBindings().bindParameters( statement );
-
 			try {
+				bindParameters( operation.getParameterBindings(), statement );
+
 				configureStatement( operation, statement );
+
 				final ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
+
 				try {
 					register( resultSet, statement );
 					return operation.getResultSetProcessor().extractResults( resultSet, this );
@@ -133,6 +136,16 @@ public class JdbcSessionImpl
 		finally {
 			afterStatement( !operation.holdOpenResources() );
 		}
+	}
+
+	private void bindParameters(ParameterBindings parameterBindings, PreparedStatement statement) {
+		int col = parameterBindings.bindLimitOffsetParametersAtStartOfQuery( statement );
+
+		col += parameterBindings.bindParameters( statement, col );
+
+		parameterBindings.bindLimitOffsetParametersAtEndOfQuery( statement, col );
+
+		parameterBindings.setMaxRow( statement );
 	}
 
 	private void register(ResultSet resultSet, Statement statement) {

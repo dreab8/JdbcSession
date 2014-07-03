@@ -29,5 +29,12 @@ import java.sql.PreparedStatement;
  * @author Andrea Boriero
  */
 public interface ParameterBindings {
-	public void bindParameters(PreparedStatement statement);
+	public int bindLimitOffsetParametersAtStartOfQuery(PreparedStatement statement);
+
+	public int bindParameters(PreparedStatement statement, int col);
+
+	public int bindLimitOffsetParametersAtEndOfQuery(PreparedStatement statement, int col);
+
+	public void setMaxRow(PreparedStatement statement);
 }
+

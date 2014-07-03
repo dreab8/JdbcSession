@@ -51,6 +51,7 @@ import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.inOrder;
@@ -113,11 +114,11 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	public void operationSpecMethodsAreCalledInRightOrder() {
 		jdbcSession.accept( operationSpec );
 
-		InOrder inorder = inOrder( operationSpec );
-		inorder.verify( operationSpec ).getQueryStatementBuilder();
-		inorder.verify( operationSpec ).getParameterBindings();
-		inorder.verify( operationSpec ).getStatementExecutor();
-		inorder.verify( operationSpec ).getResultSetProcessor();
+		InOrder inOrder = inOrder( operationSpec );
+		inOrder.verify( operationSpec ).getQueryStatementBuilder();
+		inOrder.verify( operationSpec ).getParameterBindings();
+		inOrder.verify( operationSpec ).getStatementExecutor();
+		inOrder.verify( operationSpec ).getResultSetProcessor();
 
 		verify( queryStatementBuilder ).buildQueryStatement(
 				any( Connection.class ),
@@ -128,6 +129,31 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		);
 		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
 		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
+	}
+
+	@Test
+	public void bindindgParamnetersMehtodsAreCalledInRightOrder() {
+		final int BIND_LINIT_OFFSET_AT_START_RETURN_INDEX = 0;
+		final int BIND_PARAMETERS_RETURN_INDEX = 2;
+
+		when( parameterBindings.bindLimitOffsetParametersAtStartOfQuery( any( PreparedStatement.class ) ) ).thenReturn(
+				BIND_LINIT_OFFSET_AT_START_RETURN_INDEX
+		);
+		when( parameterBindings.bindParameters( any( PreparedStatement.class ), anyInt() ) ).thenReturn(
+				BIND_PARAMETERS_RETURN_INDEX
+		);
+
+		jdbcSession.accept( operationSpec );
+
+		InOrder inOrder = inOrder( parameterBindings );
+
+		inOrder.verify( parameterBindings ).bindLimitOffsetParametersAtStartOfQuery( statement );
+		inOrder.verify( parameterBindings ).bindParameters( statement, BIND_LINIT_OFFSET_AT_START_RETURN_INDEX );
+		inOrder.verify( parameterBindings ).bindLimitOffsetParametersAtEndOfQuery(
+				statement,
+				BIND_PARAMETERS_RETURN_INDEX
+		);
+		inOrder.verify( parameterBindings ).setMaxRow( statement );
 	}
 
 	@Test
@@ -188,8 +214,15 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 
 	@Test
 	public void bindParametersReceiveTheCorrectPreparedStatement() {
+		final int BIND_LINIT_OFFSET_AT_START_RETURN_INDEX = 0;
+
+		when( parameterBindings.bindLimitOffsetParametersAtStartOfQuery( statement ) ).thenReturn(
+				BIND_LINIT_OFFSET_AT_START_RETURN_INDEX
+		);
+
 		jdbcSession.accept( operationSpec );
-		verify( parameterBindings ).bindParameters( statement );
+
+		verify( parameterBindings ).bindParameters( statement, BIND_LINIT_OFFSET_AT_START_RETURN_INDEX );
 	}
 
 	private void setHoldResources(boolean holdResources) {
