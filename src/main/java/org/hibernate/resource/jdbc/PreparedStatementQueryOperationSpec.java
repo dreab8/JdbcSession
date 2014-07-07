@@ -42,7 +42,7 @@ public interface PreparedStatementQueryOperationSpec<R> extends OperationSpec<R>
 
 	public StatementExecutor getStatementExecutor();
 
-	public ResultSetProcessor getResultSetProcessor();
+	public ResultSetProcessor<R> getResultSetProcessor();
 
 	public String getSql();
 

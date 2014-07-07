@@ -30,6 +30,6 @@ import java.sql.ResultSet;
 /**
  * @author Andrea Boriero
  */
-public interface ResultSetProcessor {
-	<R> R extractResults(ResultSet resultSet, JdbcSessionImpl jdbcSession);
+public interface ResultSetProcessor<R> {
+	R extractResults(ResultSet resultSet, JdbcSessionImpl jdbcSession);
 }
