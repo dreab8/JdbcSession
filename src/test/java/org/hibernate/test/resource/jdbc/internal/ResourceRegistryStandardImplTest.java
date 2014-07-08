@@ -1,5 +1,6 @@
 package org.hibernate.test.resource.jdbc.internal;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -29,18 +30,17 @@ public class ResourceRegistryStandardImplTest {
 	}
 
 	@Test
-	public void hasRegisterShlouldReturnFalseIfNoResourcesAreRegister() {
+	public void shouldHasRegisterReturnFalseIfNoResourcesAreRegistered() {
 		assertThat( registry.hasRegisteredResources(), is( false ) );
 	}
 
 	@Test
-	public void hasRegisterShouldReturnTrueIfOneresourceIsRegistere() {
+	public void shpouldHhasRegisterReturnTrueIfOneResourceIsRegistered() {
 		Statement statement = mock( Statement.class );
 
 		registry.register( statement, false );
 
 		assertThat( registry.hasRegisteredResources(), is( true ) );
-
 	}
 
 	@Test
@@ -56,17 +56,31 @@ public class ResourceRegistryStandardImplTest {
 	}
 
 	@Test
-	public void shouldCloseAndUnregisterAStatementAndresulsets() throws SQLException {
+	public void shouldCloseAndUnregisterAStatementAndItsResultSets() throws SQLException {
 		Statement statement = mock( Statement.class );
+		ResultSet resultSet1 = mock( ResultSet.class );
+		ResultSet resultSet2 = mock( ResultSet.class );
 
-		registry.register( statement, false );
+		registry.register( resultSet1, statement );
+		registry.register( resultSet2, statement );
 
-		registry.release( statement );
-
+		registry.release( resultSet1, statement );
 
 		assertThat( registry.hasRegisteredResources(), is( false ) );
 		verify( statement ).close();
+		verify( resultSet1 ).close();
+		verify( resultSet2 ).close();
 	}
 
+	@Test
+	public void shouldCloseAndUnregisterAResultSetNotAssociatedWithAStatement() throws SQLException {
+		ResultSet resultSet = mock( ResultSet.class );
 
+		registry.register( resultSet, null );
+
+		registry.release( resultSet, null );
+
+		assertThat( registry.hasRegisteredResources(), is( false ) );
+		verify( resultSet ).close();
+	}
 }

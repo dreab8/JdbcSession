@@ -7,6 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -25,18 +26,22 @@ import org.hibernate.resource.jdbc.ResourceRegistry;
 public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	private static final CoreMessageLogger log = CoreLogging.messageLogger( ResourceRegistryStandardImpl.class );
 
-	private final Map<Statement,Set<ResultSet>> xref = new HashMap<Statement,Set<ResultSet>>();
+	private final Map<Statement, Set<ResultSet>> xref = new HashMap<Statement, Set<ResultSet>>();
 	private final Set<ResultSet> unassociatedResultSets = new HashSet<ResultSet>();
 
-	private List<Blob> blobs = new ArrayList<Blob>(  );
-	private List<Clob> clobs = new ArrayList<Clob>(  );
-	private List<NClob> nclobs = new ArrayList<NClob>(  );
+	private List<Blob> blobs;
+	private List<Clob> clobs;
+	private List<NClob> nclobs;
 
 	private Statement lastQuery;
 
 	@Override
 	public boolean hasRegisteredResources() {
-		return !(xref.isEmpty() && unassociatedResultSets.isEmpty() && blobs.isEmpty() && clobs.isEmpty() && nclobs.isEmpty());
+		return hasRegistered( xref )
+				|| hasRegistered( unassociatedResultSets )
+				|| hasRegistered( blobs )
+				|| hasRegistered( clobs )
+				|| hasRegistered( nclobs );
 	}
 
 	@Override
@@ -95,8 +100,8 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 			if ( !removed ) {
 				log.unregisteredResultSetWithoutStatement();
 			}
+			close( resultSet );
 		}
-		close( resultSet );
 	}
 
 	protected void closeAll(Set<ResultSet> resultSets) {
@@ -106,7 +111,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 		resultSets.clear();
 	}
 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({"unchecked"})
 	protected void close(ResultSet resultSet) {
 		log.tracef( "Closing result set [%s]", resultSet );
 
@@ -116,13 +121,13 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 		catch (SQLException e) {
 			log.debugf( "Unable to release JDBC result set [%s]", e.getMessage() );
 		}
-		catch ( Exception e ) {
+		catch (Exception e) {
 			// try to handle general errors more elegantly
 			log.debugf( "Unable to release JDBC result set [%s]", e.getMessage() );
 		}
 	}
 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({"unchecked"})
 	protected void close(Statement statement) {
 		log.tracef( "Closing prepared statement [%s]", statement );
 
@@ -137,7 +142,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 					statement.setQueryTimeout( 0 );
 				}
 			}
-			catch( SQLException sqle ) {
+			catch (SQLException sqle) {
 				// there was a problem "cleaning" the prepared statement
 				if ( log.isDebugEnabled() ) {
 					log.debugf( "Exception clearing maxRows/queryTimeout [%s]", sqle.getMessage() );
@@ -150,10 +155,10 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 				lastQuery = null;
 			}
 		}
-		catch( SQLException e ) {
+		catch (SQLException e) {
 			log.debugf( "Unable to release JDBC statement [%s]", e.getMessage() );
 		}
-		catch ( Exception e ) {
+		catch (Exception e) {
 			// try to handle general errors more elegantly
 			log.debugf( "Unable to release JDBC statement [%s]", e.getMessage() );
 		}
@@ -167,7 +172,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 			try {
 				statement = resultSet.getStatement();
 			}
-			catch ( SQLException e ) {
+			catch (SQLException e) {
 				throw convert( e, "unable to access Statement from ResultSet" );
 			}
 		}
@@ -216,7 +221,6 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	public void register(Clob clob) {
 		if ( clobs == null ) {
 			clobs = new ArrayList<Clob>();
-			return;
 		}
 		clobs.add( clob );
 	}
@@ -252,7 +256,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	@Override
 	public void cancelLastQuery() {
 		try {
-			if (lastQuery != null) {
+			if ( lastQuery != null ) {
 				lastQuery.cancel();
 			}
 		}
@@ -268,7 +272,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	public void releaseResources() {
 		log.trace( "Releasing JDBC resources" );
 
-		for ( Map.Entry<Statement,Set<ResultSet>> entry : xref.entrySet() ) {
+		for ( Map.Entry<Statement, Set<ResultSet>> entry : xref.entrySet() ) {
 			if ( entry.getValue() != null ) {
 				closeAll( entry.getValue() );
 			}
@@ -313,5 +317,13 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 			}
 			nclobs.clear();
 		}
+	}
+
+	private boolean hasRegistered(Map resource) {
+		return resource != null && !resource.isEmpty();
+	}
+
+	private boolean hasRegistered(Collection resource) {
+		return resource != null && !resource.isEmpty();
 	}
 }
