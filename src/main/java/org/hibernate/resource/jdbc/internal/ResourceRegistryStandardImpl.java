@@ -56,16 +56,48 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	@Override
 	public void release(Statement statement) {
 		log.tracev( "Releasing statement [{0}]", statement );
-		final Set<ResultSet> resultSets = xref.get( statement );
-		if ( resultSets != null ) {
-			closeAll( resultSets );
+
+		// Keep this at DEBUG level, rather than warn.  Numerous connection pool implementations can return a
+		// proxy/wrapper around the JDBC Statement, causing excessive logging here.  See HHH-8210.
+		if ( log.isDebugEnabled() && !xref.containsKey( statement ) ) {
+			log.unregisteredStatement();
 		}
-		xref.remove( statement );
+		else {
+			final Set<ResultSet> resultSets = xref.get( statement );
+			if ( resultSets != null ) {
+				closeAll( resultSets );
+			}
+			xref.remove( statement );
+		}
 		close( statement );
 
 		if ( lastQuery == statement ) {
 			lastQuery = null;
 		}
+	}
+
+	@Override
+	public void release(ResultSet resultSet, Statement statement) {
+		log.tracef( "Releasing result set [%s]", resultSet );
+
+		if ( statement == null ) {
+			try {
+				statement = resultSet.getStatement();
+			}
+			catch (SQLException e) {
+				throw convert( e, "unable to access Statement from ResultSet" );
+			}
+		}
+		if ( statement != null ) {
+			release( statement );
+		}
+		else {
+			final boolean removed = unassociatedResultSets.remove( resultSet );
+			if ( !removed ) {
+				log.unregisteredResultSetWithoutStatement();
+			}
+		}
+		close( resultSet );
 	}
 
 	protected void closeAll(Set<ResultSet> resultSets) {
@@ -161,41 +193,6 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	private JDBCException convert(SQLException e, String s) {
 		// todo : implement
 		return null;
-	}
-
-	@Override
-	public void release(ResultSet resultSet, Statement statement) {
-		log.tracef( "Releasing result set [%s]", resultSet );
-
-		if ( statement == null ) {
-			try {
-				statement = resultSet.getStatement();
-			}
-			catch ( SQLException e ) {
-				throw convert( e, "unable to access Statement from ResultSet" );
-			}
-		}
-		if ( statement != null ) {
-			// Keep this at DEBUG level, rather than warn.  Numerous connection pool implementations can return a
-			// proxy/wrapper around the JDBC Statement, causing excessive logging here.  See HHH-8210.
-			if ( log.isDebugEnabled() && !xref.containsKey( statement ) ) {
-				log.unregisteredStatement();
-			}
-			final Set<ResultSet> resultSets = xref.get( statement );
-			if ( resultSets != null ) {
-				resultSets.remove( resultSet );
-				if ( resultSets.isEmpty() ) {
-					xref.remove( statement );
-				}
-			}
-		}
-		else {
-			final boolean removed = unassociatedResultSets.remove( resultSet );
-			if ( !removed ) {
-				log.unregisteredResultSetWithoutStatement();
-			}
-		}
-		close( resultSet );
 	}
 
 	@Override
