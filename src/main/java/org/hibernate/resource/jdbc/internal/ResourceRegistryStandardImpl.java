@@ -28,16 +28,15 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	private final Map<Statement,Set<ResultSet>> xref = new HashMap<Statement,Set<ResultSet>>();
 	private final Set<ResultSet> unassociatedResultSets = new HashSet<ResultSet>();
 
-	private List<Blob> blobs;
-	private List<Clob> clobs;
-	private List<NClob> nclobs;
+	private List<Blob> blobs = new ArrayList<Blob>(  );
+	private List<Clob> clobs = new ArrayList<Clob>(  );
+	private List<NClob> nclobs = new ArrayList<NClob>(  );
 
 	private Statement lastQuery;
 
 	@Override
 	public boolean hasRegisteredResources() {
-		// todo : implement
-		return false;
+		return !(xref.isEmpty() && unassociatedResultSets.isEmpty() && blobs.isEmpty() && clobs.isEmpty() && nclobs.isEmpty());
 	}
 
 	@Override
