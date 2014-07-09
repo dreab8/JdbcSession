@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -24,16 +24,17 @@
 package org.hibernate.resource.jdbc;
 
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
-import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
 /**
- * @author Steve Ebersole
+ * @author Andrea Boriero
  */
-public interface PreparedStatementQueryOperationSpec<R> extends QueryOperationSpec<R> {
+public interface ScrollableQueryOperationSpec
+		extends QueryOperationSpec<ScrollableQueryOperationSpec.OperationSpecResult> {
 
 	public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder();
 
@@ -41,7 +42,10 @@ public interface PreparedStatementQueryOperationSpec<R> extends QueryOperationSp
 
 	public StatementExecutor getStatementExecutor();
 
-	public ResultSetProcessor<R> getResultSetProcessor();
+	public interface OperationSpecResult {
 
-	public boolean holdOpenResources();
+		public ResultSet getResultSet();
+
+		public void close();
+	}
 }

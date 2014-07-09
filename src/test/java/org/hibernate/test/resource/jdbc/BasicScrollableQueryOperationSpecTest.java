@@ -32,14 +32,15 @@ import java.sql.Statement;
 import org.mockito.InOrder;
 
 import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
+import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
+import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
+import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
-import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
 import org.junit.After;
@@ -48,46 +49,43 @@ import org.junit.Test;
 
 import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Andrea Boriero
  */
-public class BasicPreparedStatementQueryOperationSpecTest {
+public class BasicScrollableQueryOperationSpecTest {
 
 	private static final int UNIMPORTANT_INT_VALUE = -1;
 
 	private JdbcSession jdbcSession;
+	private ResourceRegistry resourceRegistry;
 
 	private final JdbcSessionOwnerTestingImpl jdbcSessionOwner = new JdbcSessionOwnerTestingImpl();
-	private final PreparedStatementQueryOperationSpec operationSpec = mock( PreparedStatementQueryOperationSpec.class );
+	private final ScrollableQueryOperationSpec operationSpec = mock( ScrollableQueryOperationSpec.class );
 	private final QueryStatementBuilder queryStatementBuilder = mock( QueryStatementBuilder.class );
 	private final StatementExecutor statementExecutor = mock( StatementExecutor.class );
-	private final ResultSetProcessor resultSetProcessor = mock( ResultSetProcessor.class );
-	private final ResourceRegistry resourceRegistry = mock( ResourceRegistry.class );
 	private final PreparedStatement statement = mock( PreparedStatement.class );
 	private final ResultSet resultSet = mock( ResultSet.class );
 	private final ParameterBindings parameterBindings = mock( ParameterBindings.class );
 
 	@Before
 	public void setUp() throws SQLException {
+		resourceRegistry = new ResourceRegistryStandardImpl();
 		jdbcSession = JdbcSessionFactory.INSTANCE.create( jdbcSessionOwner, resourceRegistry );
 
-		when( operationSpec.holdOpenResources() ).thenReturn( false );
 		when( operationSpec.getParameterBindings() ).thenReturn( parameterBindings );
 		when( operationSpec.getQueryStatementBuilder() ).thenReturn( queryStatementBuilder );
 		when( operationSpec.getStatementExecutor() ).thenReturn( statementExecutor );
-		when( operationSpec.getResultSetProcessor() ).thenReturn( resultSetProcessor );
 		when( statementExecutor.execute( any( Statement.class ), eq( (JdbcSessionImpl) jdbcSession ) ) ).thenReturn(
 				resultSet
 		);
@@ -95,8 +93,8 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 				queryStatementBuilder.buildQueryStatement(
 						any( Connection.class ),
 						anyString(),
-						any( ResultSetType.class ),
-						any( ResultSetConcurrency.class )
+						any( QueryOperationSpec.ResultSetType.class ),
+						any( QueryOperationSpec.ResultSetConcurrency.class )
 				)
 		).thenReturn(
 				statement
@@ -118,16 +116,14 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		inOrder.verify( operationSpec ).getQueryStatementBuilder();
 		inOrder.verify( operationSpec ).getParameterBindings();
 		inOrder.verify( operationSpec ).getStatementExecutor();
-		inOrder.verify( operationSpec ).getResultSetProcessor();
 
 		verify( queryStatementBuilder ).buildQueryStatement(
 				any( Connection.class ),
 				anyString(),
-				any( ResultSetType.class ),
-				any( ResultSetConcurrency.class )
+				any( QueryOperationSpec.ResultSetType.class ),
+				any( QueryOperationSpec.ResultSetConcurrency.class )
 		);
 		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
-		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
 	}
 
 	@Test
@@ -158,14 +154,13 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	@Test
 	public void buildQueryStatementBuilderMethodIsCalledWithTheExpectedParameters() throws SQLException {
 		String expectedSql = "select * from SomeEntity";
-		ResultSetConcurrency expectedResultSetConcurrency = ResultSetConcurrency.READ_ONLY;
-		ResultSetType expectedResultSetType = ResultSetType.FORWARD_ONLY;
+		QueryOperationSpec.ResultSetConcurrency expectedResultSetConcurrency = QueryOperationSpec.ResultSetConcurrency.READ_ONLY;
+		QueryOperationSpec.ResultSetType expectedResultSetType = QueryOperationSpec.ResultSetType.FORWARD_ONLY;
 		mockOperationMethods(
 				UNIMPORTANT_INT_VALUE,
 				expectedSql,
 				expectedResultSetType,
-				expectedResultSetConcurrency,
-				false
+				expectedResultSetConcurrency
 		);
 
 		jdbcSession.accept( operationSpec );
@@ -173,8 +168,8 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		verify( queryStatementBuilder ).buildQueryStatement(
 				((LogicalConnectionImplementor) jdbcSession.getLogicalConnection()).getPhysicalConnection(),
 				expectedSql,
-				ResultSetType.FORWARD_ONLY,
-				ResultSetConcurrency.READ_ONLY
+				QueryOperationSpec.ResultSetType.FORWARD_ONLY,
+				QueryOperationSpec.ResultSetConcurrency.READ_ONLY
 		);
 	}
 
@@ -183,31 +178,6 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		jdbcSession.accept( operationSpec );
 
 		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
-	}
-
-	@Test
-	public void resultSetProcessorMethodIsCalledWithTheExpectedParameters() {
-		jdbcSession.accept( operationSpec );
-
-		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
-	}
-
-	@Test
-	public void resourcesAreReleasedIfHoldResourcesIsFalse() {
-		setHoldResources( false );
-
-		jdbcSession.accept( operationSpec );
-
-		verify( resourceRegistry ).release( resultSet, statement );
-	}
-
-	@Test
-	public void resourcesAreNOTReleasedIfHoldResourcesIsFalse() {
-		setHoldResources( true );
-
-		jdbcSession.accept( operationSpec );
-
-		verify( resourceRegistry, never() ).release( resultSet, statement );
 	}
 
 	@Test
@@ -223,20 +193,26 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		verify( parameterBindings ).bindParameters( statement, BIND_LINIT_OFFSET_AT_START_RETURN_INDEX );
 	}
 
-	private void setHoldResources(boolean holdResources) {
-		when( operationSpec.holdOpenResources() ).thenReturn( holdResources );
-	}
-
 	private void mockOperationMethods(
 			int queryTimeout,
 			String sql,
-			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency,
-			boolean holdResources) {
+			QueryOperationSpec.ResultSetType resultSetType,
+			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) {
 		when( operationSpec.getQueryTimeout() ).thenReturn( queryTimeout );
 		when( operationSpec.getSql() ).thenReturn( sql );
 		when( operationSpec.getResultSetType() ).thenReturn( resultSetType );
 		when( operationSpec.getResultSetConcurrency() ).thenReturn( resultSetConcurrency );
-		setHoldResources( holdResources );
+	}
+
+	@Test
+	public void closeMethodShouldCloseStatementAndResultSet() throws SQLException {
+		ScrollableQueryOperationSpec.OperationSpecResult result = jdbcSession.accept( operationSpec );
+
+		result.close();
+
+		assertThat( result.getResultSet(), is( resultSet ) );
+
+		verify( statement ).close();
+		verify( resultSet ).close();
 	}
 }

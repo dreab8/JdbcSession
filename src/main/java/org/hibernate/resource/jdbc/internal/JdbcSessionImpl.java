@@ -11,6 +11,8 @@ import org.hibernate.HibernateException;
 import org.hibernate.resource.jdbc.LogicalConnection;
 import org.hibernate.resource.jdbc.Operation;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
+import org.hibernate.resource.jdbc.QueryOperationSpec;
+import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
@@ -19,6 +21,8 @@ import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
+
+import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.OperationSpecResult;
 
 /**
  * @author Steve Ebersole
@@ -97,6 +101,44 @@ public class JdbcSessionImpl
 	}
 
 	@Override
+	public OperationSpecResult accept(ScrollableQueryOperationSpec operation) {
+		try {
+			final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
+					logicalConnection.getPhysicalConnection(),
+					operation.getSql(),
+					operation.getResultSetType(),
+					operation.getResultSetConcurrency()
+			);
+
+			bindParameters( operation.getParameterBindings(), statement );
+
+			configureStatement( operation, statement );
+
+			final ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
+
+			register( resultSet, statement );
+
+			return new OperationSpecResult() {
+				@Override
+				public void close() {
+					logicalConnection.getResourceRegistry().release( resultSet, statement );
+				}
+
+				@Override
+				public ResultSet getResultSet() {
+					return resultSet;
+				}
+			};
+		}
+		catch (SQLException e) {
+			throw context.getSqlExceptionHelper().convert( e, "" );
+		}
+		finally {
+			afterStatement( false );
+		}
+	}
+
+	@Override
 	public <R> R accept(PreparedStatementQueryOperationSpec<R> operation) {
 		try {
 			final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
@@ -159,7 +201,7 @@ public class JdbcSessionImpl
 		logicalConnection.getResourceRegistry().release( statement );
 	}
 
-	private <R> void configureStatement(PreparedStatementQueryOperationSpec<R> operation, Statement statement)
+	private void configureStatement(QueryOperationSpec operation, Statement statement)
 			throws SQLException {
 		statement.setQueryTimeout( operation.getQueryTimeout() );
 	}

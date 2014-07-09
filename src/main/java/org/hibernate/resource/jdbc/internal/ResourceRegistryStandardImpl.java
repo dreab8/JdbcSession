@@ -25,7 +25,7 @@ import org.hibernate.resource.jdbc.ResourceRegistry;
 public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	private static final CoreMessageLogger log = CoreLogging.messageLogger( ResourceRegistryStandardImpl.class );
 
-	private final Map<Statement,Set<ResultSet>> xref = new HashMap<Statement,Set<ResultSet>>();
+	private final Map<Statement, Set<ResultSet>> xref = new HashMap<Statement, Set<ResultSet>>();
 	private final Set<ResultSet> unassociatedResultSets = new HashSet<ResultSet>();
 
 	private List<Blob> blobs;
@@ -96,8 +96,8 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 			if ( !removed ) {
 				log.unregisteredResultSetWithoutStatement();
 			}
+			close( resultSet );
 		}
-		close( resultSet );
 	}
 
 	protected void closeAll(Set<ResultSet> resultSets) {
@@ -107,7 +107,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 		resultSets.clear();
 	}
 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({"unchecked"})
 	protected void close(ResultSet resultSet) {
 		log.tracef( "Closing result set [%s]", resultSet );
 
@@ -117,13 +117,13 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 		catch (SQLException e) {
 			log.debugf( "Unable to release JDBC result set [%s]", e.getMessage() );
 		}
-		catch ( Exception e ) {
+		catch (Exception e) {
 			// try to handle general errors more elegantly
 			log.debugf( "Unable to release JDBC result set [%s]", e.getMessage() );
 		}
 	}
 
-	@SuppressWarnings({ "unchecked" })
+	@SuppressWarnings({"unchecked"})
 	protected void close(Statement statement) {
 		log.tracef( "Closing prepared statement [%s]", statement );
 
@@ -138,7 +138,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 					statement.setQueryTimeout( 0 );
 				}
 			}
-			catch( SQLException sqle ) {
+			catch (SQLException sqle) {
 				// there was a problem "cleaning" the prepared statement
 				if ( log.isDebugEnabled() ) {
 					log.debugf( "Exception clearing maxRows/queryTimeout [%s]", sqle.getMessage() );
@@ -151,10 +151,10 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 				lastQuery = null;
 			}
 		}
-		catch( SQLException e ) {
+		catch (SQLException e) {
 			log.debugf( "Unable to release JDBC statement [%s]", e.getMessage() );
 		}
-		catch ( Exception e ) {
+		catch (Exception e) {
 			// try to handle general errors more elegantly
 			log.debugf( "Unable to release JDBC statement [%s]", e.getMessage() );
 		}
@@ -168,7 +168,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 			try {
 				statement = resultSet.getStatement();
 			}
-			catch ( SQLException e ) {
+			catch (SQLException e) {
 				throw convert( e, "unable to access Statement from ResultSet" );
 			}
 		}
@@ -253,7 +253,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	@Override
 	public void cancelLastQuery() {
 		try {
-			if (lastQuery != null) {
+			if ( lastQuery != null ) {
 				lastQuery.cancel();
 			}
 		}
@@ -269,7 +269,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	public void releaseResources() {
 		log.trace( "Releasing JDBC resources" );
 
-		for ( Map.Entry<Statement,Set<ResultSet>> entry : xref.entrySet() ) {
+		for ( Map.Entry<Statement, Set<ResultSet>> entry : xref.entrySet() ) {
 			if ( entry.getValue() != null ) {
 				closeAll( entry.getValue() );
 			}

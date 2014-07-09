@@ -27,8 +27,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
+import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetConcurrency;
+import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetType;
+
 
 /**
  * @author Andrea Boriero
