@@ -156,26 +156,21 @@ public class JdbcSessionImpl
 				final ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
 
 				try {
-					register( resultSet, statement );
 					return operation.getResultSetProcessor().extractResults( resultSet, this );
 				}
 				finally {
-					if ( !operation.holdOpenResources() ) {
-						release( resultSet, statement );
-					}
+					resultSet.close();
 				}
 			}
 			finally {
-				if ( !operation.holdOpenResources() ) {
-					release( statement );
-				}
+				statement.close();
 			}
 		}
 		catch (SQLException e) {
 			throw context.getSqlExceptionHelper().convert( e, "" );
 		}
 		finally {
-			afterStatement( !operation.holdOpenResources() );
+			// todo: is there something to do?
 		}
 	}
 

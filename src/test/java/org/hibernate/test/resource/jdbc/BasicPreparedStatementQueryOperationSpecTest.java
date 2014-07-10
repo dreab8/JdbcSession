@@ -56,7 +56,6 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -83,7 +82,6 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	public void setUp() throws SQLException {
 		jdbcSession = JdbcSessionFactory.INSTANCE.create( jdbcSessionOwner, resourceRegistry );
 
-		when( operationSpec.holdOpenResources() ).thenReturn( false );
 		when( operationSpec.getParameterBindings() ).thenReturn( parameterBindings );
 		when( operationSpec.getQueryStatementBuilder() ).thenReturn( queryStatementBuilder );
 		when( operationSpec.getStatementExecutor() ).thenReturn( statementExecutor );
@@ -164,8 +162,7 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 				UNIMPORTANT_INT_VALUE,
 				expectedSql,
 				expectedResultSetType,
-				expectedResultSetConcurrency,
-				false
+				expectedResultSetConcurrency
 		);
 
 		jdbcSession.accept( operationSpec );
@@ -193,24 +190,6 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 	}
 
 	@Test
-	public void resourcesAreReleasedIfHoldResourcesIsFalse() {
-		setHoldResources( false );
-
-		jdbcSession.accept( operationSpec );
-
-		verify( resourceRegistry ).release( resultSet, statement );
-	}
-
-	@Test
-	public void resourcesAreNOTReleasedIfHoldResourcesIsFalse() {
-		setHoldResources( true );
-
-		jdbcSession.accept( operationSpec );
-
-		verify( resourceRegistry, never() ).release( resultSet, statement );
-	}
-
-	@Test
 	public void bindParametersReceiveTheCorrectPreparedStatement() {
 		final int BIND_LINIT_OFFSET_AT_START_RETURN_INDEX = 0;
 
@@ -223,20 +202,22 @@ public class BasicPreparedStatementQueryOperationSpecTest {
 		verify( parameterBindings ).bindParameters( statement, BIND_LINIT_OFFSET_AT_START_RETURN_INDEX );
 	}
 
-	private void setHoldResources(boolean holdResources) {
-		when( operationSpec.holdOpenResources() ).thenReturn( holdResources );
+	@Test
+	public void resultSetAndStatementAreClosed() throws SQLException {
+		jdbcSession.accept( operationSpec );
+
+		verify( resultSet ).close();
+		verify( statement ).close();
 	}
 
 	private void mockOperationMethods(
 			int queryTimeout,
 			String sql,
 			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency,
-			boolean holdResources) {
+			ResultSetConcurrency resultSetConcurrency) {
 		when( operationSpec.getQueryTimeout() ).thenReturn( queryTimeout );
 		when( operationSpec.getSql() ).thenReturn( sql );
 		when( operationSpec.getResultSetType() ).thenReturn( resultSetType );
 		when( operationSpec.getResultSetConcurrency() ).thenReturn( resultSetConcurrency );
-		setHoldResources( holdResources );
 	}
 }

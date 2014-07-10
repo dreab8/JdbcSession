@@ -43,5 +43,4 @@ public interface PreparedStatementQueryOperationSpec<R> extends QueryOperationSp
 
 	public ResultSetProcessor<R> getResultSetProcessor();
 
-	public boolean holdOpenResources();
 }
