@@ -32,14 +32,15 @@ import java.sql.Statement;
 import org.mockito.InOrder;
 
 import org.hibernate.resource.jdbc.JdbcSession;
+import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
-import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
+import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
 import org.junit.After;
@@ -48,11 +49,6 @@ import org.junit.Test;
 
 import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
-import static org.hamcrest.core.Is.is;
-import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetConcurrency;
-import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetType;
-import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -63,27 +59,33 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
- * @author Andrea Boriero
+ * @author Andrea Borierprotectedo
  */
-public class BasicScrollableQueryOperationSpecTest {
+public abstract class AbstractQueryOperationSpecUsageTest<T extends QueryOperationSpec> {
+	protected static final int UNIMPORTANT_INT_VALUE = -1;
 
-	private static final int UNIMPORTANT_INT_VALUE = -1;
+	protected T operationSpec;
+	protected JdbcSession jdbcSession;
 
-	private JdbcSession jdbcSession;
-	private ResourceRegistry resourceRegistry;
+	protected final JdbcSessionOwnerTestingImpl jdbcSessionOwner = new JdbcSessionOwnerTestingImpl();
+	protected final ResourceRegistry resourceRegistry = new ResourceRegistryStandardImpl();
 
-	private final JdbcSessionOwnerTestingImpl jdbcSessionOwner = new JdbcSessionOwnerTestingImpl();
-	private final ScrollableQueryOperationSpec operationSpec = mock( ScrollableQueryOperationSpec.class );
-	private final QueryStatementBuilder queryStatementBuilder = mock( QueryStatementBuilder.class );
-	private final StatementExecutor statementExecutor = mock( StatementExecutor.class );
-	private final PreparedStatement statement = mock( PreparedStatement.class );
-	private final ResultSet resultSet = mock( ResultSet.class );
-	private final ParameterBindings parameterBindings = mock( ParameterBindings.class );
+	protected final QueryStatementBuilder queryStatementBuilder = mock( QueryStatementBuilder.class );
+	protected final StatementExecutor statementExecutor = mock( StatementExecutor.class );
+	protected final ResultSetProcessor resultSetProcessor = mock( ResultSetProcessor.class );
+	protected final PreparedStatement statement = mock( PreparedStatement.class );
+	protected final ResultSet resultSet = mock( ResultSet.class );
+	protected final ParameterBindings parameterBindings = mock( ParameterBindings.class );
+
+	protected abstract void mockQueryOperationSpec();
+
+	protected abstract void jdbSessionAccept();
 
 	@Before
 	public void setUp() throws SQLException {
-		resourceRegistry = new ResourceRegistryStandardImpl();
 		jdbcSession = JdbcSessionFactory.INSTANCE.create( jdbcSessionOwner, resourceRegistry );
+
+		mockQueryOperationSpec();
 
 		when( operationSpec.getParameterBindings() ).thenReturn( parameterBindings );
 		when( operationSpec.getQueryStatementBuilder() ).thenReturn( queryStatementBuilder );
@@ -95,8 +97,8 @@ public class BasicScrollableQueryOperationSpecTest {
 				queryStatementBuilder.buildQueryStatement(
 						any( Connection.class ),
 						anyString(),
-						any( ResultSetType.class ),
-						any( ResultSetConcurrency.class )
+						any( QueryOperationSpec.ResultSetType.class ),
+						any( QueryOperationSpec.ResultSetConcurrency.class )
 				)
 		).thenReturn(
 				statement
@@ -110,23 +112,6 @@ public class BasicScrollableQueryOperationSpecTest {
 		}
 	}
 
-	@Test
-	public void operationSpecMethodsAreCalledInRightOrder() throws SQLException {
-		jdbcSession.accept( operationSpec );
-
-		InOrder inOrder = inOrder( operationSpec );
-		inOrder.verify( operationSpec ).getQueryStatementBuilder();
-		inOrder.verify( operationSpec ).getParameterBindings();
-		inOrder.verify( operationSpec ).getStatementExecutor();
-
-		verify( queryStatementBuilder ).buildQueryStatement(
-				any( Connection.class ),
-				anyString(),
-				any( ResultSetType.class ),
-				any( ResultSetConcurrency.class )
-		);
-		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
-	}
 
 	@Test
 	public void bindindgParamnetersMehtodsAreCalledInRightOrder() {
@@ -140,7 +125,7 @@ public class BasicScrollableQueryOperationSpecTest {
 				BIND_PARAMETERS_RETURN_INDEX
 		);
 
-		jdbcSession.accept( operationSpec );
+		jdbSessionAccept();
 
 		InOrder inOrder = inOrder( parameterBindings );
 
@@ -156,8 +141,8 @@ public class BasicScrollableQueryOperationSpecTest {
 	@Test
 	public void buildQueryStatementBuilderMethodIsCalledWithTheExpectedParameters() throws SQLException {
 		String expectedSql = "select * from SomeEntity";
-		ResultSetConcurrency expectedResultSetConcurrency = ResultSetConcurrency.READ_ONLY;
-		ResultSetType expectedResultSetType = ResultSetType.FORWARD_ONLY;
+		QueryOperationSpec.ResultSetConcurrency expectedResultSetConcurrency = QueryOperationSpec.ResultSetConcurrency.READ_ONLY;
+		QueryOperationSpec.ResultSetType expectedResultSetType = QueryOperationSpec.ResultSetType.FORWARD_ONLY;
 		mockOperationMethods(
 				UNIMPORTANT_INT_VALUE,
 				expectedSql,
@@ -165,21 +150,14 @@ public class BasicScrollableQueryOperationSpecTest {
 				expectedResultSetConcurrency
 		);
 
-		jdbcSession.accept( operationSpec );
+		jdbSessionAccept();
 
 		verify( queryStatementBuilder ).buildQueryStatement(
 				((LogicalConnectionImplementor) jdbcSession.getLogicalConnection()).getPhysicalConnection(),
 				expectedSql,
-				ResultSetType.FORWARD_ONLY,
-				ResultSetConcurrency.READ_ONLY
+				QueryOperationSpec.ResultSetType.FORWARD_ONLY,
+				QueryOperationSpec.ResultSetConcurrency.READ_ONLY
 		);
-	}
-
-	@Test
-	public void statementExecutorMethodIsCalledWithTheExpectedParameters() {
-		jdbcSession.accept( operationSpec );
-
-		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
 	}
 
 	@Test
@@ -190,31 +168,26 @@ public class BasicScrollableQueryOperationSpecTest {
 				BIND_LINIT_OFFSET_AT_START_RETURN_INDEX
 		);
 
-		jdbcSession.accept( operationSpec );
+		jdbSessionAccept();
 
 		verify( parameterBindings ).bindParameters( statement, BIND_LINIT_OFFSET_AT_START_RETURN_INDEX );
+	}
+
+	@Test
+	public void statementExecutorMethodIsCalledWithTheExpectedParameters() {
+		jdbSessionAccept();
+
+		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
 	}
 
 	private void mockOperationMethods(
 			int queryTimeout,
 			String sql,
-			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency) {
+			QueryOperationSpec.ResultSetType resultSetType,
+			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) {
 		when( operationSpec.getQueryTimeout() ).thenReturn( queryTimeout );
 		when( operationSpec.getSql() ).thenReturn( sql );
 		when( operationSpec.getResultSetType() ).thenReturn( resultSetType );
 		when( operationSpec.getResultSetConcurrency() ).thenReturn( resultSetConcurrency );
-	}
-
-	@Test
-	public void closeMethodShouldCloseStatementAndResultSet() throws SQLException {
-		Result result = jdbcSession.accept( operationSpec );
-
-		result.close();
-
-		assertThat( result.getResultSet(), is( resultSet ) );
-
-		verify( statement ).close();
-		verify( resultSet ).close();
 	}
 }
