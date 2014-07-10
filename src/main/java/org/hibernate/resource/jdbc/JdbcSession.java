@@ -25,7 +25,7 @@ package org.hibernate.resource.jdbc;
 
 import org.hibernate.resource.transaction.TransactionCoordinator;
 
-import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.OperationSpecResult;
+import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
 
 /**
  * Models the context of a JDBC Connection and transaction.
@@ -85,5 +85,5 @@ public interface JdbcSession {
 	 */
 	public <R> R accept(PreparedStatementQueryOperationSpec<R> operation);
 
-	public OperationSpecResult accept(ScrollableQueryOperationSpec operation);
+	public Result accept(ScrollableQueryOperationSpec operation);
 }

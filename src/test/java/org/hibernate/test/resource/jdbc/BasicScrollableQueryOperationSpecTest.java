@@ -32,7 +32,6 @@ import java.sql.Statement;
 import org.mockito.InOrder;
 
 import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
@@ -50,6 +49,9 @@ import org.junit.Test;
 import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
 import static org.hamcrest.core.Is.is;
+import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetConcurrency;
+import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetType;
+import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
@@ -93,8 +95,8 @@ public class BasicScrollableQueryOperationSpecTest {
 				queryStatementBuilder.buildQueryStatement(
 						any( Connection.class ),
 						anyString(),
-						any( QueryOperationSpec.ResultSetType.class ),
-						any( QueryOperationSpec.ResultSetConcurrency.class )
+						any( ResultSetType.class ),
+						any( ResultSetConcurrency.class )
 				)
 		).thenReturn(
 				statement
@@ -120,8 +122,8 @@ public class BasicScrollableQueryOperationSpecTest {
 		verify( queryStatementBuilder ).buildQueryStatement(
 				any( Connection.class ),
 				anyString(),
-				any( QueryOperationSpec.ResultSetType.class ),
-				any( QueryOperationSpec.ResultSetConcurrency.class )
+				any( ResultSetType.class ),
+				any( ResultSetConcurrency.class )
 		);
 		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
 	}
@@ -154,8 +156,8 @@ public class BasicScrollableQueryOperationSpecTest {
 	@Test
 	public void buildQueryStatementBuilderMethodIsCalledWithTheExpectedParameters() throws SQLException {
 		String expectedSql = "select * from SomeEntity";
-		QueryOperationSpec.ResultSetConcurrency expectedResultSetConcurrency = QueryOperationSpec.ResultSetConcurrency.READ_ONLY;
-		QueryOperationSpec.ResultSetType expectedResultSetType = QueryOperationSpec.ResultSetType.FORWARD_ONLY;
+		ResultSetConcurrency expectedResultSetConcurrency = ResultSetConcurrency.READ_ONLY;
+		ResultSetType expectedResultSetType = ResultSetType.FORWARD_ONLY;
 		mockOperationMethods(
 				UNIMPORTANT_INT_VALUE,
 				expectedSql,
@@ -168,8 +170,8 @@ public class BasicScrollableQueryOperationSpecTest {
 		verify( queryStatementBuilder ).buildQueryStatement(
 				((LogicalConnectionImplementor) jdbcSession.getLogicalConnection()).getPhysicalConnection(),
 				expectedSql,
-				QueryOperationSpec.ResultSetType.FORWARD_ONLY,
-				QueryOperationSpec.ResultSetConcurrency.READ_ONLY
+				ResultSetType.FORWARD_ONLY,
+				ResultSetConcurrency.READ_ONLY
 		);
 	}
 
@@ -196,8 +198,8 @@ public class BasicScrollableQueryOperationSpecTest {
 	private void mockOperationMethods(
 			int queryTimeout,
 			String sql,
-			QueryOperationSpec.ResultSetType resultSetType,
-			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) {
+			ResultSetType resultSetType,
+			ResultSetConcurrency resultSetConcurrency) {
 		when( operationSpec.getQueryTimeout() ).thenReturn( queryTimeout );
 		when( operationSpec.getSql() ).thenReturn( sql );
 		when( operationSpec.getResultSetType() ).thenReturn( resultSetType );
@@ -206,7 +208,7 @@ public class BasicScrollableQueryOperationSpecTest {
 
 	@Test
 	public void closeMethodShouldCloseStatementAndResultSet() throws SQLException {
-		ScrollableQueryOperationSpec.OperationSpecResult result = jdbcSession.accept( operationSpec );
+		Result result = jdbcSession.accept( operationSpec );
 
 		result.close();
 

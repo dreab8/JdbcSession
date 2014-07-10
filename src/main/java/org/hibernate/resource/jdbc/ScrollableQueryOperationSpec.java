@@ -33,8 +33,7 @@ import org.hibernate.resource.jdbc.spi.StatementExecutor;
 /**
  * @author Andrea Boriero
  */
-public interface ScrollableQueryOperationSpec
-		extends QueryOperationSpec<ScrollableQueryOperationSpec.OperationSpecResult> {
+public interface ScrollableQueryOperationSpec extends QueryOperationSpec {
 
 	public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder();
 
@@ -42,7 +41,7 @@ public interface ScrollableQueryOperationSpec
 
 	public StatementExecutor getStatementExecutor();
 
-	public interface OperationSpecResult {
+	public interface Result {
 
 		public ResultSet getResultSet();
 

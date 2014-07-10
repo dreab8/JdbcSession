@@ -22,7 +22,7 @@ import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
-import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.OperationSpecResult;
+import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
 
 /**
  * @author Steve Ebersole
@@ -101,7 +101,7 @@ public class JdbcSessionImpl
 	}
 
 	@Override
-	public OperationSpecResult accept(ScrollableQueryOperationSpec operation) {
+	public Result accept(ScrollableQueryOperationSpec operation) {
 		try {
 			final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 					logicalConnection.getPhysicalConnection(),
@@ -118,7 +118,7 @@ public class JdbcSessionImpl
 
 			register( resultSet, statement );
 
-			return new OperationSpecResult() {
+			return new Result() {
 				@Override
 				public void close() {
 					logicalConnection.getResourceRegistry().release( resultSet, statement );
