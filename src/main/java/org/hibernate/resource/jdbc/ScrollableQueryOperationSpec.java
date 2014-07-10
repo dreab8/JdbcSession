@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -23,8 +23,17 @@
  */
 package org.hibernate.resource.jdbc;
 
+import java.sql.ResultSet;
+
 /**
- * @author Steve Ebersole
+ * @author Andrea Boriero
  */
-public interface OperationSpec {
+public interface ScrollableQueryOperationSpec extends QueryOperationSpec {
+
+	public interface Result {
+
+		public ResultSet getResultSet();
+
+		public void close();
+	}
 }

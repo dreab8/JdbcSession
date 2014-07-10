@@ -23,70 +23,12 @@
  */
 package org.hibernate.resource.jdbc;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
-import org.hibernate.resource.jdbc.spi.ParameterBindings;
-import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
-import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
 /**
  * @author Steve Ebersole
  */
-public interface PreparedStatementQueryOperationSpec<R> extends OperationSpec<R> {
-
-	public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder();
-
-	public ParameterBindings getParameterBindings();
-
-	public StatementExecutor getStatementExecutor();
+public interface PreparedStatementQueryOperationSpec<R> extends QueryOperationSpec {
 
 	public ResultSetProcessor<R> getResultSetProcessor();
-
-	public String getSql();
-
-	public ResultSetType getResultSetType();
-
-	public ResultSetConcurrency getResultSetConcurrency();
-
-	public int getQueryTimeout();
-
-	public boolean holdOpenResources();
-
-	public int getOffset();
-
-	public int getLimit();
-
-	public enum ResultSetConcurrency {
-		READ_ONLY( ResultSet.CONCUR_READ_ONLY ),
-		UPDATABLE( ResultSet.CONCUR_UPDATABLE );
-
-		private final int jdbcConstantValue;
-
-		ResultSetConcurrency(int jdbcConstantValue) {
-			this.jdbcConstantValue = jdbcConstantValue;
-		}
-
-		public int getJdbcConstantValue() {
-			return jdbcConstantValue;
-		}
-	}
-
-	public enum ResultSetType {
-		FORWARD_ONLY( ResultSet.TYPE_FORWARD_ONLY ),
-		SCROLL_INSENSITIVE( ResultSet.TYPE_SCROLL_INSENSITIVE ),
-		SCROLL_SENSITIVE( ResultSet.TYPE_SCROLL_SENSITIVE );
-
-		private final int jdbcConstantValue;
-
-		ResultSetType(int jdbcConstantValue) {
-			this.jdbcConstantValue = jdbcConstantValue;
-		}
-
-		public int getJdbcConstantValue() {
-			return jdbcConstantValue;
-		}
-	}
-
 }
