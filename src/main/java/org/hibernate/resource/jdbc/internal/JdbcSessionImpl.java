@@ -103,16 +103,7 @@ public class JdbcSessionImpl
 	@Override
 	public Result accept(ScrollableQueryOperationSpec operation) {
 		try {
-			final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
-					logicalConnection.getPhysicalConnection(),
-					operation.getSql(),
-					operation.getResultSetType(),
-					operation.getResultSetConcurrency()
-			);
-
-			bindParameters( operation.getParameterBindings(), statement );
-
-			configureStatement( operation, statement );
+			final PreparedStatement statement = prepareStatement( operation );
 
 			final ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
 
@@ -133,44 +124,53 @@ public class JdbcSessionImpl
 		catch (SQLException e) {
 			throw context.getSqlExceptionHelper().convert( e, "" );
 		}
-		finally {
-			afterStatement( false );
-		}
 	}
 
 	@Override
 	public <R> R accept(PreparedStatementQueryOperationSpec<R> operation) {
+		PreparedStatement statement = null;
+		ResultSet resultSet = null;
 		try {
-			final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
-					logicalConnection.getPhysicalConnection(),
-					operation.getSql(),
-					operation.getResultSetType(),
-					operation.getResultSetConcurrency()
-			);
+			statement = prepareStatement( operation );
 
-			try {
-				bindParameters( operation.getParameterBindings(), statement );
+			resultSet = operation.getStatementExecutor().execute( statement, this );
 
-				configureStatement( operation, statement );
-
-				final ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
-
-				try {
-					return operation.getResultSetProcessor().extractResults( resultSet, this );
-				}
-				finally {
-					resultSet.close();
-				}
-			}
-			finally {
-				statement.close();
-			}
+			return operation.getResultSetProcessor().extractResults( resultSet, this );
 		}
 		catch (SQLException e) {
 			throw context.getSqlExceptionHelper().convert( e, "" );
 		}
 		finally {
-			// todo: is there something to do?
+			close( statement, resultSet );
+		}
+	}
+
+	private PreparedStatement prepareStatement(QueryOperationSpec operation) throws SQLException {
+		final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
+				logicalConnection.getPhysicalConnection(),
+				operation.getSql(),
+				operation.getResultSetType(),
+				operation.getResultSetConcurrency()
+		);
+
+		bindParameters( operation.getParameterBindings(), statement );
+
+		configureStatement( operation, statement );
+
+		return statement;
+	}
+
+	private void close(PreparedStatement statement, ResultSet resultSet) {
+		try {
+			if ( resultSet != null ) {
+				resultSet.close();
+			}
+			if ( statement != null ) {
+				statement.close();
+			}
+		}
+		catch (SQLException e) {
+			throw context.getSqlExceptionHelper().convert( e, "Unexpected error closing the resource" );
 		}
 	}
 
@@ -188,21 +188,9 @@ public class JdbcSessionImpl
 		logicalConnection.getResourceRegistry().register( resultSet, statement );
 	}
 
-	private void release(ResultSet resultSet, Statement statement) {
-		logicalConnection.getResourceRegistry().release( resultSet, statement );
-	}
-
-	private void release(Statement statement) {
-		logicalConnection.getResourceRegistry().release( statement );
-	}
-
 	private void configureStatement(QueryOperationSpec operation, Statement statement)
 			throws SQLException {
 		statement.setQueryTimeout( operation.getQueryTimeout() );
-	}
-
-	private void afterStatement(boolean holdOpernResources) {
-		// todo : implement
 	}
 
 	// ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

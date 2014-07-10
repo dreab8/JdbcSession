@@ -26,5 +26,5 @@ package org.hibernate.resource.jdbc;
 /**
  * @author Steve Ebersole
  */
-public interface OperationSpec<R> {
+public interface OperationSpec {
 }

@@ -23,12 +23,23 @@
  */
 package org.hibernate.resource.jdbc;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+
+import org.hibernate.resource.jdbc.spi.ParameterBindings;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
+import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
 /**
  * @author Andrea Boriero
  */
-public interface QueryOperationSpec<R> extends OperationSpec<R> {
+public interface QueryOperationSpec extends OperationSpec {
+
+	public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder();
+
+	public ParameterBindings getParameterBindings();
+
+	public StatementExecutor getStatementExecutor();
 
 	public ResultSetType getResultSetType();
 
