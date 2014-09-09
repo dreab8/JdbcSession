@@ -153,7 +153,7 @@ public class JdbcSessionImpl
 				operation.getResultSetConcurrency()
 		);
 
-		bindParameters( operation.getParameterBindings(), statement );
+		operation.getParameterBindings().bindParameters( statement );
 
 		configureStatement( operation, statement );
 
@@ -172,16 +172,6 @@ public class JdbcSessionImpl
 		catch (SQLException e) {
 			throw context.getSqlExceptionHelper().convert( e, "Unexpected error closing the resource" );
 		}
-	}
-
-	private void bindParameters(ParameterBindings parameterBindings, PreparedStatement statement) {
-		int col = parameterBindings.bindLimitOffsetParametersAtStartOfQuery( statement );
-
-		col += parameterBindings.bindParameters( statement, col );
-
-		parameterBindings.bindLimitOffsetParametersAtEndOfQuery( statement, col );
-
-		parameterBindings.setMaxRow( statement );
 	}
 
 	private void register(ResultSet resultSet, Statement statement) {

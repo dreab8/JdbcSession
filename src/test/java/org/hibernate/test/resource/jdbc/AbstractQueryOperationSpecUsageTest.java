@@ -112,30 +112,13 @@ public abstract class AbstractQueryOperationSpecUsageTest<T extends QueryOperati
 		}
 	}
 
-
 	@Test
-	public void bindindgParamnetersMehtodsAreCalledInRightOrder() {
-		final int BIND_LINIT_OFFSET_AT_START_RETURN_INDEX = 0;
-		final int BIND_PARAMETERS_RETURN_INDEX = 2;
-
-		when( parameterBindings.bindLimitOffsetParametersAtStartOfQuery( any( PreparedStatement.class ) ) ).thenReturn(
-				BIND_LINIT_OFFSET_AT_START_RETURN_INDEX
-		);
-		when( parameterBindings.bindParameters( any( PreparedStatement.class ), anyInt() ) ).thenReturn(
-				BIND_PARAMETERS_RETURN_INDEX
-		);
-
+	public void bindindgParamnetersMehtodsAreCalledInRightOrder() throws SQLException {
 		jdbSessionAccept();
 
 		InOrder inOrder = inOrder( parameterBindings );
 
-		inOrder.verify( parameterBindings ).bindLimitOffsetParametersAtStartOfQuery( statement );
-		inOrder.verify( parameterBindings ).bindParameters( statement, BIND_LINIT_OFFSET_AT_START_RETURN_INDEX );
-		inOrder.verify( parameterBindings ).bindLimitOffsetParametersAtEndOfQuery(
-				statement,
-				BIND_PARAMETERS_RETURN_INDEX
-		);
-		inOrder.verify( parameterBindings ).setMaxRow( statement );
+		inOrder.verify( parameterBindings ).bindParameters( statement );
 	}
 
 	@Test
@@ -161,20 +144,14 @@ public abstract class AbstractQueryOperationSpecUsageTest<T extends QueryOperati
 	}
 
 	@Test
-	public void bindParametersReceiveTheCorrectPreparedStatement() {
-		final int BIND_LINIT_OFFSET_AT_START_RETURN_INDEX = 0;
-
-		when( parameterBindings.bindLimitOffsetParametersAtStartOfQuery( statement ) ).thenReturn(
-				BIND_LINIT_OFFSET_AT_START_RETURN_INDEX
-		);
-
+	public void bindParametersReceiveTheCorrectPreparedStatement() throws SQLException {
 		jdbSessionAccept();
 
-		verify( parameterBindings ).bindParameters( statement, BIND_LINIT_OFFSET_AT_START_RETURN_INDEX );
+		verify( parameterBindings ).bindParameters( statement );
 	}
 
 	@Test
-	public void statementExecutorMethodIsCalledWithTheExpectedParameters() {
+	public void statementExecutorMethodIsCalledWithTheExpectedParameters() throws SQLException {
 		jdbSessionAccept();
 
 		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );

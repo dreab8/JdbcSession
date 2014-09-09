@@ -24,6 +24,7 @@
 package org.hibernate.resource.jdbc.spi;
 
 import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
  * @author Andrea Boriero
@@ -31,10 +32,6 @@ import java.sql.PreparedStatement;
 public interface ParameterBindings {
 	public int bindLimitOffsetParametersAtStartOfQuery(PreparedStatement statement);
 
-	public int bindParameters(PreparedStatement statement, int col);
-
-	public int bindLimitOffsetParametersAtEndOfQuery(PreparedStatement statement, int col);
-
-	public void setMaxRow(PreparedStatement statement);
+	public void bindParameters(PreparedStatement statement) throws SQLException;
 }
 
