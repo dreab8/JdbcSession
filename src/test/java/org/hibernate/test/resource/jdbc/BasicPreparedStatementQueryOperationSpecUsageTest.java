@@ -69,7 +69,7 @@ public class BasicPreparedStatementQueryOperationSpecUsageTest
 	}
 
 	@Test
-	public void resultSetProcessorMethodIsCalledWithTheExpectedParameters() {
+	public void resultSetProcessorMethodIsCalledWithTheExpectedParameters() throws SQLException {
 		jdbcSession.accept( operationSpec );
 
 		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
