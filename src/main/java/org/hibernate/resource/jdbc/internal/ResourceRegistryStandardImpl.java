@@ -112,7 +112,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	}
 
 	@SuppressWarnings({"unchecked"})
-	protected void close(ResultSet resultSet) {
+	public static void close(ResultSet resultSet) {
 		log.tracef( "Closing result set [%s]", resultSet );
 
 		try {
@@ -128,7 +128,7 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	}
 
 	@SuppressWarnings({"unchecked"})
-	protected void close(Statement statement) {
+	public static void close(Statement statement) {
 		log.tracef( "Closing prepared statement [%s]", statement );
 
 		try {
@@ -151,9 +151,6 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 				return;
 			}
 			statement.close();
-			if ( lastQuery == statement ) {
-				lastQuery = null;
-			}
 		}
 		catch (SQLException e) {
 			log.debugf( "Unable to release JDBC statement [%s]", e.getMessage() );

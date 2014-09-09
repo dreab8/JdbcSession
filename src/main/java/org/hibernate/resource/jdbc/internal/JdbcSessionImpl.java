@@ -12,11 +12,11 @@ import org.hibernate.resource.jdbc.LogicalConnection;
 import org.hibernate.resource.jdbc.Operation;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
+import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
-import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
@@ -80,7 +80,7 @@ public class JdbcSessionImpl
 	public boolean isReadyToSerialize() {
 		// todo : new LogicalConnectionImplementor.isReadyToSerialize method?
 		return !logicalConnection.isPhysicallyConnected()
-				&& !logicalConnection.getResourceRegistry().hasRegisteredResources();
+				&& !getResourceRegistry().hasRegisteredResources();
 	}
 
 	@Override
@@ -112,7 +112,7 @@ public class JdbcSessionImpl
 			return new Result() {
 				@Override
 				public void close() {
-					logicalConnection.getResourceRegistry().release( resultSet, statement );
+					getResourceRegistry().release( resultSet, statement );
 				}
 
 				@Override
@@ -141,7 +141,10 @@ public class JdbcSessionImpl
 			throw context.getSqlExceptionHelper().convert( e, "" );
 		}
 		finally {
-			close( statement, resultSet );
+			if ( resultSet != null ) {
+				close( resultSet );
+			}
+			getResourceRegistry().release( statement );
 		}
 	}
 
@@ -160,20 +163,6 @@ public class JdbcSessionImpl
 		return statement;
 	}
 
-	private void close(PreparedStatement statement, ResultSet resultSet) {
-		try {
-			if ( resultSet != null ) {
-				resultSet.close();
-			}
-			if ( statement != null ) {
-				statement.close();
-			}
-		}
-		catch (SQLException e) {
-			throw context.getSqlExceptionHelper().convert( e, "Unexpected error closing the resource" );
-		}
-	}
-
 	private void register(ResultSet resultSet, Statement statement) {
 		logicalConnection.getResourceRegistry().register( resultSet, statement );
 	}
@@ -181,6 +170,10 @@ public class JdbcSessionImpl
 	private void configureStatement(QueryOperationSpec operation, Statement statement)
 			throws SQLException {
 		statement.setQueryTimeout( operation.getQueryTimeout() );
+	}
+
+	private ResourceRegistry getResourceRegistry() {
+		return getLogicalConnection().getResourceRegistry();
 	}
 
 	// ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -207,5 +200,13 @@ public class JdbcSessionImpl
 		// todo : implement
 		// for now, just log...
 		log.tracef( "JdbcSessionImpl#afterTransactionCompletion(%s)", successful );
+	}
+
+	private void close(ResultSet resultSet) {
+		ResourceRegistryStandardImpl.close( resultSet );
+	}
+
+	protected void close(Statement statement) {
+		ResourceRegistryStandardImpl.close( statement );
 	}
 }
