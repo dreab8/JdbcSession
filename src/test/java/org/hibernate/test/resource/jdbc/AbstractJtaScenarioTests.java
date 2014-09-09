@@ -39,6 +39,7 @@ import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
 import org.hibernate.test.resource.jdbc.common.ConnectionProviderJtaAwareImpl;
 import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
 import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -64,7 +65,7 @@ public abstract class AbstractJtaScenarioTests {
 	}
 
 	private JdbcSession buildJdbcSession(final boolean autoJoin) {
-		return  new JdbcSessionImpl(
+		return new JdbcSessionImpl(
 				JdbcSessionContextStandardTestingImpl.INSTANCE,
 				new LogicalConnectionManagedImpl(
 						new JdbcConnectionAccess() {

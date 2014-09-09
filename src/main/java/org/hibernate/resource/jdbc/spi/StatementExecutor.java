@@ -27,11 +27,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
-
 /**
  * @author Andrea Boriero
  */
 public interface StatementExecutor {
-	ResultSet execute(Statement statement, JdbcSessionImpl jdbcSession) throws SQLException;
+	ResultSet execute(Statement statement) throws SQLException;
 }

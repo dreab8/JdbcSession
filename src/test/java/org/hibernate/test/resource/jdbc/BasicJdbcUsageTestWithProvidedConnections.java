@@ -32,6 +32,7 @@ import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 
 import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
+
 import org.junit.After;
 import org.junit.Before;
 

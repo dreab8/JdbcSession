@@ -64,7 +64,7 @@ public class BasicPreparedStatementQueryOperationSpecUsageTest
 				any( ResultSetType.class ),
 				any( ResultSetConcurrency.class )
 		);
-		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
+		verify( statementExecutor ).execute( statement );
 		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
 	}
 

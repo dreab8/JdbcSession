@@ -29,7 +29,6 @@ import java.sql.SQLException;
 import org.mockito.InOrder;
 
 import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
-import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 
 import org.junit.Test;
 
@@ -65,7 +64,7 @@ public class BasicScrollableQueryOperationSpecUsageTest
 				any( ResultSetType.class ),
 				any( ResultSetConcurrency.class )
 		);
-		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
+		verify( statementExecutor ).execute( statement );
 	}
 
 	@Test

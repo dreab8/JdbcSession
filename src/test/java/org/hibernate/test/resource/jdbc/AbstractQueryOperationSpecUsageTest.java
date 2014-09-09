@@ -34,7 +34,6 @@ import org.mockito.InOrder;
 import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
-import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
@@ -50,9 +49,7 @@ import org.junit.Test;
 import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -90,7 +87,7 @@ public abstract class AbstractQueryOperationSpecUsageTest<T extends QueryOperati
 		when( operationSpec.getParameterBindings() ).thenReturn( parameterBindings );
 		when( operationSpec.getQueryStatementBuilder() ).thenReturn( queryStatementBuilder );
 		when( operationSpec.getStatementExecutor() ).thenReturn( statementExecutor );
-		when( statementExecutor.execute( any( Statement.class ), eq( (JdbcSessionImpl) jdbcSession ) ) ).thenReturn(
+		when( statementExecutor.execute( any( Statement.class ) ) ).thenReturn(
 				resultSet
 		);
 		when(
@@ -154,7 +151,7 @@ public abstract class AbstractQueryOperationSpecUsageTest<T extends QueryOperati
 	public void statementExecutorMethodIsCalledWithTheExpectedParameters() throws SQLException {
 		jdbSessionAccept();
 
-		verify( statementExecutor ).execute( statement, (JdbcSessionImpl) jdbcSession );
+		verify( statementExecutor ).execute( statement );
 	}
 
 	private void mockOperationMethods(

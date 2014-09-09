@@ -105,7 +105,7 @@ public class JdbcSessionImpl
 		try {
 			final PreparedStatement statement = prepareStatement( operation );
 
-			final ResultSet resultSet = operation.getStatementExecutor().execute( statement, this );
+			final ResultSet resultSet = operation.getStatementExecutor().execute( statement );
 
 			register( resultSet, statement );
 
@@ -133,7 +133,7 @@ public class JdbcSessionImpl
 		try {
 			statement = prepareStatement( operation );
 
-			resultSet = operation.getStatementExecutor().execute( statement, this );
+			resultSet = operation.getStatementExecutor().execute( statement );
 
 			return operation.getResultSetProcessor().extractResults( resultSet, this );
 		}

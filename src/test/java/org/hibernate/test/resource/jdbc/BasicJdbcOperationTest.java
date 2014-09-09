@@ -30,6 +30,7 @@ import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.Operation;
 
 import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
+
 import org.junit.Test;
 
 /**

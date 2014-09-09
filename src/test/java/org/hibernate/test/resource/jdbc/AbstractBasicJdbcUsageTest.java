@@ -14,6 +14,7 @@ import static org.junit.Assert.assertTrue;
  */
 public abstract class AbstractBasicJdbcUsageTest {
 	protected abstract Connection getConnection();
+
 	protected abstract JdbcSession getJdbcSession();
 
 	@Test

@@ -77,12 +77,16 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider {
 			}
 
 			// this portion handles enlisted connections ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-			Connection connection = (Connection) JtaPlatformStandardTestingImpl.INSTANCE.synchronizationRegistry().getResource(
-					CONNECTION_KEY
-			);
+			Connection connection = (Connection) JtaPlatformStandardTestingImpl.INSTANCE.synchronizationRegistry()
+					.getResource(
+							CONNECTION_KEY
+					);
 			if ( connection == null ) {
 				connection = DatabaseConnectionInfo.INSTANCE.makeConnection();
-				JtaPlatformStandardTestingImpl.INSTANCE.synchronizationRegistry().putResource( CONNECTION_KEY, connection );
+				JtaPlatformStandardTestingImpl.INSTANCE.synchronizationRegistry().putResource(
+						CONNECTION_KEY,
+						connection
+				);
 
 				XAResourceWrapper xaResourceWrapper = new XAResourceWrapper( this, connection );
 				currentTransaction.enlistResource( xaResourceWrapper );
@@ -93,7 +97,7 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider {
 			throw e;
 		}
 		catch (Exception e) {
-			throw new SQLException(e);
+			throw new SQLException( e );
 		}
 	}
 
@@ -159,19 +163,19 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider {
 
 		@Override
 		public int prepare(Xid xid) throws XAException {
-			throw new RuntimeException("this should never be called");
+			throw new RuntimeException( "this should never be called" );
 		}
 
 		@Override
 		public void commit(Xid xid, boolean onePhase) throws XAException {
-			if (!onePhase) {
+			if ( !onePhase ) {
 				throw new IllegalArgumentException( "must be one phase" );
 			}
 
 			try {
 				connection.commit();
 			}
-			catch(SQLException e) {
+			catch (SQLException e) {
 				throw new XAException( e.toString() );
 			}
 			finally {
@@ -190,7 +194,7 @@ public class ConnectionProviderJtaAwareImpl implements ConnectionProvider {
 			try {
 				connection.rollback();
 			}
-			catch(SQLException e) {
+			catch (SQLException e) {
 				throw new XAException( e.toString() );
 			}
 			finally {
