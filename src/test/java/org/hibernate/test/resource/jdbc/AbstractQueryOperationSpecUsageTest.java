@@ -27,7 +27,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.mockito.InOrder;
 
@@ -87,7 +86,7 @@ public abstract class AbstractQueryOperationSpecUsageTest<T extends QueryOperati
 		when( operationSpec.getParameterBindings() ).thenReturn( parameterBindings );
 		when( operationSpec.getQueryStatementBuilder() ).thenReturn( queryStatementBuilder );
 		when( operationSpec.getStatementExecutor() ).thenReturn( statementExecutor );
-		when( statementExecutor.execute( any( Statement.class ) ) ).thenReturn(
+		when( statementExecutor.execute( any( PreparedStatement.class ) ) ).thenReturn(
 				resultSet
 		);
 		when(

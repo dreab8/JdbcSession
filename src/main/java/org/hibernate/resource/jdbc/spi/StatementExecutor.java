@@ -23,13 +23,13 @@
  */
 package org.hibernate.resource.jdbc.spi;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * @author Andrea Boriero
  */
 public interface StatementExecutor {
-	ResultSet execute(Statement statement) throws SQLException;
+	ResultSet execute(PreparedStatement statement) throws SQLException;
 }
