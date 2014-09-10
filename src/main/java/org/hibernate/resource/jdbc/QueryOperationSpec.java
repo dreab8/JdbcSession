@@ -37,17 +37,17 @@ public interface QueryOperationSpec extends OperationSpec {
 
 	public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder();
 
-	public ParameterBindings getParameterBindings();
-
 	public StatementExecutor getStatementExecutor();
 
-	public ResultSetType getResultSetType();
-
-	public ResultSetConcurrency getResultSetConcurrency();
+	public ParameterBindings getParameterBindings();
 
 	public int getQueryTimeout();
 
 	public String getSql();
+
+	public ResultSetType getResultSetType();
+
+	public ResultSetConcurrency getResultSetConcurrency();
 
 	public int getOffset();
 

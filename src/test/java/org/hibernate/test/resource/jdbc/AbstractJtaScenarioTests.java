@@ -29,6 +29,7 @@ import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.resource.jdbc.JdbcSession;
+import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl;
 import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
@@ -51,6 +52,8 @@ import static org.junit.Assert.assertTrue;
  * @author Steve Ebersole
  */
 public abstract class AbstractJtaScenarioTests {
+	private int batchSize ;
+
 	protected abstract boolean preferUserTransactions();
 
 	private ConnectionProviderJtaAwareImpl connectionProvider;
@@ -85,7 +88,8 @@ public abstract class AbstractJtaScenarioTests {
 						.setJtaPlatform( JtaPlatformStandardTestingImpl.INSTANCE )
 						.setAutoJoinTransactions( autoJoin )
 						.setPreferUserTransactions( preferUserTransactions() )
-						.setPerformJtaThreadTracking( false )
+						.setPerformJtaThreadTracking( false ),
+				new BatchFactoryImpl( batchSize )
 		);
 	}
 

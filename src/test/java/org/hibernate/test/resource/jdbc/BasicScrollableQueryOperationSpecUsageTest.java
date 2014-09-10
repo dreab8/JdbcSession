@@ -88,4 +88,5 @@ public class BasicScrollableQueryOperationSpecUsageTest
 	protected void jdbSessionAccept() {
 		jdbcSession.accept( operationSpec );
 	}
+
 }

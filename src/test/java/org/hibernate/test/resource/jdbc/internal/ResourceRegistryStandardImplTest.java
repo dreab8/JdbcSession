@@ -6,6 +6,7 @@ import java.sql.Statement;
 
 import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
+import org.hibernate.resource.jdbc.spi.Batch;
 
 import org.junit.After;
 import org.junit.Before;
@@ -35,13 +36,36 @@ public class ResourceRegistryStandardImplTest {
 	}
 
 	@Test
-	public void shpouldHhasRegisterReturnTrueIfOneResourceIsRegistered() {
+	public void shpouldHasRegisterReturnTrueIfOneResourceIsRegistered() {
 		Statement statement = mock( Statement.class );
 
 		registry.register( statement, false );
 
 		assertThat( registry.hasRegisteredResources(), is( true ) );
 	}
+
+	@Test
+	public void shouldHasRegisterReturnTrueIfABatchResourceIsRegistered() {
+		Batch batch = mock( Batch.class );
+
+		registry.register( batch );
+
+		assertThat( registry.hasRegisteredResources(), is( true ) );
+	}
+
+	@Test
+	public void releaseBatchShouldCallBatchReleaseMethod(){
+		Batch batch = mock( Batch.class );
+
+		registry.register( batch );
+
+		registry.releaseCurrentBatch();
+
+		verify( batch ).release();
+
+		assertThat( registry.hasRegisteredResources(), is( false ) );
+	}
+
 
 	@Test
 	public void shouldCloseAndUnregisterAStatement() throws SQLException {

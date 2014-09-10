@@ -29,6 +29,8 @@ import java.sql.NClob;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import org.hibernate.resource.jdbc.spi.Batch;
+
 /**
  * A registry for tracking JDBC resources
  *
@@ -90,4 +92,8 @@ public interface ResourceRegistry {
 	public void release(NClob nclob);
 
 	public void cancelLastQuery();
+
+	public Batch getCurrentBatch();
+	public void register(Batch batch);
+	public void releaseCurrentBatch();
 }

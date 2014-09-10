@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,35 +21,47 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.jdbc.internal;
 
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.hibernate.resource.jdbc.spi.BatchKey;
 
 /**
- * @author Steve Ebersole
+ * @author Andrea Boriero
  */
-public interface JdbcSessionOwner {
-	/**
-	 * Obtain the builder for TransactionCoordinator instances
-	 *
-	 * @return The TransactionCoordinatorBuilder
-	 */
-	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder();
+public class NonBatching extends AbstractBatchImpl {
 
-	public BatchFactory getBatchFactory();
+	public NonBatching(
+			BatchKey key,
+			SqlExceptionHelper sqlExceptionHelper) {
+		super( key, sqlExceptionHelper );
+	}
 
-	public JdbcSessionContext getJdbcSessionContext();
-	public JdbcConnectionAccess getJdbcConnectionAccess();
+	@Override
+	public PreparedStatement getStatement(String sql) {
+		return null;
+	}
 
-	/**
-	 * A before-completion callback to the owner.
-	 */
-	public void beforeTransactionCompletion();
+	@Override
+	public void addBatch(String sql, PreparedStatement statement) throws SQLException {
+		notifyObserversImplicitExecution();
 
-	/**
-	 * An after-completion callback to the owner.
-	 *
-	 * @param successful Was the transaction successful?
-	 */
-	public void afterTransactionCompletion(boolean successful);
+		final int rowCount = statement.executeUpdate();
+		getExpectation().verifyOutcome( rowCount, statement, 0 );
+
+		close( statement );
+	}
+
+	@Override
+	public void execute() {
+		// nothing to do
+	}
+
+	@Override
+	public void release() {
+		// nothing to do
+	}
 }

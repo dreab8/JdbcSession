@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,35 +21,30 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.jdbc.internal;
 
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.hibernate.resource.jdbc.spi.Batch;
+import org.hibernate.resource.jdbc.spi.BatchFactory;
+import org.hibernate.resource.jdbc.spi.BatchKey;
 
 /**
- * @author Steve Ebersole
+ * @author Andrea Boriero
  */
-public interface JdbcSessionOwner {
-	/**
-	 * Obtain the builder for TransactionCoordinator instances
-	 *
-	 * @return The TransactionCoordinatorBuilder
-	 */
-	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder();
+public class BatchFactoryImpl implements BatchFactory {
 
-	public BatchFactory getBatchFactory();
+	private int batchSize;
 
-	public JdbcSessionContext getJdbcSessionContext();
-	public JdbcConnectionAccess getJdbcConnectionAccess();
+	public BatchFactoryImpl(int batchSize) {
+		this.batchSize = batchSize;
+	}
 
-	/**
-	 * A before-completion callback to the owner.
-	 */
-	public void beforeTransactionCompletion();
+	@Override
+	public Batch buildBatch(
+			BatchKey key, SqlExceptionHelper exceptionHelper, boolean foregoBatching) {
+		return batchSize > 1 && foregoBatching
+				? new Batching( key, batchSize, exceptionHelper )
+				: new NonBatching( key, exceptionHelper );
+	}
 
-	/**
-	 * An after-completion callback to the owner.
-	 *
-	 * @param successful Was the transaction successful?
-	 */
-	public void afterTransactionCompletion(boolean successful);
 }
