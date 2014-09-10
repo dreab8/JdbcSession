@@ -135,7 +135,7 @@ public class JdbcSessionImpl
 
 			resultSet = operation.getStatementExecutor().execute( statement );
 
-			return operation.getResultSetProcessor().extractResults( resultSet, this );
+			return operation.getResultSetProcessor().extractResults( resultSet );
 		}
 		catch (SQLException e) {
 			throw context.getSqlExceptionHelper().convert( e, "" );

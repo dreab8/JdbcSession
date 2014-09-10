@@ -29,7 +29,6 @@ import java.sql.SQLException;
 import org.mockito.InOrder;
 
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
-import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 
 import org.junit.Test;
 
@@ -65,14 +64,14 @@ public class BasicPreparedStatementQueryOperationSpecUsageTest
 				any( ResultSetConcurrency.class )
 		);
 		verify( statementExecutor ).execute( statement );
-		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
+		verify( resultSetProcessor ).extractResults( resultSet );
 	}
 
 	@Test
 	public void resultSetProcessorMethodIsCalledWithTheExpectedParameters() throws SQLException {
 		jdbcSession.accept( operationSpec );
 
-		verify( resultSetProcessor ).extractResults( resultSet, (JdbcSessionImpl) jdbcSession );
+		verify( resultSetProcessor ).extractResults( resultSet );
 	}
 
 	@Test

@@ -26,11 +26,9 @@ package org.hibernate.resource.jdbc.spi;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
-
 /**
  * @author Andrea Boriero
  */
 public interface ResultSetProcessor<R> {
-	R extractResults(ResultSet resultSet, JdbcSessionImpl jdbcSession) throws SQLException;
+	R extractResults(ResultSet resultSet) throws SQLException;
 }
