@@ -30,8 +30,6 @@ import java.sql.SQLException;
  * @author Andrea Boriero
  */
 public interface ParameterBindings {
-	public int bindLimitOffsetParametersAtStartOfQuery(PreparedStatement statement);
-
 	public void bindParameters(PreparedStatement statement) throws SQLException;
 }
 
