@@ -51,17 +51,20 @@ public class DatabaseConnectionInfo {
 	}
 
 	private Driver driver;
+	private Connection connection;
 
 	public Connection makeConnection() throws SQLException {
-		if ( driver == null ) {
-			try {
-				driver = (Driver) Class.forName( DRIVER ).newInstance();
+		if(connection == null || connection.isClosed()) {
+			if ( driver == null ) {
+				try {
+					driver = (Driver) Class.forName( DRIVER ).newInstance();
+				}
+				catch (Exception e) {
+					throw new HibernateException( "Unable to load JDBC Driver [" + DRIVER + "]", e );
+				}
 			}
-			catch (Exception e) {
-				throw new HibernateException( "Unable to load JDBC Driver [" + DRIVER + "]", e );
-			}
+			connection = driver.connect( URL, createDriverManagerProperties() );
 		}
-
-		return driver.connect( URL, createDriverManagerProperties() );
+		return connection;
 	}
 }

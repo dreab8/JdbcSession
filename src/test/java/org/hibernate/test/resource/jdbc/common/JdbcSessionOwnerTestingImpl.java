@@ -26,6 +26,8 @@ package org.hibernate.test.resource.jdbc.common;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
+import org.hibernate.resource.jdbc.spi.BatchFactory;
 import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
@@ -38,6 +40,8 @@ import org.hibernate.test.resource.common.DatabaseConnectionInfo;
  * @author Steve Ebersole
  */
 public class JdbcSessionOwnerTestingImpl implements JdbcSessionOwner {
+
+	private BatchFactory batchFactory = new BatchFactoryImpl( 0 );
 	private JdbcSessionContext jdbcSessionContext = JdbcSessionContextStandardTestingImpl.INSTANCE;
 	private JdbcConnectionAccess jdbcConnectionAccess = new JdbcConnectionAccess() {
 		@Override
@@ -78,6 +82,11 @@ public class JdbcSessionOwnerTestingImpl implements JdbcSessionOwner {
 		return transactionCoordinatorBuilder;
 	}
 
+	@Override
+	public BatchFactory getBatchFactory() {
+		return batchFactory;
+	}
+
 	public void setTransactionCoordinatorBuilder(TransactionCoordinatorBuilder transactionCoordinatorBuilder) {
 		this.transactionCoordinatorBuilder = transactionCoordinatorBuilder;
 	}
@@ -88,5 +97,9 @@ public class JdbcSessionOwnerTestingImpl implements JdbcSessionOwner {
 
 	@Override
 	public void afterTransactionCompletion(boolean successful) {
+	}
+
+	public void setBatchFactory(BatchFactory batchFactory){
+		this.batchFactory = batchFactory;
 	}
 }

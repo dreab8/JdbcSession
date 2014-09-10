@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -23,33 +23,19 @@
  */
 package org.hibernate.resource.jdbc.spi;
 
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
-
 /**
- * @author Steve Ebersole
+ * An observer contract for batch events.
+ *
+ * @author Andrea Boriero
  */
-public interface JdbcSessionOwner {
+public interface BatchObserver {
 	/**
-	 * Obtain the builder for TransactionCoordinator instances
-	 *
-	 * @return The TransactionCoordinatorBuilder
+	 * Indicates explicit execution of the batch via a call to {@link org.hibernate.engine.jdbc.batch.spi.Batch#execute()}.
 	 */
-	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder();
-
-	public BatchFactory getBatchFactory();
-
-	public JdbcSessionContext getJdbcSessionContext();
-	public JdbcConnectionAccess getJdbcConnectionAccess();
+	public void batchExplicitlyExecuted();
 
 	/**
-	 * A before-completion callback to the owner.
+	 * Indicates an implicit execution of the batch.
 	 */
-	public void beforeTransactionCompletion();
-
-	/**
-	 * An after-completion callback to the owner.
-	 *
-	 * @param successful Was the transaction successful?
-	 */
-	public void afterTransactionCompletion(boolean successful);
+	public void batchImplicitlyExecuted();
 }

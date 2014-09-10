@@ -8,12 +8,17 @@ import java.sql.Statement;
 import org.jboss.logging.Logger;
 
 import org.hibernate.HibernateException;
+import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.LogicalConnection;
 import org.hibernate.resource.jdbc.Operation;
+import org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
+import org.hibernate.resource.jdbc.spi.Batch;
+import org.hibernate.resource.jdbc.spi.BatchFactory;
+import org.hibernate.resource.jdbc.spi.BatchObserver;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
@@ -22,6 +27,8 @@ import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
+import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep;
+import static org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec.GenerateKeyResultSet;
 import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
 
 /**
@@ -35,16 +42,19 @@ public class JdbcSessionImpl
 	private final JdbcSessionContext context;
 	private final LogicalConnectionImplementor logicalConnection;
 	private final TransactionCoordinator transactionCoordinator;
+	private BatchFactory batchFactory;
 
 	private boolean closed;
 
 	public JdbcSessionImpl(
 			JdbcSessionContext context,
 			LogicalConnectionImplementor logicalConnection,
-			TransactionCoordinatorBuilder transactionCoordinatorBuilder) {
+			TransactionCoordinatorBuilder transactionCoordinatorBuilder,
+			BatchFactory batchFactory) {
 		this.context = context;
 		this.logicalConnection = logicalConnection;
 		this.transactionCoordinator = transactionCoordinatorBuilder.buildTransactionCoordinator( this );
+		this.batchFactory = batchFactory;
 	}
 
 	@Override
@@ -101,8 +111,66 @@ public class JdbcSessionImpl
 	}
 
 	@Override
+	public void accept(BatchableOperationSpec operation) {
+		Batch currentBatch = getResourceRegistry().getCurrentBatch();
+		if ( currentBatch != null ) {
+			if ( !currentBatch.getKey().equals( operation.getBatchKey() ) ) {
+				currentBatch.execute();
+				getResourceRegistry().releaseCurrentBatch();
+				currentBatch = buildBatch( operation );
+			}
+		}
+		else {
+			currentBatch = buildBatch( operation );
+		}
+		try {
+			for ( BatchableOperationStep step : operation.getSteps() ) {
+				step.apply( currentBatch, logicalConnection.getPhysicalConnection() );
+			}
+		}
+		catch (SQLException e) {
+			throw context.getSqlExceptionHelper().convert( e, "" );
+		}
+	}
+
+	@Override
+	public GenerateKeyResultSet accept(PreparedStatementInsertOperationSpec operation) {
+		try {
+			logicalConnection.getResourceRegistry();
+
+			final PreparedStatement statement = operation.getStatementBuilder()
+					.buildQueryStatement( logicalConnection.getPhysicalConnection(), operation.getSql() );
+
+			operation.getParameterBindings().bindParameters( statement );
+
+			statement.executeUpdate();
+
+			final ResultSet generatedKeys = statement.getGeneratedKeys();
+
+			register( generatedKeys, statement );
+
+			return new GenerateKeyResultSet() {
+				@Override
+				public void close() {
+					getResourceRegistry().release( generatedKeys, statement );
+				}
+
+				@Override
+				public ResultSet getGeneratedKeys() {
+					return generatedKeys;
+				}
+			};
+		}
+		catch (SQLException e) {
+			throw context.getSqlExceptionHelper().convert( e, "" );
+		}
+	}
+
+	@Override
 	public Result accept(ScrollableQueryOperationSpec operation) {
 		try {
+			logicalConnection.getResourceRegistry();
+
 			final PreparedStatement statement = prepareStatement( operation );
 
 			final ResultSet resultSet = operation.getStatementExecutor().execute( statement );
@@ -148,6 +216,45 @@ public class JdbcSessionImpl
 		}
 	}
 
+	@Override
+	public void executeBatch() {
+		final Batch currentBatch = getResourceRegistry().getCurrentBatch();
+		if ( currentBatch != null ) {
+			currentBatch.execute();
+		}
+	}
+
+	@Override
+	public void abortBatch() {
+		final ResourceRegistry registry = getResourceRegistry();
+		final Batch currentBatch = registry.getCurrentBatch();
+		if ( currentBatch != null ) {
+			currentBatch.release();
+		}
+		registry.releaseCurrentBatch();
+	}
+
+	private ResourceRegistry getResourceRegistry() {
+		return getLogicalConnection().getResourceRegistry();
+	}
+
+	private Batch buildBatch(BatchableOperationSpec operation) {
+		final Batch batch = batchFactory.buildBatch(
+				operation.getBatchKey(),
+				context.getSqlExceptionHelper(),
+				operation.foregoBatching()
+		);
+
+		if ( operation.getObservers() != null ) {
+			for ( BatchObserver observer : operation.getObservers() ) {
+				batch.addObserver( observer );
+			}
+		}
+
+		getResourceRegistry().register( batch );
+		return batch;
+	}
+
 	private PreparedStatement prepareStatement(QueryOperationSpec operation) throws SQLException {
 		final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 				logicalConnection.getPhysicalConnection(),
@@ -170,10 +277,6 @@ public class JdbcSessionImpl
 	private void configureStatement(QueryOperationSpec operation, Statement statement)
 			throws SQLException {
 		statement.setQueryTimeout( operation.getQueryTimeout() );
-	}
-
-	private ResourceRegistry getResourceRegistry() {
-		return getLogicalConnection().getResourceRegistry();
 	}
 
 	// ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

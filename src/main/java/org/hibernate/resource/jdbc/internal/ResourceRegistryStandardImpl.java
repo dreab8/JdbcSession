@@ -19,6 +19,7 @@ import org.hibernate.JDBCException;
 import org.hibernate.internal.CoreLogging;
 import org.hibernate.internal.CoreMessageLogger;
 import org.hibernate.resource.jdbc.ResourceRegistry;
+import org.hibernate.resource.jdbc.spi.Batch;
 
 /**
  * @author Steve Ebersole
@@ -28,6 +29,8 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 
 	private final Map<Statement, Set<ResultSet>> xref = new HashMap<Statement, Set<ResultSet>>();
 	private final Set<ResultSet> unassociatedResultSets = new HashSet<ResultSet>();
+
+	private Batch currentBatch;
 
 	private List<Blob> blobs;
 	private List<Clob> clobs;
@@ -41,7 +44,8 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 				|| hasRegistered( unassociatedResultSets )
 				|| hasRegistered( blobs )
 				|| hasRegistered( clobs )
-				|| hasRegistered( nclobs );
+				|| hasRegistered( nclobs )
+				|| hasRegistered( currentBatch );
 	}
 
 	@Override
@@ -266,6 +270,24 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 	}
 
 	@Override
+	public Batch getCurrentBatch() {
+		return currentBatch;
+	}
+
+	@Override
+	public void register(Batch batch) {
+		currentBatch = batch;
+	}
+
+	@Override
+	public void releaseCurrentBatch() {
+		if ( currentBatch != null ) {
+			currentBatch.release();
+			currentBatch = null;
+		}
+	}
+
+	@Override
 	public void releaseResources() {
 		log.trace( "Releasing JDBC resources" );
 
@@ -314,6 +336,8 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 			}
 			nclobs.clear();
 		}
+
+		releaseCurrentBatch();
 	}
 
 	private boolean hasRegistered(Map resource) {
@@ -322,5 +346,9 @@ public class ResourceRegistryStandardImpl implements ResourceRegistry {
 
 	private boolean hasRegistered(Collection resource) {
 		return resource != null && !resource.isEmpty();
+	}
+
+	private boolean hasRegistered(Batch currentBatch) {
+		return currentBatch != null;
 	}
 }

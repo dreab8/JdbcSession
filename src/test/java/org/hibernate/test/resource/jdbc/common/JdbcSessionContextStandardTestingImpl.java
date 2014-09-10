@@ -34,6 +34,7 @@ import org.hibernate.resource.jdbc.spi.StatementInspector;
  * @author Steve Ebersole
  */
 public class JdbcSessionContextStandardTestingImpl implements JdbcSessionContext {
+
 	/**
 	 * Singleton access
 	 */

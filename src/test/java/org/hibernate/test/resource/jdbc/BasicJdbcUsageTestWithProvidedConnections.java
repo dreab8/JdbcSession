@@ -26,6 +26,7 @@ package org.hibernate.test.resource.jdbc;
 import java.sql.Connection;
 
 import org.hibernate.resource.jdbc.JdbcSession;
+import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionProvidedImpl;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
@@ -60,7 +61,8 @@ public class BasicJdbcUsageTestWithProvidedConnections extends AbstractBasicJdbc
 		jdbcSession = new JdbcSessionImpl(
 				JdbcSessionContextStandardTestingImpl.INSTANCE,
 				new LogicalConnectionProvidedImpl( jdbcConnection ),
-				TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal()
+				TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal(),
+				new BatchFactoryImpl( 0 )
 		);
 	}
 

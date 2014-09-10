@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.hibernate.resource.jdbc.JdbcSession;
+import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl;
 import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
@@ -74,7 +75,8 @@ public class BasicJdbcUsageTestWithConnectionPooling extends AbstractBasicJdbcUs
 						},
 						JdbcSessionContextStandardTestingImpl.INSTANCE
 				),
-				TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal()
+				TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal(),
+				new BatchFactoryImpl( 0 )
 		);
 	}
 

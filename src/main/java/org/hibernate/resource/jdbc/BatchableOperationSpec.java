@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,35 +21,31 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.jdbc;
 
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.hibernate.resource.jdbc.spi.Batch;
+import org.hibernate.resource.jdbc.spi.BatchKey;
+import org.hibernate.resource.jdbc.spi.BatchObserver;
 
 /**
- * @author Steve Ebersole
+ * @author Andrea Borie,ro
  */
-public interface JdbcSessionOwner {
-	/**
-	 * Obtain the builder for TransactionCoordinator instances
-	 *
-	 * @return The TransactionCoordinatorBuilder
-	 */
-	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder();
+public interface BatchableOperationSpec {
+	public BatchKey getBatchKey();
 
-	public BatchFactory getBatchFactory();
+	public boolean foregoBatching();
 
-	public JdbcSessionContext getJdbcSessionContext();
-	public JdbcConnectionAccess getJdbcConnectionAccess();
+	public List<BatchObserver> getObservers();
 
-	/**
-	 * A before-completion callback to the owner.
-	 */
-	public void beforeTransactionCompletion();
+	public List<BatchableOperationStep> getSteps();
 
-	/**
-	 * An after-completion callback to the owner.
-	 *
-	 * @param successful Was the transaction successful?
-	 */
-	public void afterTransactionCompletion(boolean successful);
+	public interface BatchableOperationStep {
+		void apply(Batch batch, Connection connection) throws SQLException;
+
+		long getGeneratedId() throws SQLException;
+	}
 }

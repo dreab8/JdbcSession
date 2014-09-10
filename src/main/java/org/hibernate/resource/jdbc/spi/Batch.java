@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -23,33 +23,25 @@
  */
 package org.hibernate.resource.jdbc.spi;
 
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
- * @author Steve Ebersole
+ * @author Andrea Boriero
  */
-public interface JdbcSessionOwner {
-	/**
-	 * Obtain the builder for TransactionCoordinator instances
-	 *
-	 * @return The TransactionCoordinatorBuilder
-	 */
-	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder();
+public interface Batch {
+	public BatchKey getKey();
 
-	public BatchFactory getBatchFactory();
+	public void addObserver(BatchObserver observer);
 
-	public JdbcSessionContext getJdbcSessionContext();
-	public JdbcConnectionAccess getJdbcConnectionAccess();
+	public PreparedStatement getStatement(String sql);
 
-	/**
-	 * A before-completion callback to the owner.
-	 */
-	public void beforeTransactionCompletion();
+	public void addBatch(String sql, PreparedStatement statement) throws SQLException;
 
-	/**
-	 * An after-completion callback to the owner.
-	 *
-	 * @param successful Was the transaction successful?
-	 */
-	public void afterTransactionCompletion(boolean successful);
+	public Integer getRowCount(String sql);
+
+	public void execute();
+
+	public void release();
 }
