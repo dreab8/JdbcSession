@@ -60,7 +60,7 @@ import static org.hibernate.resource.jdbc.BatchableOperationSpec.UpdateOrInsertO
 /**
  * @author Andrea Boriero
  */
-public class BatchableOpeartionSpecTest {
+public class BatchableOperationSpecStepsTest {
 
 	private static final int BATCH_SIZE = 3;
 	private static final String VEHICLE_INSERT_SQL = "INSERT INTO Vehicle ( serialNumber) values  (?)";
@@ -88,7 +88,7 @@ public class BatchableOpeartionSpecTest {
 	}
 
 	@Test
-	public void testInheritanceJoinedStrategy() throws SQLException {
+	public void testStepsForInheritanceJoinedStrategy() throws SQLException {
 		final OperationStep step1 = new GenericOperationStep() {
 			@Override
 			public StatementBuilder<? extends PreparedStatement> getQueryStatementBuilder() {
@@ -186,7 +186,7 @@ public class BatchableOpeartionSpecTest {
 	}
 
 	@Test
-	public void testInheritanceJoinedStrategyWithgeneratedIDIdentity() throws SQLException {
+	public void testStepsForInheritanceJoinedStrategyWithgeneratedIDIdentity() throws SQLException {
 		final InsertOpertationStep step1 = new InsertOpertationStep() {
 			private Serializable id;
 
@@ -301,7 +301,7 @@ public class BatchableOpeartionSpecTest {
 
 
 	@Test
-	public void testUpdateOrInsert() throws SQLException {
+	public void testStepsForUpdateOrInsert() throws SQLException {
 
 		PreparedStatement statement = localConnection.prepareStatement( BILLING_ADDRESS_INSERT_SQL );
 		statement.setLong( 1, 1 );
