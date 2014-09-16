@@ -73,7 +73,7 @@ import static org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec.G
 /**
  * @author Andrea Boriero
  */
-public class BatchableOpeartionSpecTest {
+public class BatchableOpeartionSpecStepTest {
 
 	private static final int BATCH_SIZE = 3;
 	private static final Long DEFAULT_SECURITY_CODE = 123L;
@@ -102,7 +102,7 @@ public class BatchableOpeartionSpecTest {
 	}
 
 	@Test
-	public void testInheritanceJoinedStrategy() throws SQLException {
+	public void testStepsForInheritanceJoinedStrategy() throws SQLException {
 
 		final Serializable id = 1L;
 
@@ -184,7 +184,7 @@ public class BatchableOpeartionSpecTest {
 	}
 
 	@Test
-	public void testInheritanceJoinedStrategyWithGenerateValues() throws SQLException {
+	public void testStepsForInheritanceJoinedStrategyWithGenerateValues() throws SQLException {
 		final CreditCard creditCard = new CreditCard();
 		creditCard.setNumber( "123" );
 		creditCard.setOwner( "drea" );
@@ -374,7 +374,7 @@ public class BatchableOpeartionSpecTest {
 	}
 
 	@Test
-	public void testInheritanceJoinedStrategyWithgeneratedIDIdentity() throws SQLException {
+	public void testStepsForInheritanceJoinedStrategyWithgeneratedIDIdentity() throws SQLException {
 
 		final BatchableOperationStep step1 = new BatchableOperationStep() {
 			private Long id;
@@ -488,7 +488,7 @@ public class BatchableOpeartionSpecTest {
 	}
 
 	@Test
-	public void testUpdateOrInsert() throws SQLException {
+	public void testStepsForUpdateOrInsert() throws SQLException {
 
 		PreparedStatement statement = localConnection.prepareStatement( BILLING_ADDRESS_INSERT_SQL );
 		statement.setLong( 1, 1 );
