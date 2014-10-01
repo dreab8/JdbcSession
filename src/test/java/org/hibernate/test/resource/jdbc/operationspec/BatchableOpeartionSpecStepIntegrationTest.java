@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc;
+package org.hibernate.test.resource.jdbc.operationspec;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -73,7 +73,7 @@ import static org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec.G
 /**
  * @author Andrea Boriero
  */
-public class BatchableOpeartionSpecStepTest {
+public class BatchableOpeartionSpecStepIntegrationTest {
 
 	private static final int BATCH_SIZE = 3;
 	private static final Long DEFAULT_SECURITY_CODE = 123L;

@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc;
+package org.hibernate.test.resource.jdbc.operationspec;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -57,7 +57,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author Andrea Borierprotectedo
  */
-public abstract class AbstractQueryOperationSpecUsageTest<T extends QueryOperationSpec> {
+public abstract class AbstractQueryOperationSpecTest<T extends QueryOperationSpec> {
 	protected static final int UNIMPORTANT_INT_VALUE = -1;
 
 	protected T operationSpec;

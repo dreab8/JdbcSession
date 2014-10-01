@@ -21,31 +21,35 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc;
+package org.hibernate.test.resource.jdbc.operationspec;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.mockito.InOrder;
 
-import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
+import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
 
 import org.junit.Test;
 
+import org.hibernate.test.resource.jdbc.operationspec.AbstractQueryOperationSpecTest;
+
+import static org.hamcrest.core.Is.is;
 import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetConcurrency;
 import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetType;
+import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * @author Andrea Boriero
  */
-public class BasicPreparedStatementQueryOperationSpecUsageTest
-		extends AbstractQueryOperationSpecUsageTest<PreparedStatementQueryOperationSpec> {
+public class BasicScrollableQueryOperationSpecTest
+		extends AbstractQueryOperationSpecTest<ScrollableQueryOperationSpec> {
 
 	@Test
 	public void operationSpecMethodsAreCalledInRightOrder() throws SQLException {
@@ -55,7 +59,6 @@ public class BasicPreparedStatementQueryOperationSpecUsageTest
 		inOrder.verify( operationSpec ).getQueryStatementBuilder();
 		inOrder.verify( operationSpec ).getParameterBindings();
 		inOrder.verify( operationSpec ).getStatementExecutor();
-		inOrder.verify( operationSpec ).getResultSetProcessor();
 
 		verify( queryStatementBuilder ).buildQueryStatement(
 				any( Connection.class ),
@@ -64,32 +67,28 @@ public class BasicPreparedStatementQueryOperationSpecUsageTest
 				any( ResultSetConcurrency.class )
 		);
 		verify( statementExecutor ).execute( statement );
-		verify( resultSetProcessor ).extractResults( resultSet );
 	}
 
 	@Test
-	public void resultSetProcessorMethodIsCalledWithTheExpectedParameters() throws SQLException {
-		jdbcSession.accept( operationSpec );
+	public void closeMethodShouldCloseStatementAndResultSet() throws SQLException {
+		Result result = jdbcSession.accept( operationSpec );
 
-		verify( resultSetProcessor ).extractResults( resultSet );
-	}
+		result.close();
 
-	@Test
-	public void resultSetAndStatementAreClosed() throws SQLException {
-		jdbcSession.accept( operationSpec );
+		assertThat( result.getResultSet(), is( resultSet ) );
 
-		verify( resultSet ).close();
 		verify( statement ).close();
+		verify( resultSet ).close();
 	}
 
 	@Override
 	protected void mockQueryOperationSpec() {
-		operationSpec = mock( PreparedStatementQueryOperationSpec.class );
-		when( operationSpec.getResultSetProcessor() ).thenReturn( resultSetProcessor );
+		operationSpec = mock( ScrollableQueryOperationSpec.class );
 	}
 
 	@Override
 	protected void jdbSessionAccept() {
 		jdbcSession.accept( operationSpec );
 	}
+
 }
