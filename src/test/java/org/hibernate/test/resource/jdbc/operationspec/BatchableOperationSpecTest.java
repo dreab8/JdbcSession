@@ -21,7 +21,7 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc;
+package org.hibernate.test.resource.jdbc.operationspec;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -65,7 +65,7 @@ import static org.mockito.Mockito.when;
 /**
  * @author Andrea Boriero
  */
-public class BasicBatchableOperationSpecUsageTest {
+public class BatchableOperationSpecTest {
 	private static final JdbcSessionOwnerTestingImpl JDBC_SESSION_OWNER = new JdbcSessionOwnerTestingImpl();
 
 	private Batch batch;
