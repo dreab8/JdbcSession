@@ -30,51 +30,24 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.hibernate.JDBCException;
-import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
-import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
-import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
-import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
-
-import org.hibernate.test.resource.common.DatabaseConnectionInfo;
-import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 /**
  * @author Andrea Boriero
  */
-public class PreparedStatementQueryOperationSpecIntegrationTest {
+public class PreparedStatementQueryOperationSpecIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
 
 	private static final String BILLING_ADDRESS_INSERT_SQL = "INSERT INTO BillingAddress (ADDRESS_ID, owner) values  (1,'owner')";
-
-	private JdbcSession jdbcSession;
-	private Connection localConnection;
-
-	@Before
-	public void setUp() throws SQLException {
-		localConnection = DatabaseConnectionInfo.INSTANCE.makeConnection();
-		localConnection.setAutoCommit( false );
-		createTables();
-		jdbcSession = createJdbSession();
-	}
-
-	@After
-	public void tearDown() throws SQLException {
-		dropTables();
-		jdbcSession.close();
-	}
 
 	@Test
 	public void testQueryForEntity() throws SQLException {
@@ -133,19 +106,18 @@ public class PreparedStatementQueryOperationSpecIntegrationTest {
 		};
 
 		try {
-			BillingAddress billingAddress = jdbcSession.accept( operationSpec );
-			localConnection.commit();
+			BillingAddress billingAddress = getJdbcSession().accept( operationSpec );
+			commit();
 			assertThat( billingAddress.getId(), is( 1L ) );
 			assertThat( billingAddress.getOwner(), is( "owner" ) );
 		}
 		catch (JDBCException e) {
-			localConnection.rollback();
+			rollback();
 			throw e;
 		}
 	}
 
 	private class SimpleStatementBuilder implements QueryStatementBuilder {
-
 		@Override
 		public Statement buildQueryStatement(
 				Connection connection,
@@ -161,7 +133,6 @@ public class PreparedStatementQueryOperationSpecIntegrationTest {
 	}
 
 	private class SimpleParameterBindings implements ParameterBindings {
-
 		@Override
 		public void bindParameters(PreparedStatement statement) throws SQLException {
 			statement.setLong( 1, 1 );
@@ -189,13 +160,8 @@ public class PreparedStatementQueryOperationSpecIntegrationTest {
 		}
 	}
 
-	private JdbcSession createJdbSession() {
-		JdbcSessionOwnerTestingImpl JDBC_SESSION_OWNER = new JdbcSessionOwnerTestingImpl();
-		JDBC_SESSION_OWNER.setBatchFactory( new BatchFactoryImpl( 1 ) );
-		return JdbcSessionFactory.INSTANCE.create( JDBC_SESSION_OWNER, new ResourceRegistryStandardImpl() );
-	}
-
-	private void createTables() throws SQLException {
+	@Override
+	protected void createTables() throws SQLException {
 		final String createBillingAddressTableSql = "create table BillingAddress (" +
 				"        ADDRESS_ID bigint not null," +
 				"        owner varchar(255)," +
@@ -203,13 +169,14 @@ public class PreparedStatementQueryOperationSpecIntegrationTest {
 		execute( createBillingAddressTableSql );
 	}
 
-	private void dropTables() throws SQLException {
+	@Override
+	protected void dropTables() throws SQLException {
 		execute( "DROP table BillingAddress IF EXISTS" );
 	}
 
-	private void execute(String sql) throws SQLException {
-		PreparedStatement statement = localConnection.prepareStatement( sql );
-		statement.execute();
+	@Override
+	protected int getBatchSize() {
+		return 0;
 	}
 
 	public class BillingAddress {

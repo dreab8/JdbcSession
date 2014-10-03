@@ -34,28 +34,20 @@ import java.util.List;
 
 import org.hibernate.JDBCException;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
-import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
-import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
-import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
-import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementBuilder;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 import org.hibernate.test.resource.jdbc.common.BatchKeyImpl;
-import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -65,7 +57,7 @@ import static org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec.G
 /**
  * @author Andrea Boriero
  */
-public class BatchableOpeartionSpecStepIntegrationTest {
+public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
 
 	private static final int BATCH_SIZE = 3;
 	private static final Long DEFAULT_SECURITY_CODE = 123L;
@@ -77,26 +69,8 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 	public static final String UPDATE_BILLING_ADDRESS = "UPDATE BillingAddress set owner = ? where ADDRESS_ID = ? ";
 	public static final String UPDATE_CREDIT_CARD = "UPDATE CreditCard set number = ? where ADDRESS_ID = ?";
 
-	private JdbcSession jdbcSession;
-	private Connection localConnection;
-
-	@Before
-	public void setUp() throws SQLException {
-		localConnection = DatabaseConnectionInfo.INSTANCE.makeConnection();
-		localConnection.setAutoCommit( false );
-		createTables();
-		jdbcSession = createJdbSession();
-	}
-
-	@After
-	public void tearDown() throws SQLException {
-		dropTables();
-		jdbcSession.close();
-	}
-
 	@Test
 	public void testStepsForInsertEntityWithInheritanceJoinedStrategy() throws SQLException {
-
 		final Serializable id = 1L;
 
 		final BatchableOperationStep insertIntoSuperclassTableStep = new BatchableOperationStep() {
@@ -137,7 +111,7 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 
 		};
 
-		jdbcSession.accept(
+		getJdbcSession().accept(
 				new BatchableOperationSpec() {
 					@Override
 					public BatchKey getBatchKey() {
@@ -162,10 +136,10 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 		);
 
 		try {
-			jdbcSession.executeBatch();
-			localConnection.commit();
+			getJdbcSession().executeBatch();
+			commit();
 
-			Statement selectStatement = localConnection.createStatement();
+			Statement selectStatement = getLocalConnection().createStatement();
 			ResultSet resultSet = selectStatement.executeQuery( "SELECT * FROM CreditCard" );
 
 			assertThat( resultSet.next(), is( true ) );
@@ -173,10 +147,9 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 
 		}
 		catch (JDBCException e) {
-			localConnection.rollback();
+			rollback();
 			throw e;
 		}
-
 	}
 
 	@Test
@@ -186,10 +159,6 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 		creditCard.setOwner( "drea" );
 
 		final Serializable entityId = 1L;
-		final String sqlUpdateGeneratedValuesSelectString = "select creditcard_.securityCode as securityCode_ " +
-				"from CreditCard creditcard_ inner join BillingAddress creditcard_1_ " +
-				"#on creditcard_.ADDRESS_ID=creditcard_1_.ADDRESS_ID " +
-				"where creditcard_.ADDRESS_ID=?";
 
 		final BatchableOperationStep insertIntoSuperclassTableStep = new BatchableOperationStep() {
 			@Override
@@ -230,6 +199,12 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 		};
 
 		final BatchableOperationStep updateSubclassEntityWithGeneratedValueStep = new BatchableOperationStep() {
+
+			final String selectGeneratedValueFromCreditcardSlq = "select creditcard_.securityCode as securityCode_ " +
+					"from CreditCard creditcard_ inner join BillingAddress creditcard_1_ " +
+					"#on creditcard_.ADDRESS_ID=creditcard_1_.ADDRESS_ID " +
+					"where creditcard_.ADDRESS_ID=?";
+
 			@Override
 			public void apply(Batch batch, Connection connection) throws SQLException {
 
@@ -295,7 +270,7 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 
 					@Override
 					public String getSql() {
-						return sqlUpdateGeneratedValuesSelectString;
+						return selectGeneratedValueFromCreditcardSlq;
 					}
 
 					@Override
@@ -319,7 +294,7 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 					}
 				};
 
-				jdbcSession.accept( spec );
+				getJdbcSession().accept( spec );
 			}
 
 			@Override
@@ -328,7 +303,7 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 			}
 		};
 
-		jdbcSession.accept(
+		getJdbcSession().accept(
 				new BatchableOperationSpec() {
 					@Override
 					public BatchKey getBatchKey() {
@@ -357,13 +332,13 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 		);
 
 		try {
-			jdbcSession.executeBatch();
-			localConnection.commit();
+			getJdbcSession().executeBatch();
+			commit();
 
 			assertThat( creditCard.getSecurityCode(), is( DEFAULT_SECURITY_CODE ) );
 		}
 		catch (JDBCException e) {
-			localConnection.rollback();
+			rollback();
 			throw e;
 		}
 	}
@@ -377,7 +352,7 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 			@Override
 			public void apply(Batch batch, Connection connection) throws SQLException {
 
-				GenerateKeyResultSet generateKeyResultSet = jdbcSession.accept(
+				GenerateKeyResultSet generateKeyResultSet = getJdbcSession().accept(
 						new PreparedStatementInsertOperationSpec() {
 							@Override
 							public StatementBuilder<? extends PreparedStatement> getStatementBuilder() {
@@ -441,7 +416,7 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 
 		};
 
-		jdbcSession.accept(
+		getJdbcSession().accept(
 				new BatchableOperationSpec() {
 					@Override
 					public BatchKey getBatchKey() {
@@ -466,10 +441,10 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 		);
 
 		try {
-			jdbcSession.executeBatch();
-			localConnection.commit();
+			getJdbcSession().executeBatch();
+			commit();
 
-			Statement selectStatement = localConnection.createStatement();
+			Statement selectStatement = getLocalConnection().createStatement();
 			ResultSet resultSet = selectStatement.executeQuery( "SELECT * FROM Car" );
 
 			assertThat( resultSet.next(), is( true ) );
@@ -477,7 +452,7 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 			assertThat( resultSet.getLong( "car_id" ), is( insertIntoSuperclassTableStep.getGeneratedId() ) );
 		}
 		catch (JDBCException e) {
-			localConnection.rollback();
+			rollback();
 			throw e;
 		}
 	}
@@ -485,11 +460,11 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 	@Test
 	public void testStepsForUpdateEntityWithInheritance() throws SQLException {
 
-		PreparedStatement statement = localConnection.prepareStatement( BILLING_ADDRESS_INSERT_SQL );
+		PreparedStatement statement = getLocalConnection().prepareStatement( BILLING_ADDRESS_INSERT_SQL );
 		statement.setLong( 1, 1 );
 		statement.setString( 2, "Fab" );
 		statement.executeUpdate();
-		localConnection.commit();
+		commit();
 
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
@@ -541,7 +516,7 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 
 		};
 
-		jdbcSession.accept(
+		getJdbcSession().accept(
 				new BatchableOperationSpec() {
 					@Override
 					public BatchKey getBatchKey() {
@@ -566,10 +541,10 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 		);
 
 		try {
-			jdbcSession.executeBatch();
-			localConnection.commit();
+			getJdbcSession().executeBatch();
+			commit();
 
-			Statement selectStatement = localConnection.createStatement();
+			Statement selectStatement = getLocalConnection().createStatement();
 			ResultSet resultSet = selectStatement.executeQuery(
 					"SELECT * FROM BillingAddress b left join CreditCard c on b.address_Id = c.Address_Id"
 			);
@@ -579,12 +554,13 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 			assertThat( resultSet.getString( "owner" ), is( "noone" ) );
 		}
 		catch (JDBCException e) {
-			localConnection.rollback();
+			rollback();
 			throw e;
 		}
 	}
 
-	private void dropTables() throws SQLException {
+	@Override
+	protected void dropTables() throws SQLException {
 		execute( "DROP table CreditCard IF EXISTS " );
 		execute( "DROP table BillingAddress IF EXISTS" );
 
@@ -592,7 +568,13 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 		execute( "DROP table Vehicle IF EXISTS" );
 	}
 
-	private void createTables() throws SQLException {
+	@Override
+	protected int getBatchSize() {
+		return BATCH_SIZE;
+	}
+
+	@Override
+	protected void createTables() throws SQLException {
 		String createCreditCardTableSql = "create table CreditCard (" +
 				"        ADDRESS_ID bigint not null," +
 				"        number varchar(255)," +
@@ -629,17 +611,6 @@ public class BatchableOpeartionSpecStepIntegrationTest {
 		execute( createVehicleTableSql );
 		execute( createCarTableSql );
 		execute( addForeignLeyToCarTableSql );
-	}
-
-	private void execute(String sql) throws SQLException {
-		PreparedStatement statement = localConnection.prepareStatement( sql );
-		statement.execute();
-	}
-
-	private JdbcSession createJdbSession() {
-		JdbcSessionOwnerTestingImpl JDBC_SESSION_OWNER = new JdbcSessionOwnerTestingImpl();
-		JDBC_SESSION_OWNER.setBatchFactory( new BatchFactoryImpl( BATCH_SIZE ) );
-		return JdbcSessionFactory.INSTANCE.create( JDBC_SESSION_OWNER, new ResourceRegistryStandardImpl() );
 	}
 
 	public abstract class BillingAddress {
