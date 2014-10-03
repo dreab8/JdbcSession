@@ -59,7 +59,7 @@ import static org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec.G
  */
 public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
 
-	private static final int BATCH_SIZE = 3;
+	private static final int BATCH_SIZE = 5;
 	private static final Long DEFAULT_SECURITY_CODE = 123L;
 	private static final String VEHICLE_INSERT_SQL = "INSERT INTO Vehicle ( serialNumber) values  (?)";
 	private static final String CAR_INSERT_SQL = "INSERT INTO Car (car_id, speed) values  (?,?)";
@@ -154,9 +154,9 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 
 	@Test
 	public void testStepsForInsertEntityWithInheritanceJoinedStrategyAndGenerateValues() throws SQLException {
-		final CreditCard creditCard = new CreditCard();
-		creditCard.setNumber( "123" );
-		creditCard.setOwner( "drea" );
+		final CreditCard creditCardToSave = new CreditCard();
+		creditCardToSave.setNumber( "0123" );
+		creditCardToSave.setOwner( "Fab" );
 
 		final Serializable entityId = 1L;
 
@@ -168,7 +168,7 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 					statement = connection.prepareStatement( BILLING_ADDRESS_INSERT_SQL );
 				}
 				statement.setLong( 1, (Long) entityId );
-				statement.setString( 2, "Fab" );
+				statement.setString( 2, creditCardToSave.getOwner() );
 				batch.addBatch( BILLING_ADDRESS_INSERT_SQL, statement );
 			}
 
@@ -187,7 +187,7 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 					statement = connection.prepareStatement( CREDIT_CARD_INSERT_SQL );
 				}
 				statement.setLong( 1, (Long) entityId );
-				statement.setString( 2, "0123" );
+				statement.setString( 2, creditCardToSave.getNumber() );
 				batch.addBatch( CREDIT_CARD_INSERT_SQL, statement );
 			}
 
@@ -217,8 +217,8 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 									ResultSet resultSet) throws SQLException {
 								resultSet.next();
 								long securityCode = resultSet.getLong( "securityCode" );
-								creditCard.setSecurityCode( securityCode );
-								return creditCard;
+								creditCardToSave.setSecurityCode( securityCode );
+								return creditCardToSave;
 							}
 						};
 					}
@@ -335,7 +335,7 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 			getJdbcSession().executeBatch();
 			commit();
 
-			assertThat( creditCard.getSecurityCode(), is( DEFAULT_SECURITY_CODE ) );
+			assertThat( creditCardToSave.getSecurityCode(), is( DEFAULT_SECURITY_CODE ) );
 		}
 		catch (JDBCException e) {
 			rollback();
@@ -458,13 +458,13 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 	}
 
 	@Test
-	public void testStepsForUpdateEntityWithInheritance() throws SQLException {
+	public void testStepsForUpdateAnEntityWithOptionalTableWhenSubclassHasToBeInserted() throws SQLException {
+		final int addressId = 1;
+		final String owner = "Fab";
+		final String newOwner = "Fab_new";
+		final String creditCardNumber = "0123";
 
-		PreparedStatement statement = getLocalConnection().prepareStatement( BILLING_ADDRESS_INSERT_SQL );
-		statement.setLong( 1, 1 );
-		statement.setString( 2, "Fab" );
-		statement.executeUpdate();
-		commit();
+		insertIntoBillingAddressTable( addressId, owner );
 
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
@@ -473,8 +473,8 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 				if ( statement == null ) {
 					statement = connection.prepareStatement( UPDATE_BILLING_ADDRESS );
 				}
-				statement.setLong( 2, 1 );
-				statement.setString( 1, "noone" );
+				statement.setLong( 2, addressId );
+				statement.setString( 1, newOwner );
 				batch.addBatch( UPDATE_BILLING_ADDRESS, statement );
 			}
 
@@ -485,15 +485,15 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 
 		};
 
-		final BatchableOperationStep insertorUpdateIntoSubclassTableStep = new BatchableOperationStep() {
+		final BatchableOperationStep insertOrUpdateOptionalTableStep = new BatchableOperationStep() {
 			@Override
 			public void apply(Batch batch, Connection connection) throws SQLException {
 				PreparedStatement statement = batch.getStatement( UPDATE_CREDIT_CARD );
 				if ( statement == null ) {
 					statement = connection.prepareStatement( UPDATE_CREDIT_CARD );
 				}
-				statement.setLong( 2, 1 );
-				statement.setString( 1, "0123" );
+				statement.setString( 1, creditCardNumber );
+				statement.setLong( 2, addressId );
 				batch.addBatch( UPDATE_CREDIT_CARD, statement );
 
 				Integer rowCount = batch.getRowCount( UPDATE_CREDIT_CARD );
@@ -504,7 +504,7 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 						statement = connection.prepareStatement( CREDIT_CARD_INSERT_SQL );
 					}
 					statement.setLong( 1, 1 );
-					statement.setString( 2, "0123" );
+					statement.setString( 2, creditCardNumber );
 					batch.addBatch( CREDIT_CARD_INSERT_SQL, statement );
 				}
 			}
@@ -535,7 +535,7 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 
 					@Override
 					public List<BatchableOperationStep> getSteps() {
-						return Arrays.asList( updateSuperclassTableStep, insertorUpdateIntoSubclassTableStep );
+						return Arrays.asList( updateSuperclassTableStep, insertOrUpdateOptionalTableStep );
 					}
 				}
 		);
@@ -550,13 +550,21 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 			);
 
 			assertThat( resultSet.next(), is( true ) );
-			assertThat( resultSet.getString( "number" ), is( "0123" ) );
-			assertThat( resultSet.getString( "owner" ), is( "noone" ) );
+			assertThat( resultSet.getString( "number" ), is( creditCardNumber ) );
+			assertThat( resultSet.getString( "owner" ), is( newOwner ) );
 		}
 		catch (JDBCException e) {
 			rollback();
 			throw e;
 		}
+	}
+
+	private void insertIntoBillingAddressTable(int addressId, String owner) throws SQLException {
+		PreparedStatement statement = getLocalConnection().prepareStatement( BILLING_ADDRESS_INSERT_SQL );
+		statement.setLong( 1, addressId );
+		statement.setString( 2, owner );
+		statement.executeUpdate();
+		commit();
 	}
 
 	@Override
