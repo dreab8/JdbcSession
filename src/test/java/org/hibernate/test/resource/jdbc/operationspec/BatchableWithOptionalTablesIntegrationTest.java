@@ -49,14 +49,12 @@ import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperat
 /**
  * @author Andrea Boriero
  */
-public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 
 	private static final String OPTIONAL_TABLE_INSERT_SQL = "INSERT INTO OPTIONAL_TABLE (ID, OPTIONAL_VALUE) values  (?,?)";
-
 	public static final String UPDATE_BASE_TABLE_SQL = "UPDATE BASE_TABLE set BASE_PROPERTY = ? where ID = ? ";
 	public static final String UPDATE_OPTIONAL_TABLE_SQL = "UPDATE OPTIONAL_TABLE set OPTIONAL_VALUE = ? where ID = ?";
-
 
 	@Test
 	public void testStepsForUpdateInsertsTheRowIntoTheOptionalTableIfNotPresent() throws Exception {
