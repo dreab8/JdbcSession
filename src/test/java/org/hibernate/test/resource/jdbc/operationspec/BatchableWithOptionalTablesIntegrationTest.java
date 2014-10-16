@@ -57,7 +57,7 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 	public static final String UPDATE_OPTIONAL_TABLE_SQL = "UPDATE OPTIONAL_TABLE set OPTIONAL_VALUE = ? where ID = ?";
 
 	@Test
-	public void testStepsForUpdateInsertsTheRowIntoTheOptionalTableIfNotPresent() throws Exception {
+	public void testTheRowOfTheOptionalTableIsInsertedWhenNotPresent() throws Exception {
 		final int id = 1;
 		final String baseProperty = "Fab";
 		final String newBaseProeprty = "Fab_new";
@@ -113,7 +113,7 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 					if ( statement == null ) {
 						statement = connection.prepareStatement( OPTIONAL_TABLE_INSERT_SQL );
 					}
-					statement.setLong( 1, 1 );
+					statement.setLong( 1, id );
 					statement.setString( 2, optionalValue );
 					batch.addBatch( OPTIONAL_TABLE_INSERT_SQL, statement );
 				}
@@ -162,14 +162,121 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 	}
 
 	@Test
-	public void testStepsForUpdateRemovesTheRowFromTheOptionalTableWhenTheNewOptionalValueIsNull() throws Exception {
+	public void testTheRowOfTheOptionalTableIsUpdatedWhenPresent() throws Exception {
 		final int id = 1;
 		final String baseProperty = "Fab";
 		final String newBaseProeprty = "Fab_new";
-		final String oldOptionalValue = "123";
+		final String optionalValue = "0123";
+		final String newOptionalValue = "123";
 
 		insertIntoBaseTable( id, baseProperty );
-		insertIntoOptionalTable( id, oldOptionalValue );
+		insertIntoOptionalTable(  id, optionalValue );
+
+		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
+			@Override
+			public void apply(Batch batch, Connection connection) throws SQLException {
+				PreparedStatement statement = batch.getStatement( UPDATE_BASE_TABLE_SQL );
+				if ( statement == null ) {
+					statement = connection.prepareStatement( UPDATE_BASE_TABLE_SQL );
+				}
+				statement.setLong( 2, id );
+				statement.setString( 1, newBaseProeprty );
+				batch.addBatch( UPDATE_BASE_TABLE_SQL, statement );
+			}
+
+			@Override
+			public Serializable getGeneratedId() throws SQLException {
+				return 0;
+			}
+		};
+
+		final BatchableOperationStep insertIntoOptionalTableStep = new BatchableOperationStep() {
+			@Override
+			public void apply(Batch batch, Connection connection) throws SQLException {
+				PreparedStatement statement = batch.getStatement( UPDATE_OPTIONAL_TABLE_SQL );
+
+				if ( statement == null ) {
+					statement = connection.prepareStatement( UPDATE_OPTIONAL_TABLE_SQL );
+				}
+				statement.setString( 1, newOptionalValue );
+				statement.setLong( 2, id );
+
+				batch.addBatch( UPDATE_OPTIONAL_TABLE_SQL, statement );
+
+				performUpdateNoRowUpdated( batch, connection );
+			}
+
+			@Override
+			public Serializable getGeneratedId() throws SQLException {
+				return 0;
+			}
+
+			private void performUpdateNoRowUpdated(Batch batch, Connection connection) throws SQLException {
+				PreparedStatement statement;
+				Integer rowCount = batch.getRowCount( UPDATE_OPTIONAL_TABLE_SQL );
+
+				if ( rowCount == 0 ) {
+					statement = batch.getStatement( OPTIONAL_TABLE_INSERT_SQL );
+					if ( statement == null ) {
+						statement = connection.prepareStatement( OPTIONAL_TABLE_INSERT_SQL );
+					}
+					statement.setLong( 1, id );
+					statement.setString( 2, newOptionalValue );
+					batch.addBatch( OPTIONAL_TABLE_INSERT_SQL, statement );
+				}
+			}
+		};
+
+		getJdbcSession().accept(
+				new BatchableOperationSpec() {
+					@Override
+					public BatchKey getBatchKey() {
+						return new BatchKeyImpl( "UPDATE#CREDITCARD" );
+					}
+
+					@Override
+					public boolean foregoBatching() {
+						/*
+						 Cannot be batched because it is necessary to check the result of the update operation
+						 to decide id an insert is needed
+						  */
+						return false;
+					}
+
+					@Override
+					public List<BatchObserver> getObservers() {
+						return null;
+					}
+
+					@Override
+					public List<BatchableOperationStep> getSteps() {
+						return Arrays.asList( updateSuperclassTableStep, insertIntoOptionalTableStep );
+					}
+				}
+		);
+
+		try {
+			getJdbcSession().executeBatch();
+			commit();
+
+			checkBaseTableIsUpdated( id, newBaseProeprty );
+			checkRowIsInsertedIntoOptionalTable( id, newOptionalValue );
+		}
+		catch (JDBCException e) {
+			rollback();
+			throw e;
+		}
+	}
+
+	@Test
+	public void testTheRowIdDeletedFromTheOptionalTableWhenTheNewOptionalValueIsNull() throws Exception {
+		final int id = 1;
+		final String baseProperty = "Fab";
+		final String newBaseProeprty = "Fab_new";
+		final String optionalValue = "123";
+
+		insertIntoBaseTable( id, baseProperty );
+		insertIntoOptionalTable( id, optionalValue );
 
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
