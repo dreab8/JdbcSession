@@ -57,10 +57,10 @@ public class BatchableJoinInheritanceWithGeneratedIdIntegrationTest extends Abst
 	private static final String SUBCLASS_INSERT_SQL = "INSERT INTO SUBCLASS_TABLE (ID, SUBCLASS_PROPERTY) values (?,?)";
 
 	@Test
-	public void testStepsForInsertEntityWithInheritanceJoinedStrategyAndGeneratedIDIdentity() throws SQLException {
+	public void testTheSubclassTableRowHasGeneratedIdofTheSuperclassInsertedRow() throws SQLException {
 
 		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep = new BatchableOperationSpec.BatchableOperationStep() {
-			private Long id;
+			private Long generatedId;
 
 			@Override
 			public void apply(Batch batch, Connection connection) throws SQLException {
@@ -98,16 +98,19 @@ public class BatchableJoinInheritanceWithGeneratedIdIntegrationTest extends Abst
 				);
 
 				ResultSet generatedKeys = generateKeyResultSet.getGeneratedKeys();
-				generatedKeys.next();
-				id = generatedKeys.getLong( 1 );
-				generateKeyResultSet.close();
+				try {
+					generatedKeys.next();
+					generatedId = generatedKeys.getLong( 1 );
+				}
+				finally {
+					generateKeyResultSet.close();
+				}
 			}
 
 			@Override
 			public Serializable getGeneratedId() throws SQLException {
-				return id;
+				return generatedId;
 			}
-
 		};
 
 		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep = new BatchableOperationSpec.BatchableOperationStep() {
