@@ -34,12 +34,9 @@ import java.util.List;
 
 import org.hibernate.JDBCException;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
-import org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
-import org.hibernate.resource.jdbc.spi.ParameterBindings;
-import org.hibernate.resource.jdbc.spi.StatementBuilder;
 
 import org.junit.Test;
 
@@ -73,8 +70,8 @@ public class BatchableJoinInheritanceIntegrationTest extends AbstractQueryOperat
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
+			public Serializable getGeneratedId() throws SQLException {
+				return null;
 			}
 
 		};
@@ -92,8 +89,8 @@ public class BatchableJoinInheritanceIntegrationTest extends AbstractQueryOperat
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
+			public Serializable getGeneratedId() throws SQLException {
+				return null;
 			}
 
 		};
@@ -153,7 +150,6 @@ public class BatchableJoinInheritanceIntegrationTest extends AbstractQueryOperat
 				"        add constraint FK_ldlwoj0fv2uvxg7dxkvs7nn4g " +
 				"        foreign key (ID) " +
 				"        references SUPERCLASS_TABLE";
-
 
 
 		execute( createSubClassTableSql );

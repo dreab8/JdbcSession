@@ -78,8 +78,8 @@ public class BatchableWithGeneratedValueIntegrationTest extends AbstractQueryOpe
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
+			public Serializable getGeneratedId() throws SQLException {
+				return null;
 			}
 
 		};
@@ -183,8 +183,8 @@ public class BatchableWithGeneratedValueIntegrationTest extends AbstractQueryOpe
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
+			public Serializable getGeneratedId() throws SQLException {
+				return null;
 			}
 		};
 

@@ -23,6 +23,7 @@
  */
 package org.hibernate.test.resource.jdbc.operationspec;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -79,7 +80,7 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() throws SQLException {
 				return 0;
 			}
 		};
@@ -101,7 +102,7 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() throws SQLException {
 				return 0;
 			}
 
@@ -185,8 +186,8 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
+			public Serializable getGeneratedId() throws SQLException {
+				return null;
 			}
 		};
 
@@ -203,8 +204,8 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
+			public Serializable getGeneratedId() throws SQLException {
+				return null;
 			}
 		};
 

@@ -23,6 +23,7 @@
  */
 package org.hibernate.resource.jdbc;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
@@ -46,6 +47,6 @@ public interface BatchableOperationSpec {
 	public interface BatchableOperationStep {
 		void apply(Batch batch, Connection connection) throws SQLException;
 
-		long getGeneratedId() throws SQLException;
+		Serializable getGeneratedId() throws SQLException;
 	}
 }

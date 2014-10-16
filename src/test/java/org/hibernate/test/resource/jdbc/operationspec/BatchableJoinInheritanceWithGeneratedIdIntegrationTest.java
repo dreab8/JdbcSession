@@ -23,6 +23,7 @@
  */
 package org.hibernate.test.resource.jdbc.operationspec;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -103,7 +104,7 @@ public class BatchableJoinInheritanceWithGeneratedIdIntegrationTest extends Abst
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() throws SQLException {
 				return id;
 			}
 
@@ -116,14 +117,14 @@ public class BatchableJoinInheritanceWithGeneratedIdIntegrationTest extends Abst
 				if ( statement == null ) {
 					statement = connection.prepareStatement( SUBCLASS_INSERT_SQL );
 				}
-				statement.setLong( 1, insertIntoSuperclassTableStep.getGeneratedId() );
+				statement.setLong( 1, (Long) insertIntoSuperclassTableStep.getGeneratedId() );
 				statement.setInt( 2, 123 );
 				batch.addBatch( SUBCLASS_INSERT_SQL, statement );
 			}
 
 			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
+			public Serializable getGeneratedId() throws SQLException {
+				return null;
 			}
 
 		};
