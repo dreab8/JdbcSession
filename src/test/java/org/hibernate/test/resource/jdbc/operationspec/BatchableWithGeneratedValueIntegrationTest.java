@@ -86,100 +86,15 @@ public class BatchableWithGeneratedValueIntegrationTest extends AbstractQueryOpe
 
 		final BatchableOperationSpec.BatchableOperationStep updateCreditCardEntitySecurityCodeGeneratedValueStep = new BatchableOperationSpec.BatchableOperationStep() {
 
-			final String selectGeneratedValueFromCreditcardSlq = "SELECT creditcard_.SECURITY_CODE as securityCode_ " +
-					"FROM CreditCard creditcard_ " +
-					"WHERE creditcard_.ID=?";
-
 			@Override
 			public void apply(Batch batch, Connection connection) throws SQLException {
 
-				PreparedStatementQueryOperationSpec spec = new PreparedStatementQueryOperationSpec() {
-					@Override
-					public ResultSetProcessor getResultSetProcessor() {
-						return new ResultSetProcessor() {
-							@Override
-							public Object extractResults(
-									ResultSet resultSet) throws SQLException {
-								resultSet.next();
-								long securityCode = resultSet.getLong( "SECURITY_CODE" );
-								creditCardToSave.setGeneratedSecurityCode( securityCode );
-								return creditCardToSave;
-							}
-						};
-					}
+				PreparedStatementQueryOperationSpec updateGenerateValueOperationSpec = new UpdateGenerateValueOperationSpec(
+						creditCardToSave,
+						(Long) entityId
+				);
 
-					@Override
-					public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder() {
-						return new QueryStatementBuilder<PreparedStatement>() {
-							@Override
-							public PreparedStatement buildQueryStatement(
-									Connection connection,
-									String sql,
-									ResultSetType resultSetType,
-									ResultSetConcurrency resultSetConcurrency) throws SQLException {
-								PreparedStatement statement = connection.prepareStatement(
-										sql,
-										resultSetType.getJdbcConstantValue(),
-										resultSetConcurrency.getJdbcConstantValue()
-								);
-								return statement;
-							}
-						};
-					}
-
-					@Override
-					public StatementExecutor getStatementExecutor() {
-						return new StatementExecutor() {
-							@Override
-							public ResultSet execute(
-									PreparedStatement statement) throws SQLException {
-								return statement.executeQuery();
-							}
-						};
-					}
-
-					@Override
-					public ParameterBindings getParameterBindings() {
-						return new ParameterBindings() {
-							@Override
-							public void bindParameters(PreparedStatement statement) throws SQLException {
-								statement.setLong( 1, (Long) entityId );
-							}
-						};
-					}
-
-					@Override
-					public int getQueryTimeout() {
-						return 0;
-					}
-
-					@Override
-					public String getSql() {
-						return selectGeneratedValueFromCreditcardSlq;
-					}
-
-					@Override
-					public ResultSetType getResultSetType() {
-						return ResultSetType.FORWARD_ONLY;
-					}
-
-					@Override
-					public ResultSetConcurrency getResultSetConcurrency() {
-						return ResultSetConcurrency.READ_ONLY;
-					}
-
-					@Override
-					public int getOffset() {
-						return 0;
-					}
-
-					@Override
-					public int getLimit() {
-						return 0;
-					}
-				};
-
-				getJdbcSession().accept( spec );
+				getJdbcSession().accept( updateGenerateValueOperationSpec );
 			}
 
 			@Override
@@ -260,6 +175,104 @@ public class BatchableWithGeneratedValueIntegrationTest extends AbstractQueryOpe
 
 		public void setGeneratedSecurityCode(Long generatedSecurityCode) {
 			this.generatedSecurityCode = generatedSecurityCode;
+		}
+	}
+
+	public class UpdateGenerateValueOperationSpec implements PreparedStatementQueryOperationSpec {
+		final String selectGeneratedValueFromCreditcardSlq = "SELECT creditcard_.SECURITY_CODE as securityCode_ " +
+				"FROM CreditCard creditcard_ " +
+				"WHERE creditcard_.ID=?";
+
+		private CreditCard creditCardToSave;
+		private Long entityId;
+
+		public UpdateGenerateValueOperationSpec(CreditCard creditCardToSave, Long entityId) {
+			this.creditCardToSave = creditCardToSave;
+			this.entityId = entityId;
+		}
+
+		@Override
+		public ResultSetProcessor getResultSetProcessor() {
+			return new ResultSetProcessor() {
+				@Override
+				public Object extractResults(
+						ResultSet resultSet) throws SQLException {
+					resultSet.next();
+					long securityCode = resultSet.getLong( "SECURITY_CODE" );
+					creditCardToSave.setGeneratedSecurityCode( securityCode );
+					return creditCardToSave;
+				}
+			};
+		}
+
+		@Override
+		public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder() {
+			return new QueryStatementBuilder<PreparedStatement>() {
+				@Override
+				public PreparedStatement buildQueryStatement(
+						Connection connection,
+						String sql,
+						ResultSetType resultSetType,
+						ResultSetConcurrency resultSetConcurrency) throws SQLException {
+					PreparedStatement statement = connection.prepareStatement(
+							sql,
+							resultSetType.getJdbcConstantValue(),
+							resultSetConcurrency.getJdbcConstantValue()
+					);
+					return statement;
+				}
+			};
+		}
+
+		@Override
+		public StatementExecutor getStatementExecutor() {
+			return new StatementExecutor() {
+				@Override
+				public ResultSet execute(
+						PreparedStatement statement) throws SQLException {
+					return statement.executeQuery();
+				}
+			};
+		}
+
+		@Override
+		public ParameterBindings getParameterBindings() {
+			return new ParameterBindings() {
+				@Override
+				public void bindParameters(PreparedStatement statement) throws SQLException {
+					statement.setLong( 1, (Long) entityId );
+				}
+			};
+		}
+
+		@Override
+		public int getQueryTimeout() {
+			return 0;
+		}
+
+		@Override
+		public String getSql() {
+			return selectGeneratedValueFromCreditcardSlq;
+		}
+
+		@Override
+		public ResultSetType getResultSetType() {
+			return ResultSetType.FORWARD_ONLY;
+		}
+
+		@Override
+		public ResultSetConcurrency getResultSetConcurrency() {
+			return ResultSetConcurrency.READ_ONLY;
+		}
+
+		@Override
+		public int getOffset() {
+			return 0;
+		}
+
+		@Override
+		public int getLimit() {
+			return 0;
 		}
 	}
 
