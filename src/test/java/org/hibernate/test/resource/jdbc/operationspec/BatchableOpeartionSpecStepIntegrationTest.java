@@ -23,7 +23,6 @@
  */
 package org.hibernate.test.resource.jdbc.operationspec;
 
-import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,16 +33,9 @@ import java.util.List;
 
 import org.hibernate.JDBCException;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
-import org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec;
-import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
-import org.hibernate.resource.jdbc.spi.ParameterBindings;
-import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
-import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
-import org.hibernate.resource.jdbc.spi.StatementBuilder;
-import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
 import org.junit.Test;
 
@@ -52,56 +44,60 @@ import org.hibernate.test.resource.jdbc.common.BatchKeyImpl;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep;
-import static org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec.GenerateKeyResultSet;
 
 /**
  * @author Andrea Boriero
  */
 public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+	private static final int BATCH_SIZE = 10;
 
-	private static final int BATCH_SIZE = 5;
-	private static final Long DEFAULT_SECURITY_CODE = 123L;
-	private static final String VEHICLE_INSERT_SQL = "INSERT INTO Vehicle ( serialNumber) values  (?)";
-	private static final String CAR_INSERT_SQL = "INSERT INTO Car (car_id, speed) values  (?,?)";
+	private static final String OPTIONAL_TABLE_INSERT_SQL = "INSERT INTO OPTIONAL_TABLE (ID, OPTIONAL_VALUE) values  (?,?)";
 
-	private static final String BILLING_ADDRESS_INSERT_SQL = "INSERT INTO BillingAddress (ADDRESS_ID, owner) values  (?,?)";
-	private static final String CREDIT_CARD_INSERT_SQL = "INSERT INTO CreditCard (ADDRESS_ID, number) values  (?,?)";
-	public static final String UPDATE_BILLING_ADDRESS = "UPDATE BillingAddress set owner = ? where ADDRESS_ID = ? ";
-	public static final String UPDATE_CREDIT_CARD = "UPDATE CreditCard set number = ? where ADDRESS_ID = ?";
+	public static final String UPDATE_BASE_TABLE_SQL = "UPDATE BASE_TABLE set BASE_PROPERTY = ? where ID = ? ";
+	public static final String UPDATE_OPTIONAL_TABLE_SQL = "UPDATE OPTIONAL_TABLE set OPTIONAL_VALUE = ? where ID = ?";
+
 
 	@Test
-	public void testStepsForInsertEntityWithInheritanceJoinedStrategy() throws SQLException {
-		final Serializable id = 1L;
+	public void testStepsForUpdateInsertsTheRowIntoTheOptionalTableIfNotPresent() throws Exception {
+		final int id = 1;
+		final String baseProperty = "Fab";
+		final String newBaseProeprty = "Fab_new";
+		final String optionalValue = "0123";
 
-		final BatchableOperationStep insertIntoSuperclassTableStep = new BatchableOperationStep() {
+		insertIntoBaseTable( id, baseProperty );
+
+		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
 			public void apply(Batch batch, Connection connection) throws SQLException {
-				PreparedStatement statement = batch.getStatement( BILLING_ADDRESS_INSERT_SQL );
+				PreparedStatement statement = batch.getStatement( UPDATE_BASE_TABLE_SQL );
 				if ( statement == null ) {
-					statement = connection.prepareStatement( BILLING_ADDRESS_INSERT_SQL );
+					statement = connection.prepareStatement( UPDATE_BASE_TABLE_SQL );
 				}
-				statement.setLong( 1, (Long) id );
-				statement.setString( 2, "Fab" );
-				batch.addBatch( BILLING_ADDRESS_INSERT_SQL, statement );
+				statement.setLong( 2, id );
+				statement.setString( 1, newBaseProeprty );
+				batch.addBatch( UPDATE_BASE_TABLE_SQL, statement );
 			}
 
 			@Override
 			public long getGeneratedId() throws SQLException {
 				return 0;
 			}
-
 		};
 
-		final BatchableOperationStep insertIntoSubclassTableStep = new BatchableOperationStep() {
+		final BatchableOperationStep insertIntoOptionalTableStep = new BatchableOperationStep() {
 			@Override
 			public void apply(Batch batch, Connection connection) throws SQLException {
-				PreparedStatement statement = batch.getStatement( CREDIT_CARD_INSERT_SQL );
+				PreparedStatement statement = batch.getStatement( UPDATE_OPTIONAL_TABLE_SQL );
+
 				if ( statement == null ) {
-					statement = connection.prepareStatement( CREDIT_CARD_INSERT_SQL );
+					statement = connection.prepareStatement( UPDATE_OPTIONAL_TABLE_SQL );
 				}
-				statement.setLong( 1, (Long) id );
-				statement.setString( 2, "0123" );
-				batch.addBatch( CREDIT_CARD_INSERT_SQL, statement );
+				statement.setString( 1, optionalValue );
+				statement.setLong( 2, id );
+
+				batch.addBatch( UPDATE_OPTIONAL_TABLE_SQL, statement );
+
+				performInsertIfNoRowUpdated( batch, connection );
 			}
 
 			@Override
@@ -109,13 +105,114 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 				return 0;
 			}
 
+			private void performInsertIfNoRowUpdated(Batch batch, Connection connection) throws SQLException {
+				PreparedStatement statement;
+				Integer rowCount = batch.getRowCount( UPDATE_OPTIONAL_TABLE_SQL );
+
+				if ( rowCount == 0 ) {
+					statement = batch.getStatement( OPTIONAL_TABLE_INSERT_SQL );
+					if ( statement == null ) {
+						statement = connection.prepareStatement( OPTIONAL_TABLE_INSERT_SQL );
+					}
+					statement.setLong( 1, 1 );
+					statement.setString( 2, optionalValue );
+					batch.addBatch( OPTIONAL_TABLE_INSERT_SQL, statement );
+				}
+			}
 		};
 
 		getJdbcSession().accept(
 				new BatchableOperationSpec() {
 					@Override
 					public BatchKey getBatchKey() {
-						return new BatchKeyImpl( "INSERT#CREDITCARD" );
+						return new BatchKeyImpl( "UPDATE#CREDITCARD" );
+					}
+
+					@Override
+					public boolean foregoBatching() {
+						/*
+						 Cannot be batched because it is necessary to check the result of the update operation
+						 to decide id an insert is needed
+						  */
+						return false;
+					}
+
+					@Override
+					public List<BatchObserver> getObservers() {
+						return null;
+					}
+
+					@Override
+					public List<BatchableOperationStep> getSteps() {
+						return Arrays.asList( updateSuperclassTableStep, insertIntoOptionalTableStep );
+					}
+				}
+		);
+
+		try {
+			getJdbcSession().executeBatch();
+			commit();
+
+			checkBaseTableIsUpdated( id, newBaseProeprty );
+			checkRowIsInsertedIntoOptionalTable( id, optionalValue );
+		}
+		catch (JDBCException e) {
+			rollback();
+			throw e;
+		}
+	}
+
+	@Test
+	public void testStepsForUpdateRemovesTheRowFromTheOptionalTableWhenTheNewOptionalValueIsNull() throws Exception {
+		final int id = 1;
+		final String baseProperty = "Fab";
+		final String newBaseProeprty = "Fab_new";
+		final String oldOptionalValue = "123";
+
+		insertIntoBaseTable( id, baseProperty );
+		insertIntoOptionalTable( id, oldOptionalValue );
+
+		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
+			@Override
+			public void apply(Batch batch, Connection connection) throws SQLException {
+				PreparedStatement statement = batch.getStatement( UPDATE_BASE_TABLE_SQL );
+				if ( statement == null ) {
+					statement = connection.prepareStatement( UPDATE_BASE_TABLE_SQL );
+				}
+				statement.setLong( 2, id );
+				statement.setString( 1, newBaseProeprty );
+				batch.addBatch( UPDATE_BASE_TABLE_SQL, statement );
+			}
+
+			@Override
+			public long getGeneratedId() throws SQLException {
+				return 0;
+			}
+		};
+
+		final BatchableOperationStep deleteRowFormOptionalTableStep = new BatchableOperationStep() {
+			@Override
+			public void apply(Batch batch, Connection connection) throws SQLException {
+				final String DELETE_FROM_OPTIONAL_TABLE_SQL = "DELETE FROM OPTIONAL_TABLE WHERE ID = ?";
+				PreparedStatement statement = batch.getStatement( DELETE_FROM_OPTIONAL_TABLE_SQL );
+				if ( statement == null ) {
+					statement = connection.prepareStatement( DELETE_FROM_OPTIONAL_TABLE_SQL );
+				}
+				statement.setLong( 1, id );
+				batch.addBatch( DELETE_FROM_OPTIONAL_TABLE_SQL, statement );
+			}
+
+			@Override
+			public long getGeneratedId() throws SQLException {
+				return 0;
+			}
+		};
+
+		getJdbcSession().accept(
+				new BatchableOperationSpec() {
+					@Override
+					public BatchKey getBatchKey() {
+						return new BatchKeyImpl( "UPDATE#CREDITCARD" );
 					}
 
 					@Override
@@ -130,7 +227,7 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 
 					@Override
 					public List<BatchableOperationStep> getSteps() {
-						return Arrays.asList( insertIntoSuperclassTableStep, insertIntoSubclassTableStep );
+						return Arrays.asList( updateSuperclassTableStep, deleteRowFormOptionalTableStep );
 					}
 				}
 		);
@@ -139,12 +236,9 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 			getJdbcSession().executeBatch();
 			commit();
 
-			Statement selectStatement = getLocalConnection().createStatement();
-			ResultSet resultSet = selectStatement.executeQuery( "SELECT * FROM CreditCard" );
+			checkRowIsDeletedFromOptionalTable( id );
 
-			assertThat( resultSet.next(), is( true ) );
-			assertThat( resultSet.getLong( "ADDRESS_ID" ), is( 1l ) );
-
+			checkBaseTableIsUpdated( id, newBaseProeprty );
 		}
 		catch (JDBCException e) {
 			rollback();
@@ -152,428 +246,58 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 		}
 	}
 
-	@Test
-	public void testStepsForInsertEntityWithInheritanceJoinedStrategyAndGenerateValues() throws SQLException {
-		final CreditCard creditCardToSave = new CreditCard();
-		creditCardToSave.setNumber( "0123" );
-		creditCardToSave.setOwner( "Fab" );
+	private void checkBaseTableIsUpdated(int id, String newBaseProeprty) throws SQLException {
+		Statement selectStatement = getLocalConnection().createStatement();
+		ResultSet resultSet = selectStatement.executeQuery(
+				"SELECT * FROM BASE_TABLE b where b.ID = " + id
+		);
+		resultSet.next();
+		assertThat( resultSet.getString( "BASE_PROPERTY" ), is( newBaseProeprty ) );
+	}
 
-		final Serializable entityId = 1L;
-
-		final BatchableOperationStep insertIntoSuperclassTableStep = new BatchableOperationStep() {
-			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
-				PreparedStatement statement = batch.getStatement( BILLING_ADDRESS_INSERT_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( BILLING_ADDRESS_INSERT_SQL );
-				}
-				statement.setLong( 1, (Long) entityId );
-				statement.setString( 2, creditCardToSave.getOwner() );
-				batch.addBatch( BILLING_ADDRESS_INSERT_SQL, statement );
-			}
-
-			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
-			}
-
-		};
-
-		final BatchableOperationStep insertIntoSubclassTableStep = new BatchableOperationStep() {
-			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
-				PreparedStatement statement = batch.getStatement( CREDIT_CARD_INSERT_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( CREDIT_CARD_INSERT_SQL );
-				}
-				statement.setLong( 1, (Long) entityId );
-				statement.setString( 2, creditCardToSave.getNumber() );
-				batch.addBatch( CREDIT_CARD_INSERT_SQL, statement );
-			}
-
-			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
-			}
-
-		};
-
-		final BatchableOperationStep updateSubclassEntityWithGeneratedValueStep = new BatchableOperationStep() {
-
-			final String selectGeneratedValueFromCreditcardSlq = "select creditcard_.securityCode as securityCode_ " +
-					"from CreditCard creditcard_ inner join BillingAddress creditcard_1_ " +
-					"#on creditcard_.ADDRESS_ID=creditcard_1_.ADDRESS_ID " +
-					"where creditcard_.ADDRESS_ID=?";
-
-			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
-
-				PreparedStatementQueryOperationSpec spec = new PreparedStatementQueryOperationSpec() {
-					@Override
-					public ResultSetProcessor getResultSetProcessor() {
-						return new ResultSetProcessor() {
-							@Override
-							public Object extractResults(
-									ResultSet resultSet) throws SQLException {
-								resultSet.next();
-								long securityCode = resultSet.getLong( "securityCode" );
-								creditCardToSave.setSecurityCode( securityCode );
-								return creditCardToSave;
-							}
-						};
-					}
-
-					@Override
-					public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder() {
-						return new QueryStatementBuilder<PreparedStatement>() {
-							@Override
-							public PreparedStatement buildQueryStatement(
-									Connection connection,
-									String sql,
-									ResultSetType resultSetType,
-									ResultSetConcurrency resultSetConcurrency) throws SQLException {
-								PreparedStatement statement = connection.prepareStatement(
-										sql,
-										resultSetType.getJdbcConstantValue(),
-										resultSetConcurrency.getJdbcConstantValue()
-								);
-								return statement;
-							}
-						};
-					}
-
-					@Override
-					public StatementExecutor getStatementExecutor() {
-						return new StatementExecutor() {
-							@Override
-							public ResultSet execute(
-									PreparedStatement statement) throws SQLException {
-								return statement.executeQuery();
-							}
-						};
-					}
-
-					@Override
-					public ParameterBindings getParameterBindings() {
-						return new ParameterBindings() {
-							@Override
-							public void bindParameters(PreparedStatement statement) throws SQLException {
-								statement.setLong( 1, (Long) entityId );
-							}
-						};
-					}
-
-					@Override
-					public int getQueryTimeout() {
-						return 0;
-					}
-
-					@Override
-					public String getSql() {
-						return selectGeneratedValueFromCreditcardSlq;
-					}
-
-					@Override
-					public ResultSetType getResultSetType() {
-						return ResultSetType.FORWARD_ONLY;
-					}
-
-					@Override
-					public ResultSetConcurrency getResultSetConcurrency() {
-						return ResultSetConcurrency.READ_ONLY;
-					}
-
-					@Override
-					public int getOffset() {
-						return 0;
-					}
-
-					@Override
-					public int getLimit() {
-						return 0;
-					}
-				};
-
-				getJdbcSession().accept( spec );
-			}
-
-			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
-			}
-		};
-
-		getJdbcSession().accept(
-				new BatchableOperationSpec() {
-					@Override
-					public BatchKey getBatchKey() {
-						return new BatchKeyImpl( "INSERT#CREDITCARD" );
-					}
-
-					@Override
-					public boolean foregoBatching() {
-						return false;
-					}
-
-					@Override
-					public List<BatchObserver> getObservers() {
-						return null;
-					}
-
-					@Override
-					public List<BatchableOperationStep> getSteps() {
-						return Arrays.asList(
-								insertIntoSuperclassTableStep,
-								insertIntoSubclassTableStep,
-								updateSubclassEntityWithGeneratedValueStep
-						);
-					}
-				}
+	private void checkRowIsDeletedFromOptionalTable(int id) throws SQLException {
+		Statement selectStatement = getLocalConnection().createStatement();
+		ResultSet resultSet = selectStatement.executeQuery(
+				"SELECT * FROM OPTIONAL_TABLE o where o.ID = " + id
 		);
 
-		try {
-			getJdbcSession().executeBatch();
-			commit();
-
-			assertThat( creditCardToSave.getSecurityCode(), is( DEFAULT_SECURITY_CODE ) );
-		}
-		catch (JDBCException e) {
-			rollback();
-			throw e;
-		}
+		assertThat( resultSet.next(), is( false ) );
 	}
 
-	@Test
-	public void testStepsForInsertEntityWithInheritanceJoinedStrategyAndGeneratedIDIdentity() throws SQLException {
-
-		final BatchableOperationStep insertIntoSuperclassTableStep = new BatchableOperationStep() {
-			private Long id;
-
-			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
-
-				GenerateKeyResultSet generateKeyResultSet = getJdbcSession().accept(
-						new PreparedStatementInsertOperationSpec() {
-							@Override
-							public StatementBuilder<? extends PreparedStatement> getStatementBuilder() {
-								return new StatementBuilder<PreparedStatement>() {
-									@Override
-									public PreparedStatement buildQueryStatement(
-											Connection connection,
-											String sql) throws SQLException {
-										return connection.prepareStatement( sql );
-									}
-								};
-							}
-
-							@Override
-							public ParameterBindings getParameterBindings() {
-								return new ParameterBindings() {
-									@Override
-									public void bindParameters(PreparedStatement statement)
-											throws SQLException {
-										statement.setString( 1, "123" );
-									}
-								};
-							}
-
-							@Override
-							public String getSql() {
-								return VEHICLE_INSERT_SQL;
-							}
-						}
-				);
-
-				ResultSet generatedKeys = generateKeyResultSet.getGeneratedKeys();
-				generatedKeys.next();
-				id = generatedKeys.getLong( 1 );
-				generateKeyResultSet.close();
-			}
-
-			@Override
-			public long getGeneratedId() throws SQLException {
-				return id;
-			}
-
-		};
-
-		final BatchableOperationStep insertIntoSubclassTableStep = new BatchableOperationStep() {
-			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
-				PreparedStatement statement = batch.getStatement( CAR_INSERT_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( CAR_INSERT_SQL );
-				}
-				statement.setLong( 1, insertIntoSuperclassTableStep.getGeneratedId() );
-				statement.setInt( 2, 123 );
-				batch.addBatch( CAR_INSERT_SQL, statement );
-			}
-
-			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
-			}
-
-		};
-
-		getJdbcSession().accept(
-				new BatchableOperationSpec() {
-					@Override
-					public BatchKey getBatchKey() {
-						return new BatchKeyImpl( "INSERT#CAR" );
-					}
-
-					@Override
-					public boolean foregoBatching() {
-						return false;
-					}
-
-					@Override
-					public List<BatchObserver> getObservers() {
-						return null;
-					}
-
-					@Override
-					public List<BatchableOperationStep> getSteps() {
-						return Arrays.asList( insertIntoSuperclassTableStep, insertIntoSubclassTableStep );
-					}
-				}
+	private void checkRowIsInsertedIntoOptionalTable(int id, String optionalValue) throws SQLException {
+		Statement selectStatement = getLocalConnection().createStatement();
+		ResultSet resultSet = selectStatement.executeQuery(
+				"SELECT * FROM OPTIONAL_TABLE o where o.ID = " + id
 		);
 
-		try {
-			getJdbcSession().executeBatch();
-			commit();
-
-			Statement selectStatement = getLocalConnection().createStatement();
-			ResultSet resultSet = selectStatement.executeQuery( "SELECT * FROM Car" );
-
-			assertThat( resultSet.next(), is( true ) );
-			assertThat( resultSet.getInt( "speed" ), is( 123 ) );
-			assertThat( resultSet.getLong( "car_id" ), is( insertIntoSuperclassTableStep.getGeneratedId() ) );
-		}
-		catch (JDBCException e) {
-			rollback();
-			throw e;
-		}
+		assertThat( resultSet.next(), is( true ) );
+		assertThat( resultSet.getString( "OPTIONAL_VALUE" ), is( optionalValue ) );
 	}
 
-	@Test
-	public void testStepsForUpdateAnEntityWithOptionalTableWhenSubclassHasToBeInserted() throws SQLException {
-		final int addressId = 1;
-		final String owner = "Fab";
-		final String newOwner = "Fab_new";
-		final String creditCardNumber = "0123";
-
-		insertIntoBillingAddressTable( addressId, owner );
-
-		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
-			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
-				PreparedStatement statement = batch.getStatement( UPDATE_BILLING_ADDRESS );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( UPDATE_BILLING_ADDRESS );
-				}
-				statement.setLong( 2, addressId );
-				statement.setString( 1, newOwner );
-				batch.addBatch( UPDATE_BILLING_ADDRESS, statement );
-			}
-
-			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
-			}
-
-		};
-
-		final BatchableOperationStep insertOrUpdateOptionalTableStep = new BatchableOperationStep() {
-			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
-				PreparedStatement statement = batch.getStatement( UPDATE_CREDIT_CARD );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( UPDATE_CREDIT_CARD );
-				}
-				statement.setString( 1, creditCardNumber );
-				statement.setLong( 2, addressId );
-				batch.addBatch( UPDATE_CREDIT_CARD, statement );
-
-				Integer rowCount = batch.getRowCount( UPDATE_CREDIT_CARD );
-
-				if ( rowCount == 0 ) {
-					statement = batch.getStatement( CREDIT_CARD_INSERT_SQL );
-					if ( statement == null ) {
-						statement = connection.prepareStatement( CREDIT_CARD_INSERT_SQL );
-					}
-					statement.setLong( 1, 1 );
-					statement.setString( 2, creditCardNumber );
-					batch.addBatch( CREDIT_CARD_INSERT_SQL, statement );
-				}
-			}
-
-			@Override
-			public long getGeneratedId() throws SQLException {
-				return 0;
-			}
-
-		};
-
-		getJdbcSession().accept(
-				new BatchableOperationSpec() {
-					@Override
-					public BatchKey getBatchKey() {
-						return new BatchKeyImpl( "UPDATE#CREDITCARD" );
-					}
-
-					@Override
-					public boolean foregoBatching() {
-						return false;
-					}
-
-					@Override
-					public List<BatchObserver> getObservers() {
-						return null;
-					}
-
-					@Override
-					public List<BatchableOperationStep> getSteps() {
-						return Arrays.asList( updateSuperclassTableStep, insertOrUpdateOptionalTableStep );
-					}
-				}
-		);
-
-		try {
-			getJdbcSession().executeBatch();
-			commit();
-
-			Statement selectStatement = getLocalConnection().createStatement();
-			ResultSet resultSet = selectStatement.executeQuery(
-					"SELECT * FROM BillingAddress b left join CreditCard c on b.address_Id = c.Address_Id"
-			);
-
-			assertThat( resultSet.next(), is( true ) );
-			assertThat( resultSet.getString( "number" ), is( creditCardNumber ) );
-			assertThat( resultSet.getString( "owner" ), is( newOwner ) );
-		}
-		catch (JDBCException e) {
-			rollback();
-			throw e;
-		}
+	private void insertIntoOptionalTable(int id, String oldOptionalValue) throws Exception {
+		final String OPTIONAL_TABLE_INSERT_SQL = "INSERT INTO OPTIONAL_TABLE (ID, OPTIONAL_VALUE) values (?,?)";
+		PreparedStatement statement = getLocalConnection().prepareStatement( OPTIONAL_TABLE_INSERT_SQL );
+		statement.setLong( 1, id );
+		statement.setString( 2, oldOptionalValue );
+		statement.executeUpdate();
+		commit();
 	}
 
-	private void insertIntoBillingAddressTable(int addressId, String owner) throws SQLException {
-		PreparedStatement statement = getLocalConnection().prepareStatement( BILLING_ADDRESS_INSERT_SQL );
-		statement.setLong( 1, addressId );
-		statement.setString( 2, owner );
+
+	private void insertIntoBaseTable(int id, String baseTableProperty) throws Exception {
+		final String BASE_TABLE_INSERT_SQL = "INSERT INTO BASE_TABLE (ID, BASE_PROPERTY) values  (?,?)";
+
+		PreparedStatement statement = getLocalConnection().prepareStatement( BASE_TABLE_INSERT_SQL );
+		statement.setLong( 1, id );
+		statement.setString( 2, baseTableProperty );
 		statement.executeUpdate();
 		commit();
 	}
 
 	@Override
 	protected void dropTables() throws SQLException {
-		execute( "DROP table CreditCard IF EXISTS " );
-		execute( "DROP table BillingAddress IF EXISTS" );
-
-		execute( "DROP table Car IF EXISTS" );
-		execute( "DROP table Vehicle IF EXISTS" );
+		execute( "DROP table BASE_TABLE IF EXISTS " );
+		execute( "DROP table OPTIONAL_TABLE IF EXISTS" );
 	}
 
 	@Override
@@ -583,97 +307,21 @@ public class BatchableOpeartionSpecStepIntegrationTest extends AbstractQueryOper
 
 	@Override
 	protected void createTables() throws SQLException {
-		String createCreditCardTableSql = "create table CreditCard (" +
-				"        ADDRESS_ID bigint not null," +
-				"        number varchar(255)," +
-				"		 securityCode integer default " + DEFAULT_SECURITY_CODE + " ," +
-				"        primary key (ADDRESS_ID) )";
-		String createBillingAddressTableSql = "create table BillingAddress (" +
-				"        ADDRESS_ID bigint not null," +
-				"        owner varchar(255)," +
-				"        primary key (ADDRESS_ID) )";
-		String addForeignLeyToCreditCardTableSql = "alter table CreditCard " +
+		String createCreditCardTableSql = "create table BASE_TABLE (" +
+				"        ID bigint not null," +
+				"        BASE_PROPERTY varchar(255)," +
+				"        primary key (ID) )";
+		String createBillingAddressTableSql = "create table OPTIONAL_TABLE (" +
+				"        ID bigint not null," +
+				"        OPTIONAL_VALUE varchar(255)," +
+				"        primary key (ID) )";
+		String addForeignLeyToCreditCardTableSql = "alter table OPTIONAL_TABLE " +
 				"        add constraint FK_ldlwoj0fv2uvxg7dxkvs7nn4g " +
-				"        foreign key (ADDRESS_ID) " +
-				"        references BillingAddress";
-
-		String createVehicleTableSql = "create table Vehicle (" +
-				"        id bigint generated by default as identity," +
-				"        serialNumber varchar(255)," +
-				"        primary key (id) )";
-
-		String createCarTableSql = "create table Car (" +
-				"        car_id bigint not null," +
-				"        speed integer," +
-				"        primary key (car_id) )";
-
-		String addForeignLeyToCarTableSql = "alter table Car " +
-				"        add constraint FK_ldlwoj0fv2uvxg7dxkvs7nn5g " +
-				"        foreign key (car_id) " +
-				"        references Vehicle";
+				"        foreign key (ID) " +
+				"        references BASE_TABLE";
 
 		execute( createCreditCardTableSql );
 		execute( createBillingAddressTableSql );
 		execute( addForeignLeyToCreditCardTableSql );
-
-		execute( createVehicleTableSql );
-		execute( createCarTableSql );
-		execute( addForeignLeyToCarTableSql );
 	}
-
-	public abstract class BillingAddress {
-
-		protected Long id;
-
-		Long amount;
-
-		protected String owner;
-
-		public Long getId() {
-			return id;
-		}
-
-		public void setId(Long id) {
-			this.id = id;
-		}
-
-		public String getOwner() {
-			return owner;
-		}
-
-		public void setOwner(String owner) {
-			this.owner = owner;
-		}
-
-		public Long getAmount() {
-			return amount;
-		}
-
-		public void setAmount(Long amount) {
-			this.amount = amount;
-		}
-	}
-
-	public class CreditCard extends BillingAddress {
-		private String number;
-
-		Long securityCode;
-
-		public String getNumber() {
-			return number;
-		}
-
-		public void setNumber(String number) {
-			this.number = number;
-		}
-
-		public Long getSecurityCode() {
-			return securityCode;
-		}
-
-		public void setSecurityCode(Long securityCode) {
-			this.securityCode = securityCode;
-		}
-	}
-
 }
