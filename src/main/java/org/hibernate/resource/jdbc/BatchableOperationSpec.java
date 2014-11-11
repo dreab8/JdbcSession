@@ -28,9 +28,11 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
+import org.hibernate.tuple.GenerationTiming;
 
 /**
  * @author Andrea Borie,ro
@@ -45,8 +47,54 @@ public interface BatchableOperationSpec {
 	public List<BatchableOperationStep> getSteps();
 
 	public interface BatchableOperationStep {
-		void apply(Batch batch, Connection connection) throws SQLException;
 
-		Serializable getGeneratedId() throws SQLException;
+
+		public void apply(Batch batch, Connection connection, Context context) throws SQLException;
+
+		//??? remove this method and add a return type to apply method ???
+		public Serializable getGeneratedId() throws SQLException;
 	}
+
+	// ???Operation Parameter or Values instead of Context ???
+	public interface Context {
+	}
+
+	public interface InsertContext extends Context {
+		public Serializable getId();
+
+		public Object[] getFields();
+
+		public Object getObject();
+
+		public SessionImplementor getSessionImplementor();
+
+		public GenerationTiming getMatchTiming();
+	}
+
+	public interface UpdateContext extends Context {
+		public Serializable getId();
+
+		public Object[] getFields();
+
+		public Object getObject();
+
+		public int[] getDirtyFields();
+
+		public boolean isDirtyCollection();
+
+		public Object[] getOldFields();
+
+		public Object getOldVersion();
+
+		public Object getrowId();
+	}
+
+	public interface DeleteContext extends Context {
+		public Serializable getId();
+
+		public Object[] getFields();
+
+		public Object getObject();
+	}
+
 }

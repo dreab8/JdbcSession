@@ -88,7 +88,7 @@ public interface JdbcSession {
 
 	public Result accept(ScrollableQueryOperationSpec operation);
 
-	public void accept(BatchableOperationSpec operatioon);
+	public void accept(BatchableOperationSpec operatioon, BatchableOperationSpec.Context context);
 
 	public GenerateKeyResultSet accept(PreparedStatementInsertOperationSpec operation);
 

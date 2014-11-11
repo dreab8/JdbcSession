@@ -111,7 +111,7 @@ public class JdbcSessionImpl
 	}
 
 	@Override
-	public void accept(BatchableOperationSpec operation) {
+	public void accept(BatchableOperationSpec operation, BatchableOperationSpec.Context operationContext) {
 		Batch currentBatch = getResourceRegistry().getCurrentBatch();
 		if ( currentBatch != null ) {
 			if ( !currentBatch.getKey().equals( operation.getBatchKey() ) ) {
@@ -125,7 +125,7 @@ public class JdbcSessionImpl
 		}
 		try {
 			for ( BatchableOperationStep step : operation.getSteps() ) {
-				step.apply( currentBatch, logicalConnection.getPhysicalConnection() );
+				step.apply( currentBatch, logicalConnection.getPhysicalConnection(), operationContext );
 			}
 		}
 		catch (SQLException e) {
@@ -136,8 +136,6 @@ public class JdbcSessionImpl
 	@Override
 	public GenerateKeyResultSet accept(PreparedStatementInsertOperationSpec operation) {
 		try {
-			logicalConnection.getResourceRegistry();
-
 			final PreparedStatement statement = operation.getStatementBuilder()
 					.buildQueryStatement( logicalConnection.getPhysicalConnection(), operation.getSql() );
 
@@ -169,8 +167,6 @@ public class JdbcSessionImpl
 	@Override
 	public Result accept(ScrollableQueryOperationSpec operation) {
 		try {
-			logicalConnection.getResourceRegistry();
-
 			final PreparedStatement statement = prepareStatement( operation );
 
 			final ResultSet resultSet = operation.getStatementExecutor().execute( statement );
@@ -256,6 +252,8 @@ public class JdbcSessionImpl
 	}
 
 	private PreparedStatement prepareStatement(QueryOperationSpec operation) throws SQLException {
+		context.getSqlStatementLogger().logStatement( operation.getSql() );
+
 		final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 				logicalConnection.getPhysicalConnection(),
 				operation.getSql(),

@@ -12,7 +12,7 @@ apply plugin: 'idea'
 
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.9'
+    gradleVersion = '2.1'
 }
 
 repositories {
@@ -34,8 +34,8 @@ buildDir = "target"
 group = 'org.hibernate.design'
 version = "1.0.0-SNAPSHOT"
 
-targetCompatibility = "1.6"
-sourceCompatibility = "1.6"
+targetCompatibility = "1.7"
+sourceCompatibility = "1.7"
 
 configurations {
     asciidoclet {

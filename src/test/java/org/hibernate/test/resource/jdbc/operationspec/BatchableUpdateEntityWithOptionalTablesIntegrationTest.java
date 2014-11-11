@@ -33,10 +33,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.JDBCException;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
+import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Test;
 
@@ -49,7 +51,7 @@ import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperat
 /**
  * @author Andrea Boriero
  */
-public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 
 	private static final String OPTIONAL_TABLE_INSERT_SQL = "INSERT INTO OPTIONAL_TABLE (ID, OPTIONAL_VALUE) values  (?,?)";
@@ -59,21 +61,22 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 	@Test
 	public void testTheRowOfTheOptionalTableIsInsertedWhenNotPresent() throws Exception {
 		final int id = 1;
-		final String baseProperty = "Fab";
-		final String newBaseProeprty = "Fab_new";
+		final String baseProperty = "old";
+		final String newBaseProperty = "new";
 		final String optionalValue = "0123";
 
 		insertIntoBaseTable( id, baseProperty );
 
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
 				PreparedStatement statement = batch.getStatement( UPDATE_BASE_TABLE_SQL );
 				if ( statement == null ) {
 					statement = connection.prepareStatement( UPDATE_BASE_TABLE_SQL );
 				}
 				statement.setLong( 2, id );
-				statement.setString( 1, newBaseProeprty );
+				statement.setString( 1, newBaseProperty );
 				batch.addBatch( UPDATE_BASE_TABLE_SQL, statement );
 			}
 
@@ -85,7 +88,8 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 
 		final BatchableOperationStep insertIntoOptionalTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
 				PreparedStatement statement = batch.getStatement( UPDATE_OPTIONAL_TABLE_SQL );
 
 				if ( statement == null ) {
@@ -145,14 +149,55 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( updateSuperclassTableStep, insertIntoOptionalTableStep );
 					}
+				}, new BatchableOperationSpec.UpdateContext() {
+					@Override
+					public Serializable getId() {
+						return null;
+					}
+
+					@Override
+					public Object[] getFields() {
+						return new Object[0];
+					}
+
+					@Override
+					public Object getObject() {
+						return null;
+					}
+
+					@Override
+					public int[] getDirtyFields() {
+						return new int[0];
+					}
+
+					@Override
+					public boolean isDirtyCollection() {
+						return false;
+					}
+
+					@Override
+					public Object[] getOldFields() {
+						return new Object[0];
+					}
+
+					@Override
+					public Object getOldVersion() {
+						return null;
+					}
+
+					@Override
+					public Object getrowId() {
+						return null;
+					}
 				}
+
 		);
 
 		try {
 			getJdbcSession().executeBatch();
 			commit();
 
-			checkBaseTableIsUpdated( id, newBaseProeprty );
+			checkBaseTableIsUpdated( id, newBaseProperty );
 			checkRowIsInsertedIntoOptionalTable( id, optionalValue );
 		}
 		catch (JDBCException e) {
@@ -170,11 +215,12 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 		final String newOptionalValue = "123";
 
 		insertIntoBaseTable( id, baseProperty );
-		insertIntoOptionalTable(  id, optionalValue );
+		insertIntoOptionalTable( id, optionalValue );
 
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
 				PreparedStatement statement = batch.getStatement( UPDATE_BASE_TABLE_SQL );
 				if ( statement == null ) {
 					statement = connection.prepareStatement( UPDATE_BASE_TABLE_SQL );
@@ -192,7 +238,8 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 
 		final BatchableOperationStep insertIntoOptionalTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
 				PreparedStatement statement = batch.getStatement( UPDATE_OPTIONAL_TABLE_SQL );
 
 				if ( statement == null ) {
@@ -252,6 +299,46 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( updateSuperclassTableStep, insertIntoOptionalTableStep );
 					}
+				}, new BatchableOperationSpec.UpdateContext() {
+					@Override
+					public Serializable getId() {
+						return null;
+					}
+
+					@Override
+					public Object[] getFields() {
+						return new Object[0];
+					}
+
+					@Override
+					public Object getObject() {
+						return null;
+					}
+
+					@Override
+					public int[] getDirtyFields() {
+						return new int[0];
+					}
+
+					@Override
+					public boolean isDirtyCollection() {
+						return false;
+					}
+
+					@Override
+					public Object[] getOldFields() {
+						return new Object[0];
+					}
+
+					@Override
+					public Object getOldVersion() {
+						return null;
+					}
+
+					@Override
+					public Object getrowId() {
+						return null;
+					}
 				}
 		);
 
@@ -280,7 +367,8 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
 				PreparedStatement statement = batch.getStatement( UPDATE_BASE_TABLE_SQL );
 				if ( statement == null ) {
 					statement = connection.prepareStatement( UPDATE_BASE_TABLE_SQL );
@@ -298,7 +386,8 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 
 		final BatchableOperationStep deleteRowFormOptionalTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
 				final String DELETE_FROM_OPTIONAL_TABLE_SQL = "DELETE FROM OPTIONAL_TABLE WHERE ID = ?";
 				PreparedStatement statement = batch.getStatement( DELETE_FROM_OPTIONAL_TABLE_SQL );
 				if ( statement == null ) {
@@ -334,6 +423,46 @@ public class BatchableWithOptionalTablesIntegrationTest extends AbstractQueryOpe
 					@Override
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( updateSuperclassTableStep, deleteRowFormOptionalTableStep );
+					}
+				}, new BatchableOperationSpec.UpdateContext() {
+					@Override
+					public Serializable getId() {
+						return null;
+					}
+
+					@Override
+					public Object[] getFields() {
+						return new Object[0];
+					}
+
+					@Override
+					public Object getObject() {
+						return null;
+					}
+
+					@Override
+					public int[] getDirtyFields() {
+						return new int[0];
+					}
+
+					@Override
+					public boolean isDirtyCollection() {
+						return false;
+					}
+
+					@Override
+					public Object[] getOldFields() {
+						return new Object[0];
+					}
+
+					@Override
+					public Object getOldVersion() {
+						return null;
+					}
+
+					@Override
+					public Object getrowId() {
+						return null;
 					}
 				}
 		);

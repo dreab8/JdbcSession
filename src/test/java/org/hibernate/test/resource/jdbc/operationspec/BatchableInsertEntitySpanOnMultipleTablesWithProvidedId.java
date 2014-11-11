@@ -33,10 +33,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.JDBCException;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
+import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Test;
 
@@ -44,28 +46,31 @@ import org.hibernate.test.resource.jdbc.common.BatchKeyImpl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hibernate.resource.jdbc.BatchableOperationSpec.InsertContext;
 
 /**
  * @author Andrea Boriero
  */
-public class BatchableJoinInheritanceIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedId extends AbstractQueryOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 	private static final String SUPERCLASS_INSERT_SQL = "INSERT INTO SUPERCLASS_TABLE (ID, SUPERCLASS_PROPERTY) values (?,?)";
 	private static final String SUBCLASS_INSERT_SQL = "INSERT INTO SUBCLASS_TABLE (ID, SUBCLASS_PROPERTY) values (?,?)";
 
 	@Test
-	public void testStepsForInsertEntityWithInheritanceJoinedStrategy() throws Exception {
-		final Serializable id = 1L;
+	public void testStepsForInsertEntitySpanOnMultibleTables() throws Exception {
+//		final Serializable id = 1L;
 
 		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
+				InsertContext insertContext = (InsertContext) context;
 				PreparedStatement statement = batch.getStatement( SUPERCLASS_INSERT_SQL );
 				if ( statement == null ) {
 					statement = connection.prepareStatement( SUPERCLASS_INSERT_SQL );
 				}
-				statement.setLong( 1, (Long) id );
-				statement.setString( 2, "Fab" );
+				statement.setLong( 1, (Long) insertContext.getId() );
+				statement.setString( 2, "unimportant" );
 				batch.addBatch( SUPERCLASS_INSERT_SQL, statement );
 			}
 
@@ -78,12 +83,14 @@ public class BatchableJoinInheritanceIntegrationTest extends AbstractQueryOperat
 
 		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
+				InsertContext insertContext = (InsertContext) context;
 				PreparedStatement statement = batch.getStatement( SUBCLASS_INSERT_SQL );
 				if ( statement == null ) {
 					statement = connection.prepareStatement( SUBCLASS_INSERT_SQL );
 				}
-				statement.setLong( 1, (Long) id );
+				statement.setLong( 1, (Long) insertContext.getId() );
 				statement.setString( 2, "0123" );
 				batch.addBatch( SUBCLASS_INSERT_SQL, statement );
 			}
@@ -115,6 +122,31 @@ public class BatchableJoinInheritanceIntegrationTest extends AbstractQueryOperat
 					@Override
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( insertIntoSuperclassTableStep, insertIntoSubclassTableStep );
+					}
+				}, new InsertContext() {
+					@Override
+					public Serializable getId() {
+						return 1L;
+					}
+
+					@Override
+					public Object[] getFields() {
+						return new Object[0];
+					}
+
+					@Override
+					public Object getObject() {
+						return null;
+					}
+
+					@Override
+					public SessionImplementor getSessionImplementor() {
+						return null;
+					}
+
+					@Override
+					public GenerationTiming getMatchTiming() {
+						return null;
 					}
 				}
 		);

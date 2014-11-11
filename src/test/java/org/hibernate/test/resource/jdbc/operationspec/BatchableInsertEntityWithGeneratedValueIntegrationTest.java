@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.JDBCException;
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
@@ -41,6 +42,7 @@ import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
+import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Test;
 
@@ -52,7 +54,7 @@ import static org.hamcrest.core.Is.is;
 /**
  * @author Andrea Boriero
  */
-public class BatchableWithGeneratedValueIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class BatchableInsertEntityWithGeneratedValueIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 	private static final Long DEFAULT_SECURITY_CODE = 123L;
 
@@ -67,7 +69,8 @@ public class BatchableWithGeneratedValueIntegrationTest extends AbstractQueryOpe
 
 		final BatchableOperationSpec.BatchableOperationStep insertIntoCreditCardTableStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
 				PreparedStatement statement = batch.getStatement( CREDIT_CARD_INSERT_SQL );
 				if ( statement == null ) {
 					statement = connection.prepareStatement( CREDIT_CARD_INSERT_SQL );
@@ -87,7 +90,8 @@ public class BatchableWithGeneratedValueIntegrationTest extends AbstractQueryOpe
 		final BatchableOperationSpec.BatchableOperationStep updateCreditCardEntitySecurityCodeGeneratedValueStep = new BatchableOperationSpec.BatchableOperationStep() {
 
 			@Override
-			public void apply(Batch batch, Connection connection) throws SQLException {
+			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+					throws SQLException {
 
 				PreparedStatementQueryOperationSpec updateGenerateValueOperationSpec = new UpdateGenerateValueOperationSpec(
 						creditCardToSave,
@@ -130,6 +134,31 @@ public class BatchableWithGeneratedValueIntegrationTest extends AbstractQueryOpe
 								insertIntoCreditCardTableStep,
 								updateCreditCardEntitySecurityCodeGeneratedValueStep
 						);
+					}
+				}, new BatchableOperationSpec.InsertContext() {
+					@Override
+					public Serializable getId() {
+						return null;
+					}
+
+					@Override
+					public Object[] getFields() {
+						return new Object[0];
+					}
+
+					@Override
+					public Object getObject() {
+						return null;
+					}
+
+					@Override
+					public SessionImplementor getSessionImplementor() {
+						return null;
+					}
+
+					@Override
+					public GenerationTiming getMatchTiming() {
+						return null;
 					}
 				}
 		);

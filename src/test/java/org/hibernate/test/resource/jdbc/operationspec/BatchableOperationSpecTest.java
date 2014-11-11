@@ -75,6 +75,7 @@ public class BatchableOperationSpecTest {
 
 	private final BatchableOperationSpec operationSpec = mock( BatchableOperationSpec.class );
 	private final BatchableOperationStep step = mock( BatchableOperationStep.class );
+	private final BatchableOperationSpec.Context batchContext = mock( BatchableOperationSpec.Context.class );
 
 	private Connection connection;
 
@@ -99,7 +100,7 @@ public class BatchableOperationSpecTest {
 
 	@Test
 	public void previousBatchStatementExecutionIsForcedWhenABatchWithADifferentKeyIsSet() throws SQLException {
-		jdbcSession.accept( operationSpec );
+		jdbcSession.accept( operationSpec, batchContext );
 
 		when( operationSpec.getBatchKey() ).thenReturn(
 				new BatchKeyImpl(
@@ -108,7 +109,7 @@ public class BatchableOperationSpecTest {
 				)
 		);
 
-		jdbcSession.accept( operationSpec );
+		jdbcSession.accept( operationSpec, batchContext );
 
 		verify( batch, times( 1 ) ).execute();
 	}
@@ -120,11 +121,11 @@ public class BatchableOperationSpecTest {
 		List<BatchableOperationStep> steps = Arrays.asList( step, step2 );
 		when( operationSpec.getSteps() ).thenReturn( steps );
 
-		jdbcSession.accept( operationSpec );
+		jdbcSession.accept( operationSpec, batchContext );
 
 		InOrder inOrder = inOrder( step, step2 );
-		inOrder.verify( step ).apply( batch , connection);
-		inOrder.verify( step2 ).apply( batch , connection);
+		inOrder.verify( step ).apply( batch, connection, batchContext );
+		inOrder.verify( step2 ).apply( batch, connection, batchContext );
 	}
 
 	@Test
@@ -132,7 +133,7 @@ public class BatchableOperationSpecTest {
 		BatchFactory factory = mockBatchFactory();
 		initBatching( factory );
 
-		jdbcSession.accept( operationSpec );
+		jdbcSession.accept( operationSpec, batchContext );
 
 		verify( factory ).buildBatch(
 				operationSpec.getBatchKey(),
@@ -146,7 +147,7 @@ public class BatchableOperationSpecTest {
 		ResourceRegistry resourceRegistry = mock( ResourceRegistry.class );
 		initJdbSession( mockBatchFactory(), resourceRegistry );
 
-		jdbcSession.accept( operationSpec );
+		jdbcSession.accept( operationSpec, batchContext );
 
 		verify( resourceRegistry ).register( batch );
 	}
@@ -158,7 +159,7 @@ public class BatchableOperationSpecTest {
 
 		initJdbSession( mockBatchFactory(), resourceRegistry );
 
-		jdbcSession.accept( operationSpec );
+		jdbcSession.accept( operationSpec, batchContext );
 
 		when( operationSpec.getBatchKey() ).thenReturn(
 				new BatchKeyImpl(
@@ -167,7 +168,7 @@ public class BatchableOperationSpecTest {
 				)
 		);
 
-		jdbcSession.accept( operationSpec );
+		jdbcSession.accept( operationSpec, batchContext );
 
 		verify( resourceRegistry ).releaseCurrentBatch();
 		verify( resourceRegistry ).register( batch2 );
