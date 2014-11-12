@@ -39,6 +39,7 @@ import org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.StatementBuilder;
 import org.hibernate.tuple.GenerationTiming;
@@ -76,6 +77,7 @@ public class BatchableInsetyEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 									@Override
 									public PreparedStatement buildQueryStatement(
 											Connection connection,
+											JdbcSessionContext context,
 											String sql) throws SQLException {
 										return connection.prepareStatement( sql );
 									}

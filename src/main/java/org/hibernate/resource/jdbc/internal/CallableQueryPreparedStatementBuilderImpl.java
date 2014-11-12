@@ -28,12 +28,13 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.hibernate.resource.jdbc.QueryOperationSpec;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 /**
  * @author Andrea Boriero
  */
-public class CallableQueryPreparedStatementBuilderImpl
-		extends AbstractStandardQueryPreparedStatementBuilder<CallableStatement> {
+public class CallableQueryPreparedStatementBuilderImpl implements QueryStatementBuilder<CallableStatement> {
 
 	public static final CallableQueryPreparedStatementBuilderImpl INSTANCE = new CallableQueryPreparedStatementBuilderImpl();
 
@@ -41,20 +42,26 @@ public class CallableQueryPreparedStatementBuilderImpl
 	}
 
 	@Override
-	protected CallableStatement getStatement(
-			Connection connection,
-			String sql,
-			QueryOperationSpec.ResultSetType resultSetType,
-			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
-		if ( resultSetType != null && resultSetConcurrency != null ) {
-			return connection.prepareCall(
-					sql,
-					resultSetType.getJdbcConstantValue(),
-					resultSetConcurrency.getJdbcConstantValue()
-			);
-		}
-		else {
-			return connection.prepareCall( sql );
-		}
+	public CallableStatement buildQueryStatement(
+			final Connection connection,
+			JdbcSessionContext context,
+			final String sql,
+			final QueryOperationSpec.ResultSetType resultSetType,
+			final QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
+		return new AbstractPreparedStatementBuilder<CallableStatement>() {
+			@Override
+			protected CallableStatement getStatement() throws SQLException {
+				if ( resultSetType != null && resultSetConcurrency != null ) {
+					return connection.prepareCall(
+							sql,
+							resultSetType.getJdbcConstantValue(),
+							resultSetConcurrency.getJdbcConstantValue()
+					);
+				}
+				else {
+					return connection.prepareCall( sql );
+				}
+			}
+		}.buildStatement( context, sql );
 	}
 }

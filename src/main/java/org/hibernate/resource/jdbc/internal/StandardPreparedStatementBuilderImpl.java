@@ -24,44 +24,27 @@
 package org.hibernate.resource.jdbc.internal;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
-import org.hibernate.resource.jdbc.QueryOperationSpec;
-import org.hibernate.resource.jdbc.spi.JdbcObserver;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
-import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
+import org.hibernate.resource.jdbc.spi.StatementBuilder;
 
 /**
  * @author Andrea Boriero
  */
-public abstract class AbstractStandardQueryPreparedStatementBuilder<R extends Statement>
-		implements QueryStatementBuilder {
-
+public class StandardPreparedStatementBuilderImpl implements StatementBuilder<PreparedStatement> {
 	@Override
-	public R buildQueryStatement(
-			Connection connection,
-			JdbcSessionContext context,
-			String sql,
-			QueryOperationSpec.ResultSetType resultSetType,
-			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
-		final JdbcObserver observer = context.getObserver();
-
-		observer.onPrepareStatement( sql );
-		context.getSqlStatementLogger().logStatement( sql );
-		observer.jdbcPrepareStatementStart();
-
-		final R statement = getStatement( connection, sql, resultSetType, resultSetConcurrency );
-
-		observer.jdbcPrepareStatementEnd();
-
-		return statement;
+	public PreparedStatement buildQueryStatement(
+			final Connection connection,
+			final JdbcSessionContext context,
+			final String sql)
+			throws SQLException {
+		return new AbstractPreparedStatementBuilder<PreparedStatement>() {
+			@Override
+			protected PreparedStatement getStatement() throws SQLException {
+				return connection.prepareStatement( sql );
+			}
+		}.buildStatement( context, sql );
 	}
-
-	protected abstract R getStatement(
-			Connection connection,
-			String sql,
-			QueryOperationSpec.ResultSetType resultSetType,
-			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException;
-
 }

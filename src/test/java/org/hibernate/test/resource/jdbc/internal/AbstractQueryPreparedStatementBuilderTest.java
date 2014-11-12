@@ -11,6 +11,7 @@ import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.junit.Test;
 
 import org.hibernate.test.resource.jdbc.common.JdbcObserverNoOpImpl;
+import org.hibernate.test.resource.jdbc.common.StatementInspectorNoOpImpl;
 
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
@@ -25,9 +26,10 @@ public abstract class AbstractQueryPreparedStatementBuilderTest {
 	protected ConnectionMethodCallCheck verifier;
 	protected JdbcSessionContext context = mock( JdbcSessionContext.class );
 
-	protected void onSetUp(){
+	protected void onSetUp() {
 		when( context.getObserver() ).thenReturn( new JdbcObserverNoOpImpl() );
-		when( context.getSqlStatementLogger()).thenReturn( new SqlStatementLogger(  ) );
+		when( context.getSqlStatementLogger() ).thenReturn( new SqlStatementLogger() );
+		when( context.getStatementInspector() ).thenReturn( new StatementInspectorNoOpImpl() );
 	}
 
 	protected interface ConnectionMethodCallCheck {

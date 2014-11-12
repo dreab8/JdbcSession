@@ -28,12 +28,13 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.hibernate.resource.jdbc.QueryOperationSpec;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 /**
  * @author Andrea Boriero
  */
-public class StandardQueryPreparedStatementBuilderImpl
-		extends AbstractStandardQueryPreparedStatementBuilder<PreparedStatement> {
+public class StandardQueryPreparedStatementBuilderImpl implements QueryStatementBuilder<PreparedStatement> {
 
 	public static final StandardQueryPreparedStatementBuilderImpl INSTANCE = new StandardQueryPreparedStatementBuilderImpl();
 
@@ -41,20 +42,26 @@ public class StandardQueryPreparedStatementBuilderImpl
 	}
 
 	@Override
-	protected PreparedStatement getStatement(
-			Connection connection,
-			String sql,
-			QueryOperationSpec.ResultSetType resultSetType,
-			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
-		if ( resultSetType != null && resultSetConcurrency != null ) {
-			return connection.prepareStatement(
-					sql,
-					resultSetType.getJdbcConstantValue(),
-					resultSetConcurrency.getJdbcConstantValue()
-			);
-		}
-		else {
-			return connection.prepareStatement( sql );
-		}
+	public PreparedStatement buildQueryStatement(
+			final Connection connection,
+			JdbcSessionContext context,
+			final String sql,
+			final QueryOperationSpec.ResultSetType resultSetType,
+			final QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
+		return new AbstractPreparedStatementBuilder<PreparedStatement>() {
+			@Override
+			protected PreparedStatement getStatement() throws SQLException {
+				if ( resultSetType != null && resultSetConcurrency != null ) {
+					return connection.prepareStatement(
+							sql,
+							resultSetType.getJdbcConstantValue(),
+							resultSetConcurrency.getJdbcConstantValue()
+					);
+				}
+				else {
+					return connection.prepareStatement( sql );
+				}
+			}
+		}.buildStatement( context, sql );
 	}
 }

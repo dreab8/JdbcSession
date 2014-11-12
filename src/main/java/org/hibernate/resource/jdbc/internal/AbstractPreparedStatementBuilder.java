@@ -21,18 +21,30 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.jdbc.internal;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 
 /**
  * @author Andrea Boriero
  */
-public interface StatementBuilder<R extends Statement> {
-	public R buildQueryStatement(
-			Connection connection,
-			JdbcSessionContext context,
-			String sql) throws SQLException;
+public abstract class AbstractPreparedStatementBuilder<R extends Statement> {
+
+	public R buildStatement(JdbcSessionContext context, String sql) throws SQLException {
+		context.getStatementInspector().inspect( sql );
+		context.getSqlStatementLogger().logStatement( sql );
+		context.getObserver().jdbcPrepareStatementStart();
+
+		final R statement = getStatement();
+
+		context.getObserver().jdbcPrepareStatementEnd();
+
+		return statement;
+	}
+
+	protected abstract R getStatement() throws SQLException;
+
 }
