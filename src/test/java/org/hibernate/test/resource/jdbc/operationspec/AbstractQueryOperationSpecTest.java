@@ -34,6 +34,7 @@ import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
@@ -92,6 +93,7 @@ public abstract class AbstractQueryOperationSpecTest<T extends QueryOperationSpe
 		when(
 				queryStatementBuilder.buildQueryStatement(
 						any( Connection.class ),
+						any( JdbcSessionContext.class ),
 						anyString(),
 						any( QueryOperationSpec.ResultSetType.class ),
 						any( QueryOperationSpec.ResultSetConcurrency.class )
@@ -133,6 +135,7 @@ public abstract class AbstractQueryOperationSpecTest<T extends QueryOperationSpe
 
 		verify( queryStatementBuilder ).buildQueryStatement(
 				((LogicalConnectionImplementor) jdbcSession.getLogicalConnection()).getPhysicalConnection(),
+				jdbcSessionOwner.getJdbcSessionContext(),
 				expectedSql,
 				QueryOperationSpec.ResultSetType.FORWARD_ONLY,
 				QueryOperationSpec.ResultSetConcurrency.READ_ONLY

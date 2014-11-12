@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,24 +21,47 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.jdbc.internal;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetConcurrency;
-import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetType;
-
+import org.hibernate.resource.jdbc.QueryOperationSpec;
+import org.hibernate.resource.jdbc.spi.JdbcObserver;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 /**
  * @author Andrea Boriero
  */
-public interface QueryStatementBuilder<R extends Statement> {
+public abstract class AbstractStandardQueryPreparedStatementBuilder<R extends Statement>
+		implements QueryStatementBuilder {
+
+	@Override
 	public R buildQueryStatement(
 			Connection connection,
 			JdbcSessionContext context,
 			String sql,
-			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency) throws SQLException;
+			QueryOperationSpec.ResultSetType resultSetType,
+			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
+		final JdbcObserver observer = context.getObserver();
+
+		observer.onPrepareStatement( sql );
+		context.getSqlStatementLogger().logStatement( sql );
+		observer.jdbcPrepareStatementStart();
+
+		final R statement = getStatement( connection, sql, resultSetType, resultSetConcurrency );
+
+		observer.jdbcPrepareStatementEnd();
+
+		return statement;
+	}
+
+	protected abstract R getStatement(
+			Connection connection,
+			String sql,
+			QueryOperationSpec.ResultSetType resultSetType,
+			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException;
+
 }

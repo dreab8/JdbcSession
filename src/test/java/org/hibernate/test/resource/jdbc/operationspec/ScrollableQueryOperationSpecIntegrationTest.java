@@ -32,6 +32,7 @@ import java.sql.Statement;
 import org.hibernate.JDBCException;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
@@ -124,6 +125,7 @@ public class ScrollableQueryOperationSpecIntegrationTest extends AbstractQueryOp
 		@Override
 		public Statement buildQueryStatement(
 				Connection connection,
+				JdbcSessionContext context,
 				String sql,
 				QueryOperationSpec.ResultSetType resultSetType,
 				QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {

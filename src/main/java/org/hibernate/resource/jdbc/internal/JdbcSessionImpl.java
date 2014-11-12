@@ -252,10 +252,10 @@ public class JdbcSessionImpl
 	}
 
 	private PreparedStatement prepareStatement(QueryOperationSpec operation) throws SQLException {
-		context.getSqlStatementLogger().logStatement( operation.getSql() );
 
 		final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 				logicalConnection.getPhysicalConnection(),
+				context,
 				operation.getSql(),
 				operation.getResultSetType(),
 				operation.getResultSetConcurrency()
@@ -274,7 +274,10 @@ public class JdbcSessionImpl
 
 	private void configureStatement(QueryOperationSpec operation, Statement statement)
 			throws SQLException {
-		statement.setQueryTimeout( operation.getQueryTimeout() );
+		final int queryTimeOut = operation.getQueryTimeout();
+		if ( queryTimeOut > 0 ) {
+			statement.setQueryTimeout( operation.getQueryTimeout() );
+		}
 	}
 
 	// ResourceLocalTransactionAccess impl ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

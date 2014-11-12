@@ -33,6 +33,7 @@ public interface JdbcObserver {
 	public void jdbcConnectionReleaseStart();
 	public void jdbcConnectionReleaseEnd();
 
+	public String onPrepareStatement(String sql);
 	public void jdbcPrepareStatementStart();
 	public void jdbcPrepareStatementEnd();
 
@@ -41,4 +42,5 @@ public interface JdbcObserver {
 
 	public void jdbcExecuteBatchStart();
 	public void jdbcExecuteBatchEnd();
+
 }

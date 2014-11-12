@@ -3,20 +3,32 @@ package org.hibernate.test.resource.jdbc.internal;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.hibernate.engine.jdbc.spi.SqlStatementLogger;
+import org.hibernate.resource.jdbc.spi.JdbcObserver;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 
 import org.junit.Test;
 
+import org.hibernate.test.resource.jdbc.common.JdbcObserverNoOpImpl;
+
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
 import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public abstract class AbstractQueryPreparedStatementBuilderTest {
 
-	private Connection connection = mock( Connection.class );
+	protected Connection connection = mock( Connection.class );
 	protected QueryStatementBuilder queryBuilder;
 	private final String sql = "Select * from item";
-	private ConnectionMethodCallCheck verifier;
+	protected ConnectionMethodCallCheck verifier;
+	protected JdbcSessionContext context = mock( JdbcSessionContext.class );
+
+	protected void onSetUp(){
+		when( context.getObserver() ).thenReturn( new JdbcObserverNoOpImpl() );
+		when( context.getSqlStatementLogger()).thenReturn( new SqlStatementLogger(  ) );
+	}
 
 	protected interface ConnectionMethodCallCheck {
 		void verify(Connection c, String expectedSql) throws SQLException;
@@ -34,12 +46,14 @@ public abstract class AbstractQueryPreparedStatementBuilderTest {
 
 	@Test
 	public void prepareCallIsInvokedWithoutResultTypeAndResultConcurrenecy() throws SQLException {
-		queryBuilder.buildQueryStatement( connection, sql, null, null );
+
+		queryBuilder.buildQueryStatement( connection, context, sql, null, null );
 
 		verifier.verify( connection, sql );
 
 		queryBuilder.buildQueryStatement(
 				connection,
+				context,
 				sql,
 				ResultSetType.FORWARD_ONLY,
 				null
@@ -49,6 +63,7 @@ public abstract class AbstractQueryPreparedStatementBuilderTest {
 
 		queryBuilder.buildQueryStatement(
 				connection,
+				context,
 				sql,
 				null,
 				ResultSetConcurrency.READ_ONLY
@@ -64,6 +79,7 @@ public abstract class AbstractQueryPreparedStatementBuilderTest {
 
 		queryBuilder.buildQueryStatement(
 				connection,
+				context,
 				sql,
 				expectedResultSetType,
 				expectedResultSetConcurrency

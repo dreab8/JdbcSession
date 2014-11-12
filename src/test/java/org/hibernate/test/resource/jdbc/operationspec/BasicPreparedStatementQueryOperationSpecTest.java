@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import org.mockito.InOrder;
 
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 
 import org.junit.Test;
 
@@ -61,6 +62,7 @@ public class BasicPreparedStatementQueryOperationSpecTest
 
 		verify( queryStatementBuilder ).buildQueryStatement(
 				any( Connection.class ),
+				any( JdbcSessionContext.class ),
 				anyString(),
 				any( ResultSetType.class ),
 				any( ResultSetConcurrency.class )

@@ -51,6 +51,11 @@ public class JdbcObserverNoOpImpl implements JdbcObserver {
 	}
 
 	@Override
+	public String onPrepareStatement(String sql) {
+		return null;
+	}
+
+	@Override
 	public void jdbcPrepareStatementStart() {
 	}
 

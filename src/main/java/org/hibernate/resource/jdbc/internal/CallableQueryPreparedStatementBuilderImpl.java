@@ -27,15 +27,13 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
-
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetConcurrency;
-import static org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec.ResultSetType;
+import org.hibernate.resource.jdbc.QueryOperationSpec;
 
 /**
  * @author Andrea Boriero
  */
-public class CallableQueryPreparedStatementBuilderImpl implements QueryStatementBuilder<CallableStatement> {
+public class CallableQueryPreparedStatementBuilderImpl
+		extends AbstractStandardQueryPreparedStatementBuilder<CallableStatement> {
 
 	public static final CallableQueryPreparedStatementBuilderImpl INSTANCE = new CallableQueryPreparedStatementBuilderImpl();
 
@@ -43,11 +41,11 @@ public class CallableQueryPreparedStatementBuilderImpl implements QueryStatement
 	}
 
 	@Override
-	public CallableStatement buildQueryStatement(
+	protected CallableStatement getStatement(
 			Connection connection,
 			String sql,
-			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency) throws SQLException {
+			QueryOperationSpec.ResultSetType resultSetType,
+			QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
 		if ( resultSetType != null && resultSetConcurrency != null ) {
 			return connection.prepareCall(
 					sql,
