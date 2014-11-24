@@ -71,4 +71,5 @@ public interface LogicalConnectionImplementor extends LogicalConnection {
 	public LogicalConnectionImplementor makeShareableCopy();
 
 	public PhysicalJdbcTransaction getPhysicalJdbcTransaction();
+
 }

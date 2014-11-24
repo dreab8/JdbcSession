@@ -23,6 +23,7 @@
  */
 package org.hibernate.resource.jdbc;
 
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 
 import static org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec.GenerateKeyResultSet;
@@ -66,6 +67,8 @@ public interface JdbcSession {
 	 */
 	public TransactionCoordinator getTransactionCoordinator();
 
+	public JdbcSessionContext getSessionContext();
+
 	/**
 	 * Accept an operation to be performed within bounds of this JdbcSession
 	 *
@@ -95,4 +98,5 @@ public interface JdbcSession {
 	public void executeBatch();
 
 	public void abortBatch();
+
 }

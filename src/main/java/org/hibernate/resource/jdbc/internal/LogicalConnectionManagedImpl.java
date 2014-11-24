@@ -163,7 +163,6 @@ public class LogicalConnectionManagedImpl extends AbstractLogicalConnectionImple
 		return null;
 	}
 
-
 	@Override
 	public Connection close() {
 		if ( closed ) {

@@ -104,6 +104,11 @@ public class PreparedStatementQueryOperationSpecIntegrationTest extends Abstract
 			public int getLimit() {
 				return 0;
 			}
+
+			@Override
+			public boolean isCancellable() {
+				return false;
+			}
 		};
 
 		try {

@@ -32,7 +32,7 @@ import static org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec.G
 import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
 
 /**
- * @author Steve Ebersole
+ * @author Steve Ebersolepublic JdbcSessionContext getSessionContext()nsp
  */
 public class JdbcSessionImpl
 		implements JdbcSessionImplementor,
@@ -65,6 +65,11 @@ public class JdbcSessionImpl
 	@Override
 	public TransactionCoordinator getTransactionCoordinator() {
 		return transactionCoordinator;
+	}
+
+	@Override
+	public JdbcSessionContext getSessionContext(){
+		return this.context;
 	}
 
 	@Override
@@ -169,6 +174,10 @@ public class JdbcSessionImpl
 		try {
 			final PreparedStatement statement = prepareStatement( operation );
 
+			if ( operation.isCancellable() ) {
+				getResourceRegistry().register( statement, true );
+			}
+
 			final ResultSet resultSet = operation.getStatementExecutor().execute( statement );
 
 			register( resultSet, statement );
@@ -196,6 +205,10 @@ public class JdbcSessionImpl
 		ResultSet resultSet = null;
 		try {
 			statement = prepareStatement( operation );
+
+			if ( operation.isCancellable() ) {
+				getResourceRegistry().register( statement, true );
+			}
 
 			resultSet = operation.getStatementExecutor().execute( statement );
 
@@ -255,7 +268,7 @@ public class JdbcSessionImpl
 
 		final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 				logicalConnection.getPhysicalConnection(),
-				context,
+				getSessionContext(),
 				operation.getSql(),
 				operation.getResultSetType(),
 				operation.getResultSetConcurrency()

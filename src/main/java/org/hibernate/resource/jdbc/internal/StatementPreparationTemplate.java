@@ -31,20 +31,21 @@ import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 /**
  * @author Andrea Boriero
  */
-public abstract class AbstractPreparedStatementBuilder<R extends Statement> {
+public abstract class StatementPreparationTemplate<R extends Statement> {
 
-	public R buildStatement(JdbcSessionContext context, String sql) throws SQLException {
-		context.getStatementInspector().inspect( sql );
-		context.getSqlStatementLogger().logStatement( sql );
+	public R prepare(JdbcSessionContext context, String sql) throws SQLException {
+		String inspected = context.getStatementInspector().inspect( sql );
+
+		context.getSqlStatementLogger().logStatement( inspected );
 		context.getObserver().jdbcPrepareStatementStart();
 
-		final R statement = getStatement();
+		final R statement = doPrepare();
 
 		context.getObserver().jdbcPrepareStatementEnd();
 
 		return statement;
 	}
 
-	protected abstract R getStatement() throws SQLException;
+	protected abstract R doPrepare() throws SQLException;
 
 }

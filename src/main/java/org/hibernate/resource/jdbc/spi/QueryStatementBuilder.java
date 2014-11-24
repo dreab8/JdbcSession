@@ -27,6 +27,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.hibernate.resource.jdbc.JdbcSession;
+
 import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetConcurrency;
 import static org.hibernate.resource.jdbc.QueryOperationSpec.ResultSetType;
 

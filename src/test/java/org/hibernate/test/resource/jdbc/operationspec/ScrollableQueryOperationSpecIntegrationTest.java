@@ -98,6 +98,11 @@ public class ScrollableQueryOperationSpecIntegrationTest extends AbstractQueryOp
 			public int getLimit() {
 				return 0;
 			}
+
+			@Override
+			public boolean isCancellable() {
+				return false;
+			}
 		};
 
 		Result result = null;

@@ -53,6 +53,8 @@ public interface QueryOperationSpec extends OperationSpec {
 
 	public int getLimit();
 
+	public boolean isCancellable();
+
 	public enum ResultSetConcurrency {
 		READ_ONLY( ResultSet.CONCUR_READ_ONLY ),
 		UPDATABLE( ResultSet.CONCUR_UPDATABLE );

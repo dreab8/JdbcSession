@@ -44,13 +44,13 @@ public class StandardQueryPreparedStatementBuilderImpl implements QueryStatement
 	@Override
 	public PreparedStatement buildQueryStatement(
 			final Connection connection,
-			JdbcSessionContext context,
+			final JdbcSessionContext context,
 			final String sql,
 			final QueryOperationSpec.ResultSetType resultSetType,
 			final QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
-		return new AbstractPreparedStatementBuilder<PreparedStatement>() {
+		return new StatementPreparationTemplate<PreparedStatement>() {
 			@Override
-			protected PreparedStatement getStatement() throws SQLException {
+			protected PreparedStatement doPrepare() throws SQLException {
 				if ( resultSetType != null && resultSetConcurrency != null ) {
 					return connection.prepareStatement(
 							sql,
@@ -62,6 +62,6 @@ public class StandardQueryPreparedStatementBuilderImpl implements QueryStatement
 					return connection.prepareStatement( sql );
 				}
 			}
-		}.buildStatement( context, sql );
+		}.prepare( context, sql );
 	}
 }

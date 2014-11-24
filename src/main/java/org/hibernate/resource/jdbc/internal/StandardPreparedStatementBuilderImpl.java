@@ -40,11 +40,11 @@ public class StandardPreparedStatementBuilderImpl implements StatementBuilder<Pr
 			final JdbcSessionContext context,
 			final String sql)
 			throws SQLException {
-		return new AbstractPreparedStatementBuilder<PreparedStatement>() {
+		return new StatementPreparationTemplate<PreparedStatement>() {
 			@Override
-			protected PreparedStatement getStatement() throws SQLException {
+			protected PreparedStatement doPrepare() throws SQLException {
 				return connection.prepareStatement( sql );
 			}
-		}.buildStatement( context, sql );
+		}.prepare( context, sql );
 	}
 }

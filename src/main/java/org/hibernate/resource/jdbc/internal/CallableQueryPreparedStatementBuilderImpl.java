@@ -44,13 +44,14 @@ public class CallableQueryPreparedStatementBuilderImpl implements QueryStatement
 	@Override
 	public CallableStatement buildQueryStatement(
 			final Connection connection,
-			JdbcSessionContext context,
+			final JdbcSessionContext context,
+
 			final String sql,
 			final QueryOperationSpec.ResultSetType resultSetType,
 			final QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
-		return new AbstractPreparedStatementBuilder<CallableStatement>() {
+		return new StatementPreparationTemplate<CallableStatement>() {
 			@Override
-			protected CallableStatement getStatement() throws SQLException {
+			protected CallableStatement doPrepare() throws SQLException {
 				if ( resultSetType != null && resultSetConcurrency != null ) {
 					return connection.prepareCall(
 							sql,
@@ -62,6 +63,7 @@ public class CallableQueryPreparedStatementBuilderImpl implements QueryStatement
 					return connection.prepareCall( sql );
 				}
 			}
-		}.buildStatement( context, sql );
+		}.prepare( context, sql );
 	}
+
 }

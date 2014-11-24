@@ -305,6 +305,11 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest extends Abst
 		public int getLimit() {
 			return 0;
 		}
+
+		@Override
+		public boolean isCancellable() {
+			return false;
+		}
 	}
 
 	@Override
