@@ -35,13 +35,13 @@ import java.util.List;
 import org.hibernate.JDBCException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
-import org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec;
+import org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
+import org.hibernate.resource.jdbc.spi.InsertWithGeneratedKeyStatementBuilder;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
-import org.hibernate.resource.jdbc.spi.StatementBuilder;
 import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Test;
@@ -54,7 +54,7 @@ import static org.hamcrest.core.Is.is;
 /**
  * @author Andrea Boriero
  */
-public class BatchableInsetyEntitySpanOverMultipleTablesWithGeneratedIdIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 	private static final String SUPERCLASS_INSERT_SQL = "INSERT INTO SUPERCLASS_TABLE (SUPERCLASS_PROPERTY) values (?)";
 	private static final String SUBCLASS_INSERT_SQL = "INSERT INTO SUBCLASS_TABLE (ID, SUBCLASS_PROPERTY) values (?,?)";
@@ -69,17 +69,18 @@ public class BatchableInsetyEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
 					throws SQLException {
 
-				PreparedStatementInsertOperationSpec.GenerateKeyResultSet generateKeyResultSet = getJdbcSession().accept(
-						new PreparedStatementInsertOperationSpec() {
+				PreparedStatementWithGeneratedKeyInsertOperationSpec.GenerateKeyResultSet generateKeyResultSet = getJdbcSession().accept(
+						new PreparedStatementWithGeneratedKeyInsertOperationSpec() {
 							@Override
-							public StatementBuilder<? extends PreparedStatement> getStatementBuilder() {
-								return new StatementBuilder<PreparedStatement>() {
+							public InsertWithGeneratedKeyStatementBuilder<? extends PreparedStatement> getStatementBuilder() {
+								return new InsertWithGeneratedKeyStatementBuilder<PreparedStatement>() {
 									@Override
 									public PreparedStatement buildQueryStatement(
 											Connection connection,
 											JdbcSessionContext context,
-											String sql) throws SQLException {
-										return connection.prepareStatement( sql );
+											String sql,
+											String[] columnNames) throws SQLException {
+										return connection.prepareStatement( sql, columnNames );
 									}
 								};
 							}
@@ -98,6 +99,12 @@ public class BatchableInsetyEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 							@Override
 							public String getSql() {
 								return SUPERCLASS_INSERT_SQL;
+							}
+
+							@Override
+							public String[] getColumNames() {
+								String[] columnNames = {"ID"};
+								return columnNames;
 							}
 						}
 				);

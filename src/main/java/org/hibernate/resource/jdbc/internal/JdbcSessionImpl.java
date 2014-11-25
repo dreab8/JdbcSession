@@ -11,7 +11,7 @@ import org.hibernate.HibernateException;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.LogicalConnection;
 import org.hibernate.resource.jdbc.Operation;
-import org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec;
+import org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
@@ -28,7 +28,7 @@ import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep;
-import static org.hibernate.resource.jdbc.PreparedStatementInsertOperationSpec.GenerateKeyResultSet;
+import static org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec.GenerateKeyResultSet;
 import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
 
 /**
@@ -139,10 +139,10 @@ public class JdbcSessionImpl
 	}
 
 	@Override
-	public GenerateKeyResultSet accept(PreparedStatementInsertOperationSpec operation) {
+	public GenerateKeyResultSet accept(PreparedStatementWithGeneratedKeyInsertOperationSpec operation) {
 		try {
 			final PreparedStatement statement = operation.getStatementBuilder()
-					.buildQueryStatement( logicalConnection.getPhysicalConnection(), context, operation.getSql() );
+					.buildQueryStatement( logicalConnection.getPhysicalConnection(), context, operation.getSql(), operation.getColumNames() );
 
 			operation.getParameterBindings().bindParameters( statement );
 
