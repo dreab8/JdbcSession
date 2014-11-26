@@ -31,7 +31,7 @@ import java.sql.Statement;
  * @author Andrea Boriero
  */
 public interface StatementBuilder<R extends Statement> {
-	public R buildQueryStatement(
+	public R buildStatement(
 			Connection connection,
 			JdbcSessionContext context,
 			String sql) throws SQLException;

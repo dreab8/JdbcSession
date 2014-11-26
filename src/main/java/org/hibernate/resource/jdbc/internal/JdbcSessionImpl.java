@@ -142,7 +142,11 @@ public class JdbcSessionImpl
 	public GenerateKeyResultSet accept(PreparedStatementWithGeneratedKeyInsertOperationSpec operation) {
 		try {
 			final PreparedStatement statement = operation.getStatementBuilder()
-					.buildQueryStatement( logicalConnection.getPhysicalConnection(), context, operation.getSql(), operation.getColumNames() );
+					.buildStatement(
+							logicalConnection.getPhysicalConnection(),
+							context,
+							operation.getSql()
+					);
 
 			operation.getParameterBindings().bindParameters( statement );
 

@@ -26,7 +26,6 @@ package org.hibernate.resource.jdbc;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
-import org.hibernate.resource.jdbc.spi.InsertWithGeneratedKeyStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.StatementBuilder;
 
@@ -35,7 +34,7 @@ import org.hibernate.resource.jdbc.spi.StatementBuilder;
  */
 public interface PreparedStatementWithGeneratedKeyInsertOperationSpec extends OperationSpec {
 
-	public InsertWithGeneratedKeyStatementBuilder<? extends PreparedStatement> getStatementBuilder();
+	public StatementBuilder<? extends PreparedStatement> getStatementBuilder();
 
 	public ParameterBindings getParameterBindings();
 

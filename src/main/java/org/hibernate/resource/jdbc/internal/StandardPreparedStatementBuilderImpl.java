@@ -35,7 +35,7 @@ import org.hibernate.resource.jdbc.spi.StatementBuilder;
  */
 public class StandardPreparedStatementBuilderImpl implements StatementBuilder<PreparedStatement> {
 	@Override
-	public PreparedStatement buildQueryStatement(
+	public PreparedStatement buildStatement(
 			final Connection connection,
 			final JdbcSessionContext context,
 			final String sql)

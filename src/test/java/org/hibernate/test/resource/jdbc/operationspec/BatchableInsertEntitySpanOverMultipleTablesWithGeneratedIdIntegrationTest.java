@@ -36,12 +36,13 @@ import org.hibernate.JDBCException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec;
+import org.hibernate.resource.jdbc.internal.InsertWithReturnColumsStatementBuilder;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
-import org.hibernate.resource.jdbc.spi.InsertWithGeneratedKeyStatementBuilder;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
+import org.hibernate.resource.jdbc.spi.StatementBuilder;
 import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Test;
@@ -72,17 +73,8 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 				PreparedStatementWithGeneratedKeyInsertOperationSpec.GenerateKeyResultSet generateKeyResultSet = getJdbcSession().accept(
 						new PreparedStatementWithGeneratedKeyInsertOperationSpec() {
 							@Override
-							public InsertWithGeneratedKeyStatementBuilder<? extends PreparedStatement> getStatementBuilder() {
-								return new InsertWithGeneratedKeyStatementBuilder<PreparedStatement>() {
-									@Override
-									public PreparedStatement buildQueryStatement(
-											Connection connection,
-											JdbcSessionContext context,
-											String sql,
-											String[] columnNames) throws SQLException {
-										return connection.prepareStatement( sql, columnNames );
-									}
-								};
+							public StatementBuilder<? extends PreparedStatement> getStatementBuilder() {
+								return new InsertWithReturnColumsStatementBuilder(getColumNames());
 							}
 
 							@Override

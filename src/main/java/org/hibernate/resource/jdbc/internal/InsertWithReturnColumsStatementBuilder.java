@@ -27,17 +27,23 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.hibernate.resource.jdbc.spi.InsertWithGeneratedKeyStatementBuilder;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.jdbc.spi.StatementBuilder;
 
 /**
  * @author Andrea Boriero
  */
-public class StandardInsertWithGeneratedKeyStatementBuilder
-		implements InsertWithGeneratedKeyStatementBuilder<PreparedStatement> {
+public class InsertWithReturnColumsStatementBuilder
+		implements StatementBuilder<PreparedStatement> {
+	private String[] columnNames;
+
+	public InsertWithReturnColumsStatementBuilder(String[] columnNames) {
+		this.columnNames = columnNames;
+	}
+
 	@Override
-	public PreparedStatement buildQueryStatement(
-			final Connection connection, JdbcSessionContext context, final String sql, final String[] columnNames)
+	public PreparedStatement buildStatement(
+			final Connection connection, JdbcSessionContext context, final String sql)
 			throws SQLException {
 		return new StatementPreparationTemplate<PreparedStatement>() {
 			@Override
