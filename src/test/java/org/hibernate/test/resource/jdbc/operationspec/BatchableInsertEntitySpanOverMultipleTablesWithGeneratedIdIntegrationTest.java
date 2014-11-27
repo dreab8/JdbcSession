@@ -102,7 +102,9 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 			assertThat( resultSet.getInt( "SUBCLASS_PROPERTY" ), is( 123 ) );
 			assertThat( resultSet.getLong( "ID" ), is( insertIntoSuperclassTableStep1.getGeneratedId() ) );
 
-			resultSet = selectStatement.executeQuery( "SELECT * FROM SUBCLASS_TABLE where id = " + insertIntoSuperclassTableStep2.getGeneratedId() );
+			resultSet = selectStatement.executeQuery(
+					"SELECT * FROM SUBCLASS_TABLE where id = " + insertIntoSuperclassTableStep2.getGeneratedId()
+			);
 			assertThat( resultSet.next(), is( true ) );
 			assertThat( resultSet.getInt( "SUBCLASS_PROPERTY" ), is( 456 ) );
 			assertThat( resultSet.getLong( "ID" ), is( insertIntoSuperclassTableStep2.getGeneratedId() ) );
@@ -205,7 +207,8 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 								new PreparedStatementWithGeneratedKeyInsertOperationSpec() {
 									@Override
 									public StatementBuilder<? extends PreparedStatement> getStatementBuilder() {
-										return new InsertWithReturnColumsStatementBuilder( getColumNames() );
+										String[] columnNames = {"ID"};
+										return new InsertWithReturnColumsStatementBuilder( columnNames );
 									}
 
 									@Override
@@ -222,12 +225,6 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 									@Override
 									public String getSql() {
 										return SUPERCLASS_INSERT_SQL;
-									}
-
-									@Override
-									public String[] getColumNames() {
-										String[] columnNames = {"ID"};
-										return columnNames;
 									}
 								}
 						);

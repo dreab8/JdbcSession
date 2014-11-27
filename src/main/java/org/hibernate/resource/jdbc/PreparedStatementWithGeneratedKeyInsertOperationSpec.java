@@ -40,8 +40,6 @@ public interface PreparedStatementWithGeneratedKeyInsertOperationSpec extends Op
 
 	public String getSql();
 
-	public String[] getColumNames();
-
 	public interface GenerateKeyResultSet {
 
 		public ResultSet getGeneratedKeys();
