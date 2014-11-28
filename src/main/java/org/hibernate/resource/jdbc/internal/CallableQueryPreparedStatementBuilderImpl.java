@@ -27,6 +27,7 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
@@ -45,10 +46,9 @@ public class CallableQueryPreparedStatementBuilderImpl implements QueryStatement
 	public CallableStatement buildQueryStatement(
 			final Connection connection,
 			final JdbcSessionContext context,
-
 			final String sql,
 			final QueryOperationSpec.ResultSetType resultSetType,
-			final QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
+			final QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) {
 		return new StatementPreparationTemplate<CallableStatement>() {
 			@Override
 			protected CallableStatement doPrepare() throws SQLException {

@@ -33,17 +33,22 @@ import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
  */
 public abstract class StatementPreparationTemplate<R extends Statement> {
 
-	public R prepare(JdbcSessionContext context, String sql) throws SQLException {
-		String inspected = context.getStatementInspector().inspect( sql );
+	public R prepare(JdbcSessionContext context, String sql) {
+		try {
+			String inspected = context.getStatementInspector().inspect( sql );
 
-		context.getSqlStatementLogger().logStatement( inspected );
-		context.getObserver().jdbcPrepareStatementStart();
+			context.getSqlStatementLogger().logStatement( inspected );
+			context.getObserver().jdbcPrepareStatementStart();
 
-		final R statement = doPrepare();
+			final R statement = doPrepare();
 
-		context.getObserver().jdbcPrepareStatementEnd();
+			context.getObserver().jdbcPrepareStatementEnd();
 
-		return statement;
+			return statement;
+		}
+		catch (SQLException e) {
+			throw context.getSqlExceptionHelper().convert( e, "could not prepare statement", sql );
+		}
 	}
 
 	protected abstract R doPrepare() throws SQLException;

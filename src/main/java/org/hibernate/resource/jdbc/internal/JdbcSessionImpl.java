@@ -68,7 +68,7 @@ public class JdbcSessionImpl
 	}
 
 	@Override
-	public JdbcSessionContext getSessionContext(){
+	public JdbcSessionContext getSessionContext() {
 		return this.context;
 	}
 
@@ -134,24 +134,30 @@ public class JdbcSessionImpl
 			}
 		}
 		catch (SQLException e) {
+			currentBatch.release();
 			throw context.getSqlExceptionHelper().convert( e, "" );
 		}
 	}
 
 	@Override
 	public GenerateKeyResultSet accept(PreparedStatementWithGeneratedKeyInsertOperationSpec operation) {
+
+		final PreparedStatement statement = operation.getStatementBuilder()
+				.buildStatement(
+						logicalConnection.getPhysicalConnection(),
+						context,
+						operation.getSql()
+				);
 		try {
-			final PreparedStatement statement = operation.getStatementBuilder()
-					.buildStatement(
-							logicalConnection.getPhysicalConnection(),
-							context,
-							operation.getSql()
-					);
-
 			operation.getParameterBindings().bindParameters( statement );
-
+			getResourceRegistry().register( statement, false );
 			statement.executeUpdate();
-
+		}
+		catch (SQLException e) {
+			getResourceRegistry().release( statement );
+			throw context.getSqlExceptionHelper().convert( e, "" );
+		}
+		try {
 			final ResultSet generatedKeys = statement.getGeneratedKeys();
 
 			register( generatedKeys, statement );
@@ -175,13 +181,8 @@ public class JdbcSessionImpl
 
 	@Override
 	public Result accept(ScrollableQueryOperationSpec operation) {
+		final PreparedStatement statement = prepareStatement( operation );
 		try {
-			final PreparedStatement statement = prepareStatement( operation );
-
-			if ( operation.isCancellable() ) {
-				getResourceRegistry().register( statement, true );
-			}
-
 			final ResultSet resultSet = operation.getStatementExecutor().execute( statement );
 
 			register( resultSet, statement );
@@ -205,27 +206,18 @@ public class JdbcSessionImpl
 
 	@Override
 	public <R> R accept(PreparedStatementQueryOperationSpec<R> operation) {
-		PreparedStatement statement = null;
+		final PreparedStatement statement = prepareStatement( operation );
 		ResultSet resultSet = null;
 		try {
-			statement = prepareStatement( operation );
-
-			if ( operation.isCancellable() ) {
-				getResourceRegistry().register( statement, true );
-			}
-
 			resultSet = operation.getStatementExecutor().execute( statement );
-
 			return operation.getResultSetProcessor().extractResults( resultSet );
 		}
 		catch (SQLException e) {
 			throw context.getSqlExceptionHelper().convert( e, "" );
 		}
 		finally {
-			if ( resultSet != null ) {
-				close( resultSet );
-			}
-			getResourceRegistry().release( statement );
+			ResourceRegistryStandardImpl.close( resultSet );
+			getResourceRegistry().release( resultSet, statement );
 		}
 	}
 
@@ -268,7 +260,7 @@ public class JdbcSessionImpl
 		return batch;
 	}
 
-	private PreparedStatement prepareStatement(QueryOperationSpec operation) throws SQLException {
+	private PreparedStatement prepareStatement(QueryOperationSpec operation) {
 
 		final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 				logicalConnection.getPhysicalConnection(),
@@ -278,10 +270,16 @@ public class JdbcSessionImpl
 				operation.getResultSetConcurrency()
 		);
 
-		operation.getParameterBindings().bindParameters( statement );
+		getResourceRegistry().register( statement, operation.isCancellable() );
 
-		configureStatement( operation, statement );
-
+		try {
+			operation.getParameterBindings().bindParameters( statement );
+			configureStatement( operation, statement );
+		}
+		catch (SQLException e) {
+			getResourceRegistry().release( statement );
+			throw context.getSqlExceptionHelper().convert( e, "" );
+		}
 		return statement;
 	}
 
@@ -321,13 +319,5 @@ public class JdbcSessionImpl
 		// todo : implement
 		// for now, just log...
 		log.tracef( "JdbcSessionImpl#afterTransactionCompletion(%s)", successful );
-	}
-
-	private void close(ResultSet resultSet) {
-		ResourceRegistryStandardImpl.close( resultSet );
-	}
-
-	protected void close(Statement statement) {
-		ResourceRegistryStandardImpl.close( statement );
 	}
 }

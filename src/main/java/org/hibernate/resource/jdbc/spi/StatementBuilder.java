@@ -34,5 +34,5 @@ public interface StatementBuilder<R extends Statement> {
 	public R buildStatement(
 			Connection connection,
 			JdbcSessionContext context,
-			String sql) throws SQLException;
+			String sql);
 }

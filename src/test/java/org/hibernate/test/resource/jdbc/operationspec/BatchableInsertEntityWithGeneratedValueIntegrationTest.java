@@ -35,6 +35,7 @@ import org.hibernate.JDBCException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
+import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilderImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
@@ -237,22 +238,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest extends Abst
 
 		@Override
 		public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder() {
-			return new QueryStatementBuilder<PreparedStatement>() {
-				@Override
-				public PreparedStatement buildQueryStatement(
-						Connection connection,
-						JdbcSessionContext context,
-						String sql,
-						ResultSetType resultSetType,
-						ResultSetConcurrency resultSetConcurrency) throws SQLException {
-					PreparedStatement statement = connection.prepareStatement(
-							sql,
-							resultSetType.getJdbcConstantValue(),
-							resultSetConcurrency.getJdbcConstantValue()
-					);
-					return statement;
-				}
-			};
+			return StandardQueryPreparedStatementBuilderImpl.INSTANCE;
 		}
 
 		@Override

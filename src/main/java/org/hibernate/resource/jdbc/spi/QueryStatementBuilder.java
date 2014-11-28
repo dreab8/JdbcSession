@@ -42,5 +42,5 @@ public interface QueryStatementBuilder<R extends Statement> {
 			JdbcSessionContext context,
 			String sql,
 			ResultSetType resultSetType,
-			ResultSetConcurrency resultSetConcurrency) throws SQLException;
+			ResultSetConcurrency resultSetConcurrency);
 }

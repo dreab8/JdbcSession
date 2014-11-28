@@ -42,7 +42,7 @@ public class InsertStatementBuilder implements StatementBuilder<PreparedStatemen
 
 	@Override
 	public PreparedStatement buildStatement(
-			final Connection connection, JdbcSessionContext context, final String sql) throws SQLException {
+			final Connection connection, JdbcSessionContext context, final String sql) {
 		return new StatementPreparationTemplate<PreparedStatement>() {
 			@Override
 			protected PreparedStatement doPrepare() throws SQLException {

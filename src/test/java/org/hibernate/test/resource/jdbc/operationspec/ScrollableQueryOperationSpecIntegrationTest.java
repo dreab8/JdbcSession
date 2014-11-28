@@ -32,6 +32,7 @@ import java.sql.Statement;
 import org.hibernate.JDBCException;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
+import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilderImpl;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
@@ -56,7 +57,7 @@ public class ScrollableQueryOperationSpecIntegrationTest extends AbstractQueryOp
 		ScrollableQueryOperationSpec operationSpec = new ScrollableQueryOperationSpec() {
 			@Override
 			public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder() {
-				return new SimpleStatementBuilder();
+				return StandardQueryPreparedStatementBuilderImpl.INSTANCE;
 			}
 
 			@Override
@@ -123,22 +124,6 @@ public class ScrollableQueryOperationSpecIntegrationTest extends AbstractQueryOp
 			if ( result != null ) {
 				result.close();
 			}
-		}
-	}
-
-	private class SimpleStatementBuilder implements QueryStatementBuilder {
-		@Override
-		public Statement buildQueryStatement(
-				Connection connection,
-				JdbcSessionContext context,
-				String sql,
-				QueryOperationSpec.ResultSetType resultSetType,
-				QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
-			return connection.prepareStatement(
-					sql,
-					resultSetType.getJdbcConstantValue(),
-					resultSetConcurrency.getJdbcConstantValue()
-			);
 		}
 	}
 

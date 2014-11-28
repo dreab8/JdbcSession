@@ -44,10 +44,10 @@ public class StandardQueryPreparedStatementBuilderImpl implements QueryStatement
 	@Override
 	public PreparedStatement buildQueryStatement(
 			final Connection connection,
-			final JdbcSessionContext context,
+			JdbcSessionContext context,
 			final String sql,
 			final QueryOperationSpec.ResultSetType resultSetType,
-			final QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) throws SQLException {
+			final QueryOperationSpec.ResultSetConcurrency resultSetConcurrency) {
 		return new StatementPreparationTemplate<PreparedStatement>() {
 			@Override
 			protected PreparedStatement doPrepare() throws SQLException {
