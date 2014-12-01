@@ -173,6 +173,7 @@ public class JdbcSessionImpl
 					return generatedKeys;
 				}
 			};
+
 		}
 		catch (SQLException e) {
 			throw context.getSqlExceptionHelper().convert( e, "" );
@@ -200,6 +201,7 @@ public class JdbcSessionImpl
 			};
 		}
 		catch (SQLException e) {
+			getResourceRegistry().release( statement );
 			throw context.getSqlExceptionHelper().convert( e, "" );
 		}
 	}
