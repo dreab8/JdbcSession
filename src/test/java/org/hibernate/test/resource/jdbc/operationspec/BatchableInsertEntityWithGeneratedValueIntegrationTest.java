@@ -238,7 +238,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest extends Abst
 
 		@Override
 		public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder() {
-			return StandardQueryPreparedStatementBuilderImpl.INSTANCE;
+			return new StandardQueryPreparedStatementBuilderImpl();
 		}
 
 		@Override

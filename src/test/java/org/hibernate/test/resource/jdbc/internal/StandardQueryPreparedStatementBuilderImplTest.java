@@ -45,7 +45,7 @@ public class StandardQueryPreparedStatementBuilderImplTest
 	@Before
 	public void setUp() throws SQLException {
 		super.onSetUp();
-		queryBuilder = StandardQueryPreparedStatementBuilderImpl.INSTANCE;
+		queryBuilder = new StandardQueryPreparedStatementBuilderImpl();
 		setMethodCallCheck(
 				new ConnectionMethodCallCheck() {
 

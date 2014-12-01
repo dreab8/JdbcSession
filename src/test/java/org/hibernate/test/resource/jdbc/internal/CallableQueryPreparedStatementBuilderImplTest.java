@@ -47,7 +47,7 @@ public class CallableQueryPreparedStatementBuilderImplTest
 	@Before
 	public void setUp() throws SQLException {
 		super.onSetUp();
-		queryBuilder = CallableQueryPreparedStatementBuilderImpl.INSTANCE;
+		queryBuilder = new CallableQueryPreparedStatementBuilderImpl();
 		setMethodCallCheck(
 				new ConnectionMethodCallCheck() {
 

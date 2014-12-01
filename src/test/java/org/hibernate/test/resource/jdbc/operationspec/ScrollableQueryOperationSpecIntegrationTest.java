@@ -57,7 +57,7 @@ public class ScrollableQueryOperationSpecIntegrationTest extends AbstractQueryOp
 		ScrollableQueryOperationSpec operationSpec = new ScrollableQueryOperationSpec() {
 			@Override
 			public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder() {
-				return StandardQueryPreparedStatementBuilderImpl.INSTANCE;
+				return new StandardQueryPreparedStatementBuilderImpl();
 			}
 
 			@Override

@@ -34,7 +34,7 @@ import org.hibernate.resource.jdbc.spi.StatementBuilder;
 /**
  * @author Andrea Boriero
  */
-public class InsertStatementBuilderWithReturnGenerateKey implements StatementBuilder<PreparedStatement> {
+public class InsertStatementBuilderWithNoReturnGenerateKey implements StatementBuilder<PreparedStatement> {
 
 	@Override
 	public PreparedStatement buildStatement(
@@ -42,7 +42,7 @@ public class InsertStatementBuilderWithReturnGenerateKey implements StatementBui
 		return new StatementPreparationTemplate<PreparedStatement>() {
 			@Override
 			protected PreparedStatement doPrepare() throws SQLException {
-				return connection.prepareStatement( sql, Statement.RETURN_GENERATED_KEYS );
+				return connection.prepareStatement( sql, Statement.NO_GENERATED_KEYS );
 			}
 		}.prepare( context, sql );
 	}

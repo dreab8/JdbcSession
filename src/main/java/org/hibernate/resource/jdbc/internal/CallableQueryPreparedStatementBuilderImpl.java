@@ -37,11 +37,6 @@ import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
  */
 public class CallableQueryPreparedStatementBuilderImpl implements QueryStatementBuilder<CallableStatement> {
 
-	public static final CallableQueryPreparedStatementBuilderImpl INSTANCE = new CallableQueryPreparedStatementBuilderImpl();
-
-	private CallableQueryPreparedStatementBuilderImpl() {
-	}
-
 	@Override
 	public CallableStatement buildQueryStatement(
 			final Connection connection,

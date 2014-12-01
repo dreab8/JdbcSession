@@ -58,7 +58,7 @@ public class PreparedStatementQueryOperationSpecIntegrationTest extends Abstract
 		PreparedStatementQueryOperationSpec<BillingAddress> operationSpec = new PreparedStatementQueryOperationSpec() {
 			@Override
 			public QueryStatementBuilder<? extends PreparedStatement> getQueryStatementBuilder() {
-				return StandardQueryPreparedStatementBuilderImpl.INSTANCE;
+				return new StandardQueryPreparedStatementBuilderImpl();
 			}
 
 			@Override
