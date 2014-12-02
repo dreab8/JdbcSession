@@ -50,7 +50,7 @@ import org.junit.Test;
 import org.hibernate.test.resource.jdbc.common.BatchKeyImpl;
 
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.notNull;
+import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep;
 
 /**
  * @author Andrea Boriero
@@ -58,17 +58,20 @@ import static org.mockito.Matchers.notNull;
 public class BatchableInsertEntityWithSelectedIdIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 	private static final String INSERT_SQL = "INSERT INTO ENTITY_TABLE (PROPERTY) values (?)";
-	private static final boolean FOREGO_BATCHING = true;
+	private static final boolean FOREGO_BATCHING = false;
 
 
 	@Test
 	public void testInsertTableRowAndSelectinId() throws SQLException {
-		final BatchableOperationSpec.BatchableOperationStep insertStep = prepareBatchableInsertOperationStep( "123" );
+		final BatchableOperationStep insertStep = prepareBatchableInsertOperationStep( "123" );
+
 		getJdbcSession().accept( prepareOperationSpec( insertStep ), getContext() );
+
 		getJdbcSession().executeBatch();
 		commit();
-//		Assert.assertThat(insertStep.getGeneratedId(), is(notNull()));
+
 		Long generatedId = (Long) insertStep.getGeneratedId();
+
 		Assert.assertThat( generatedId, is( 1L ) );
 	}
 
@@ -121,7 +124,7 @@ public class BatchableInsertEntityWithSelectedIdIntegrationTest extends Abstract
 	}
 
 	private BatchableOperationSpec prepareOperationSpec(
-			final BatchableOperationSpec.BatchableOperationStep insertStep) {
+			final BatchableOperationStep insertStep) {
 		return new BatchableOperationSpec() {
 			@Override
 			public BatchKey getBatchKey() {
@@ -145,8 +148,8 @@ public class BatchableInsertEntityWithSelectedIdIntegrationTest extends Abstract
 		};
 	}
 
-	private BatchableOperationSpec.BatchableOperationStep prepareBatchableInsertOperationStep(final String value) {
-		return new BatchableOperationSpec.BatchableOperationStep() {
+	private BatchableOperationStep prepareBatchableInsertOperationStep(final String value) {
+		return new BatchableOperationStep() {
 
 			Long id;
 
