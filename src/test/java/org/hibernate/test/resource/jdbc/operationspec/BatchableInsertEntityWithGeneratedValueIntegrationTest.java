@@ -83,7 +83,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest extends Abst
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return null;
 			}
 
@@ -104,7 +104,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest extends Abst
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return null;
 			}
 		};

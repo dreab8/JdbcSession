@@ -34,7 +34,7 @@ import org.hibernate.resource.jdbc.spi.StatementBuilder;
 /**
  * @author Andrea Boriero
  */
-public class InsertStatementBuilderWithReturnGenerateKey implements StatementBuilder<PreparedStatement> {
+public class InsertStatementWithReturnGenerateKeyBuilder implements StatementBuilder<PreparedStatement> {
 
 	@Override
 	public PreparedStatement buildStatement(

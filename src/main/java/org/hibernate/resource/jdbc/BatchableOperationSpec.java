@@ -52,7 +52,7 @@ public interface BatchableOperationSpec {
 		public void apply(Batch batch, Connection connection, Context context) throws SQLException;
 
 		//??? remove this method and add a return type to apply method ???
-		public Serializable getGeneratedId() throws SQLException;
+		public Serializable getGeneratedId();
 	}
 
 	// ???Operation Parameter or Values instead of Context ???

@@ -81,7 +81,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return 0;
 			}
 		};
@@ -104,7 +104,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return 0;
 			}
 
@@ -231,7 +231,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return 0;
 			}
 		};
@@ -254,7 +254,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return 0;
 			}
 
@@ -379,7 +379,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return null;
 			}
 		};
@@ -398,7 +398,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return null;
 			}
 		};

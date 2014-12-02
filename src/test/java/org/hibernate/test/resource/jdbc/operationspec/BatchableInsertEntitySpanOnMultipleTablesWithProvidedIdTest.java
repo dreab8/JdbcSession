@@ -51,7 +51,8 @@ import static org.hibernate.resource.jdbc.BatchableOperationSpec.InsertContext;
 /**
  * @author Andrea Boriero
  */
-public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest extends AbstractQueryOperationSpecIntegrationTest {
+public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
+		extends AbstractQueryOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 	private static final String SUPERCLASS_INSERT_SQL = "INSERT INTO SUPERCLASS_TABLE (ID, SUPERCLASS_PROPERTY) values (?,?)";
 	private static final String SUBCLASS_INSERT_SQL = "INSERT INTO SUBCLASS_TABLE (ID, SUBCLASS_PROPERTY) values (?,?)";
@@ -75,7 +76,7 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest extends
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return null;
 			}
 
@@ -96,7 +97,7 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest extends
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return null;
 			}
 

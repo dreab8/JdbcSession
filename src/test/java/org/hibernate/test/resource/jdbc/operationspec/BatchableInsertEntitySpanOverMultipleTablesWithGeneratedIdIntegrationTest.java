@@ -64,29 +64,29 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 	@Test
 	public void testTheSubclassTableRowHasGeneratedIdOfTheSuperclassInsertedRow() throws SQLException {
 
-		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep1 = getInsertIntoSuperClassTableBatchableOperationStep(
+		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep1 = prepareInsertIntoSuperClassTableBatchableOperationStep(
 				"123"
 		);
 
-		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep1 = getBatchableInsertIntoSubClasstableOperationStep(
+		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep1 = prepareBatchableInsertIntoSubClasstableOperationStep(
 				insertIntoSuperclassTableStep1,
 				123
 		);
 
-		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep2 = getInsertIntoSuperClassTableBatchableOperationStep(
+		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep2 = prepareInsertIntoSuperClassTableBatchableOperationStep(
 				"456"
 		);
 
-		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep2 = getBatchableInsertIntoSubClasstableOperationStep(
+		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep2 = prepareBatchableInsertIntoSubClasstableOperationStep(
 				insertIntoSuperclassTableStep2,
 				456
 		);
 
 		getJdbcSession().accept(
-				getOperationSpec( insertIntoSuperclassTableStep1, insertIntoSubclassTableStep1 ), getContext()
+				prepareOperationSpec( insertIntoSuperclassTableStep1, insertIntoSubclassTableStep1 ), getContext()
 		);
 		getJdbcSession().accept(
-				getOperationSpec( insertIntoSuperclassTableStep2, insertIntoSubclassTableStep2 ), getContext()
+				prepareOperationSpec( insertIntoSuperclassTableStep2, insertIntoSubclassTableStep2 ), getContext()
 		);
 
 		try {
@@ -125,7 +125,7 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 
 			@Override
 			public Object[] getFields() {
-				return new Object[0];
+				return null;
 			}
 
 			@Override
@@ -145,7 +145,7 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 		};
 	}
 
-	private BatchableOperationSpec getOperationSpec(
+	private BatchableOperationSpec prepareOperationSpec(
 			final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep,
 			final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep) {
 		return new BatchableOperationSpec() {
@@ -171,7 +171,7 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 		};
 	}
 
-	private BatchableOperationSpec.BatchableOperationStep getBatchableInsertIntoSubClasstableOperationStep(
+	private BatchableOperationSpec.BatchableOperationStep prepareBatchableInsertIntoSubClasstableOperationStep(
 			final BatchableOperationSpec.BatchableOperationStep step, final int value) {
 		return new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
@@ -187,14 +187,13 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return null;
 			}
-
 		};
 	}
 
-	private BatchableOperationSpec.BatchableOperationStep getInsertIntoSuperClassTableBatchableOperationStep(final String value) {
+	private BatchableOperationSpec.BatchableOperationStep prepareInsertIntoSuperClassTableBatchableOperationStep(final String value) {
 		return new BatchableOperationSpec.BatchableOperationStep() {
 			private Long generatedId;
 
@@ -240,7 +239,7 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 			}
 
 			@Override
-			public Serializable getGeneratedId() throws SQLException {
+			public Serializable getGeneratedId() {
 				return generatedId;
 			}
 		};
