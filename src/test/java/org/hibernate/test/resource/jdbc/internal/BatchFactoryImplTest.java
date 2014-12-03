@@ -10,7 +10,6 @@ import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.internal.Batching;
 import org.hibernate.resource.jdbc.internal.NonBatching;
 import org.hibernate.resource.jdbc.spi.Batch;
-import org.hibernate.resource.jdbc.spi.BatchExpectation;
 import org.hibernate.resource.jdbc.spi.BatchFactory;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 
