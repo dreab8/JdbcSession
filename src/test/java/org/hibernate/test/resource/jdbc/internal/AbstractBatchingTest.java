@@ -26,9 +26,8 @@ package org.hibernate.test.resource.jdbc.internal;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.ResourceRegistry;
-import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
-import org.hibernate.resource.jdbc.spi.BatchExpectation;
 
 import org.junit.Before;
 
@@ -46,7 +45,7 @@ public abstract class AbstractBatchingTest {
 	protected ResourceRegistry resourceRegistry;
 	protected final PreparedStatement statementSql1 = mock( PreparedStatement.class );
 	protected final PreparedStatement statementSql2 = mock( PreparedStatement.class );
-	protected final BatchExpectation expectation = mock( BatchExpectation.class );
+	protected final Expectation expectation = mock( Expectation.class );
 
 	@Before
 	public void setUp() throws SQLException {

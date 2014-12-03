@@ -23,38 +23,29 @@
  */
 package org.hibernate.test.resource.jdbc.common;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
-import org.hibernate.HibernateException;
-import org.hibernate.resource.jdbc.spi.BatchExpectation;
+import org.hibernate.jdbc.Expectation;
+import org.hibernate.jdbc.Expectations;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 
 /**
  * @author Andrea Boriero
  */
 public class BatchKeyImpl implements BatchKey {
-	private BatchExpectation expectation;
+	private Expectation expectation;
 	private String comparison;
 
-	public BatchKeyImpl(String comparison, BatchExpectation expectation) {
+	public BatchKeyImpl(String comparison, Expectation expectation) {
 		this.expectation = expectation;
 		this.comparison = comparison;
 	}
 
 	public BatchKeyImpl(String comparison) {
-		this.expectation = new BatchExpectation() {
-			@Override
-			public void verifyOutcome(int rowCount, PreparedStatement statement, int batchPosition)
-					throws SQLException, HibernateException {
-
-			}
-		};
+		this.expectation = Expectations.NONE;
 		this.comparison = comparison;
 	}
 
 	@Override
-	public BatchExpectation getExpectation() {
+	public Expectation getExpectation() {
 		return expectation;
 	}
 

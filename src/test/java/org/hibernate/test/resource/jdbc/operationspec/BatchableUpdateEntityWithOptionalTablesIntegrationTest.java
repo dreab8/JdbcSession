@@ -33,12 +33,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.JDBCException;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
-import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Test;
 

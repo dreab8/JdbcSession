@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import org.hibernate.HibernateException;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.internal.Batching;
 import org.hibernate.resource.jdbc.internal.NonBatching;
@@ -26,10 +27,20 @@ public class BatchFactoryImplTest {
 
 	@Before
 	public void setUp() {
-		final BatchExpectation batchExpectation = new BatchExpectation() {
+		final Expectation batchExpectation = new Expectation() {
 			@Override
 			public void verifyOutcome(int rowCount, PreparedStatement statement, int batchPosition)
 					throws SQLException, HibernateException {
+			}
+
+			@Override
+			public int prepare(PreparedStatement statement) throws SQLException, HibernateException {
+				return 0;
+			}
+
+			@Override
+			public boolean canBeBatched() {
+				return false;
 			}
 		};
 

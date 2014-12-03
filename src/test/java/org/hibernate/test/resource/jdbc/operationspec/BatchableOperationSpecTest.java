@@ -24,7 +24,6 @@
 package org.hibernate.test.resource.jdbc.operationspec;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
@@ -32,6 +31,7 @@ import java.util.List;
 import org.mockito.InOrder;
 
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.ResourceRegistry;
@@ -39,17 +39,14 @@ import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.internal.Batching;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
-import org.hibernate.resource.jdbc.spi.BatchExpectation;
 import org.hibernate.resource.jdbc.spi.BatchFactory;
 import org.hibernate.resource.jdbc.spi.BatchKey;
-import org.hibernate.resource.jdbc.spi.BatchObserver;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 import org.hibernate.test.resource.jdbc.common.BatchKeyImpl;
 import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
@@ -82,7 +79,7 @@ public class BatchableOperationSpecTest {
 	@Before
 	public void setUp() throws SQLException {
 		connection = JDBC_SESSION_OWNER.getJdbcConnectionAccess().obtainConnection();
-		batchKey = new BatchKeyImpl( "{SomeEntity.INSERT}", mock( BatchExpectation.class ) );
+		batchKey = new BatchKeyImpl( "{SomeEntity.INSERT}", mock( Expectation.class ) );
 		when( operationSpec.getBatchKey() ).thenReturn( batchKey );
 
 		initBatching( mockBatchFactory() );
@@ -105,7 +102,7 @@ public class BatchableOperationSpecTest {
 		when( operationSpec.getBatchKey() ).thenReturn(
 				new BatchKeyImpl(
 						"{SomeEntity.UPDATE}",
-						mock( BatchExpectation.class )
+						mock( Expectation.class )
 				)
 		);
 
@@ -164,7 +161,7 @@ public class BatchableOperationSpecTest {
 		when( operationSpec.getBatchKey() ).thenReturn(
 				new BatchKeyImpl(
 						"{SomeEntity.UPDATE}",
-						mock( BatchExpectation.class )
+						mock( Expectation.class )
 				)
 		);
 

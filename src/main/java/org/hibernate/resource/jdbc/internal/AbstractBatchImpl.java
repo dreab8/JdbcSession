@@ -29,8 +29,8 @@ import java.util.LinkedHashSet;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.internal.CoreLogging;
 import org.hibernate.internal.CoreMessageLogger;
+import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.spi.Batch;
-import org.hibernate.resource.jdbc.spi.BatchExpectation;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
 
@@ -78,7 +78,7 @@ public abstract class AbstractBatchImpl implements Batch {
 		}
 	}
 
-	protected BatchExpectation getExpectation() {
+	protected Expectation getExpectation() {
 		return getKey().getExpectation();
 	}
 

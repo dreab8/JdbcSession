@@ -23,6 +23,8 @@
  */
 package org.hibernate.resource.jdbc.spi;
 
+import org.hibernate.jdbc.Expectation;
+
 /**
  * @author Andrea Boriero
  */
@@ -32,5 +34,5 @@ public interface BatchKey {
 	 *
 	 * @return The expectations
 	 */
-	public BatchExpectation getExpectation();
+	public Expectation getExpectation();
 }
