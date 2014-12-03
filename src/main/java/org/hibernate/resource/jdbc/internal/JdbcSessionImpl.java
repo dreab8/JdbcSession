@@ -259,6 +259,7 @@ public class JdbcSessionImpl
 		}
 
 		getResourceRegistry().register( batch );
+		batch.advance();
 		return batch;
 	}
 

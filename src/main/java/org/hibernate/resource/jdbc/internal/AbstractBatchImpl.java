@@ -23,8 +23,6 @@
  */
 package org.hibernate.resource.jdbc.internal;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.LinkedHashSet;
 
@@ -63,18 +61,6 @@ public abstract class AbstractBatchImpl implements Batch {
 	public void addObserver(BatchObserver observer) {
 		observers.add( observer );
 	}
-
-	@Override
-	public abstract PreparedStatement getStatement(String sql);
-
-	@Override
-	public abstract void addBatch(String sql, PreparedStatement statement) throws SQLException;
-
-	@Override
-	public abstract void execute();
-
-	@Override
-	public abstract void release();
 
 	protected SqlExceptionHelper getSqlExceptionHelper() {
 		return sqlExceptionHelper;

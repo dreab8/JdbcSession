@@ -24,10 +24,14 @@ public class BatchingTest extends AbstractBatchingTest {
 
 		batch.addBatch( SQL_1, statementSql1 );
 
+		batch.advance();
+
 		verify( statementSql1 ).addBatch();
 		verify( statementSql1, never() ).executeBatch();
 
 		batch.addBatch( SQL_1, statementSql1 );
+
+		batch.advance();
 
 		verify( statementSql1, times( 2 ) ).addBatch();
 		verify( statementSql1 ).executeBatch();
@@ -40,14 +44,20 @@ public class BatchingTest extends AbstractBatchingTest {
 		Batch batch = getBatch( 2, "{SomeEntity.INSERT}" );
 
 		batch.addBatch( SQL_1, statementSql1 );
+		batch.advance();
+
 		batch.addBatch( SQL_1, statementSql1 );
+		batch.advance();
+
 		batch.addBatch( SQL_1, statementSql1 );
+		batch.advance();
 
 		verify( statementSql1, times( 3 ) ).addBatch();
 		verify( statementSql1, times( 1 ) ).executeBatch();
 		verify( statementSql1, times( 1 ) ).clearBatch();
 
 		batch.addBatch( SQL_1, statementSql1 );
+		batch.advance();
 
 		verify( statementSql1, times( 4 ) ).addBatch();
 		verify( statementSql1, times( 2 ) ).executeBatch();
@@ -60,11 +70,13 @@ public class BatchingTest extends AbstractBatchingTest {
 		Batch batch = getBatch( 2, "{SomeEntity.INSERT}" );
 
 		batch.addBatch( SQL_1, statementSql1 );
+		batch.advance();
 
 		verify( statementSql1 ).addBatch();
 		verify( statementSql1, never() ).executeBatch();
 
 		batch.addBatch( SQL_2, statementSql2 );
+		batch.advance();
 
 		verify( statementSql2 ).addBatch();
 		verify( statementSql1 ).executeBatch();
@@ -77,7 +89,9 @@ public class BatchingTest extends AbstractBatchingTest {
 	public void batchExecutionClosesAllTheStatements() throws SQLException {
 		Batch batch = getBatch( 2, "{SomeEntity.INSERT}" );
 		batch.addBatch( SQL_1, statementSql1 );
+		batch.advance();
 		batch.addBatch( SQL_2, statementSql2 );
+		batch.advance();
 
 		verify( statementSql1 ).close();
 		verify( statementSql2 ).close();
@@ -87,7 +101,9 @@ public class BatchingTest extends AbstractBatchingTest {
 	public void batchReleaseClosesAllTheStatements() throws SQLException {
 		Batch batch = getBatch( 3, "{SomeEntity.INSERT}" );
 		batch.addBatch( SQL_1, statementSql1 );
+		batch.advance();
 		batch.addBatch( SQL_2, statementSql2 );
+		batch.advance();
 
 		batch.release();
 
@@ -99,7 +115,9 @@ public class BatchingTest extends AbstractBatchingTest {
 	public void batchReleaseNotExecuteTheStatements() throws SQLException {
 		Batch batch = getBatch( 3, "{SomeEntity.INSERT}" );
 		batch.addBatch( SQL_1, statementSql1 );
+		batch.advance();
 		batch.addBatch( SQL_2, statementSql2 );
+		batch.advance();
 
 		batch.release();
 

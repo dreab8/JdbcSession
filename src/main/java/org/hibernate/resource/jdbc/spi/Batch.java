@@ -24,7 +24,6 @@
 package org.hibernate.resource.jdbc.spi;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -34,6 +33,8 @@ public interface Batch {
 	public BatchKey getKey();
 
 	public void addObserver(BatchObserver observer);
+
+	public void advance();
 
 	public PreparedStatement getStatement(String sql);
 

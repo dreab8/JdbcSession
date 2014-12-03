@@ -25,7 +25,6 @@ package org.hibernate.resource.jdbc.internal;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.resource.jdbc.spi.BatchKey;
@@ -41,6 +40,11 @@ public class NonBatching extends AbstractBatchImpl {
 			BatchKey key,
 			SqlExceptionHelper sqlExceptionHelper) {
 		super( key, sqlExceptionHelper );
+	}
+
+	@Override
+	public void advance() {
+
 	}
 
 	@Override

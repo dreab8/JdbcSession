@@ -24,7 +24,6 @@
 package org.hibernate.resource.jdbc.internal;
 
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -54,6 +53,15 @@ public class Batching extends AbstractBatchImpl {
 	}
 
 	@Override
+	public void advance() {
+		batchPosition++;
+		if ( batchPosition == batchSize ) {
+			notifyObserversImplicitExecution();
+			performExecution();
+		}
+	}
+
+	@Override
 	public PreparedStatement getStatement(String sql) {
 		return batchStatements.get( sql );
 	}
@@ -61,14 +69,7 @@ public class Batching extends AbstractBatchImpl {
 	@Override
 	public void addBatch(String sql, PreparedStatement statement) throws SQLException {
 		statement.addBatch();
-
 		batchStatements.put( sql, statement );
-
-		batchPosition++;
-		if ( batchPosition == batchSize ) {
-			notifyObserversImplicitExecution();
-			performExecution();
-		}
 	}
 
 	@Override
