@@ -27,9 +27,12 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.hibernate.jdbc.Expectations;
 import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
+import org.hibernate.resource.jdbc.spi.Batch;
+import org.hibernate.resource.jdbc.spi.BatchFactory;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 
 import org.junit.After;
@@ -41,7 +44,7 @@ import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 /**
  * @author Andrea Boriero
  */
-public abstract class AbstractQueryOperationSpecIntegrationTest {
+public abstract class AbstractOperationSpecIntegrationTest {
 
 	private JdbcSession jdbcSession;
 	private Connection localConnection;
@@ -62,8 +65,12 @@ public abstract class AbstractQueryOperationSpecIntegrationTest {
 
 	private JdbcSession createJdbSession() {
 		JdbcSessionOwnerTestingImpl JDBC_SESSION_OWNER = new JdbcSessionOwnerTestingImpl();
-		JDBC_SESSION_OWNER.setBatchFactory( new BatchFactoryImpl( getBatchSize() ) );
+		JDBC_SESSION_OWNER.setBatchFactory( getBatchFactory() );
 		return JdbcSessionFactory.INSTANCE.create( JDBC_SESSION_OWNER, new ResourceRegistryStandardImpl() );
+	}
+
+	protected BatchFactory getBatchFactory() {
+		return new BatchFactoryImpl( 1 );
 	}
 
 	public JdbcSession getJdbcSession() {
@@ -91,5 +98,5 @@ public abstract class AbstractQueryOperationSpecIntegrationTest {
 
 	protected abstract void dropTables() throws SQLException;
 
-	protected abstract int getBatchSize();
+
 }

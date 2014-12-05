@@ -49,7 +49,8 @@ import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperat
 /**
  * @author Andrea Boriero
  */
-public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
+																	AbstractBatchableOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 
 	private static final String OPTIONAL_TABLE_INSERT_SQL = "INSERT INTO OPTIONAL_TABLE (ID, OPTIONAL_VALUE) values  (?,?)";
@@ -67,12 +68,12 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-				PreparedStatement statement = batch.getStatement( UPDATE_BASE_TABLE_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( UPDATE_BASE_TABLE_SQL );
-				}
+				final PreparedStatement statement = getStatement( batch, connection, UPDATE_BASE_TABLE_SQL );
 				statement.setLong( 2, id );
 				statement.setString( 1, newBaseProperty );
 				batch.addBatch( UPDATE_BASE_TABLE_SQL, statement );
@@ -86,13 +87,13 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 
 		final BatchableOperationStep insertIntoOptionalTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-				PreparedStatement statement = batch.getStatement( UPDATE_OPTIONAL_TABLE_SQL );
+				PreparedStatement statement = getStatement( batch, connection, UPDATE_OPTIONAL_TABLE_SQL );
 
-				if ( statement == null ) {
-					statement = connection.prepareStatement( UPDATE_OPTIONAL_TABLE_SQL );
-				}
 				statement.setString( 1, optionalValue );
 				statement.setLong( 2, id );
 
@@ -107,14 +108,10 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 			}
 
 			private void performInsertIfNoRowUpdated(Batch batch, Connection connection) throws SQLException {
-				PreparedStatement statement;
 				Integer rowCount = batch.getRowCount( UPDATE_OPTIONAL_TABLE_SQL );
 
 				if ( rowCount == 0 ) {
-					statement = batch.getStatement( OPTIONAL_TABLE_INSERT_SQL );
-					if ( statement == null ) {
-						statement = connection.prepareStatement( OPTIONAL_TABLE_INSERT_SQL );
-					}
+					final PreparedStatement statement = getStatement( batch, connection, OPTIONAL_TABLE_INSERT_SQL );
 					statement.setLong( 1, id );
 					statement.setString( 2, optionalValue );
 					batch.addBatch( OPTIONAL_TABLE_INSERT_SQL, statement );
@@ -217,12 +214,12 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-				PreparedStatement statement = batch.getStatement( UPDATE_BASE_TABLE_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( UPDATE_BASE_TABLE_SQL );
-				}
+				final PreparedStatement statement = getStatement( batch, connection, UPDATE_BASE_TABLE_SQL );
 				statement.setLong( 2, id );
 				statement.setString( 1, newBaseProeprty );
 				batch.addBatch( UPDATE_BASE_TABLE_SQL, statement );
@@ -236,13 +233,13 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 
 		final BatchableOperationStep insertIntoOptionalTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-				PreparedStatement statement = batch.getStatement( UPDATE_OPTIONAL_TABLE_SQL );
+				final PreparedStatement statement = getStatement( batch, connection, UPDATE_OPTIONAL_TABLE_SQL );
 
-				if ( statement == null ) {
-					statement = connection.prepareStatement( UPDATE_OPTIONAL_TABLE_SQL );
-				}
 				statement.setString( 1, newOptionalValue );
 				statement.setLong( 2, id );
 
@@ -257,14 +254,10 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 			}
 
 			private void performUpdateNoRowUpdated(Batch batch, Connection connection) throws SQLException {
-				PreparedStatement statement;
 				Integer rowCount = batch.getRowCount( UPDATE_OPTIONAL_TABLE_SQL );
 
 				if ( rowCount == 0 ) {
-					statement = batch.getStatement( OPTIONAL_TABLE_INSERT_SQL );
-					if ( statement == null ) {
-						statement = connection.prepareStatement( OPTIONAL_TABLE_INSERT_SQL );
-					}
+					final PreparedStatement statement = getStatement( batch, connection, OPTIONAL_TABLE_INSERT_SQL );
 					statement.setLong( 1, id );
 					statement.setString( 2, newOptionalValue );
 					batch.addBatch( OPTIONAL_TABLE_INSERT_SQL, statement );
@@ -365,12 +358,12 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-				PreparedStatement statement = batch.getStatement( UPDATE_BASE_TABLE_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( UPDATE_BASE_TABLE_SQL );
-				}
+				final PreparedStatement statement = getStatement( batch, connection, UPDATE_BASE_TABLE_SQL );
 				statement.setLong( 2, id );
 				statement.setString( 1, newBaseProeprty );
 				batch.addBatch( UPDATE_BASE_TABLE_SQL, statement );
@@ -384,15 +377,19 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends Abst
 
 		final BatchableOperationStep deleteRowFormOptionalTableStep = new BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-				final String DELETE_FROM_OPTIONAL_TABLE_SQL = "DELETE FROM OPTIONAL_TABLE WHERE ID = ?";
-				PreparedStatement statement = batch.getStatement( DELETE_FROM_OPTIONAL_TABLE_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( DELETE_FROM_OPTIONAL_TABLE_SQL );
-				}
+				final PreparedStatement statement = getStatement(
+						batch,
+						connection,
+						"DELETE FROM OPTIONAL_TABLE WHERE ID = ?"
+				);
+
 				statement.setLong( 1, id );
-				batch.addBatch( DELETE_FROM_OPTIONAL_TABLE_SQL, statement );
+				batch.addBatch( "DELETE FROM OPTIONAL_TABLE WHERE ID = ?", statement );
 			}
 
 			@Override

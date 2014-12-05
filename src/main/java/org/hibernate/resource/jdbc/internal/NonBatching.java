@@ -27,6 +27,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 
 /**
@@ -35,6 +36,7 @@ import org.hibernate.resource.jdbc.spi.BatchKey;
 public class NonBatching extends AbstractBatchImpl {
 
 	private int rowCount;
+	private Expectation expectation;
 
 	public NonBatching(
 			BatchKey key,
@@ -44,11 +46,11 @@ public class NonBatching extends AbstractBatchImpl {
 
 	@Override
 	public void advance() {
-
 	}
 
 	@Override
-	public PreparedStatement getStatement(String sql) {
+	public PreparedStatement getStatement(String sql, Expectation expectation) {
+		this.expectation = expectation;
 		return null;
 	}
 
@@ -57,9 +59,9 @@ public class NonBatching extends AbstractBatchImpl {
 		notifyObserversImplicitExecution();
 
 		rowCount = statement.executeUpdate();
-		getExpectation().verifyOutcome( rowCount, statement, 0 );
+		expectation.verifyOutcome( rowCount, statement, 0 );
 
-		close(statement);
+		close( statement );
 	}
 
 	@Override

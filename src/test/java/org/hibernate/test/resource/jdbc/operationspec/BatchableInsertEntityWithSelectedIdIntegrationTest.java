@@ -55,7 +55,7 @@ import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperat
 /**
  * @author Andrea Boriero
  */
-public class BatchableInsertEntityWithSelectedIdIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class BatchableInsertEntityWithSelectedIdIntegrationTest extends AbstractBatchableOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 	private static final String INSERT_SQL = "INSERT INTO ENTITY_TABLE (PROPERTY) values (?)";
 	private static final boolean FOREGO_BATCHING = false;
@@ -150,16 +150,15 @@ public class BatchableInsertEntityWithSelectedIdIntegrationTest extends Abstract
 
 	private BatchableOperationStep prepareBatchableInsertOperationStep(final String value) {
 		return new BatchableOperationStep() {
-
 			Long id;
 
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-				PreparedStatement statement = batch.getStatement( INSERT_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( INSERT_SQL );
-				}
+				final PreparedStatement statement = getStatement( batch, connection, INSERT_SQL );
 				statement.setString( 1, value );
 				batch.addBatch( INSERT_SQL, statement );
 				id = (Long) getJdbcSession().accept( prepareSelectIdOperatioSpec() );

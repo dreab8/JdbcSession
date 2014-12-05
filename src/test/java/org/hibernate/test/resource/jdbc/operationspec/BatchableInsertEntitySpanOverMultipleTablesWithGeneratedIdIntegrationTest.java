@@ -34,6 +34,8 @@ import java.util.List;
 
 import org.hibernate.JDBCException;
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.jdbc.Expectation;
+import org.hibernate.jdbc.Expectations;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec;
 import org.hibernate.resource.jdbc.internal.InsertWithReturnColumsStatementBuilder;
@@ -55,7 +57,7 @@ import static org.hamcrest.core.Is.is;
  * @author Andrea Boriero
  */
 public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrationTest
-		extends AbstractQueryOperationSpecIntegrationTest {
+		extends AbstractBatchableOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 	private static final String SUPERCLASS_INSERT_SQL = "INSERT INTO SUPERCLASS_TABLE (SUPERCLASS_PROPERTY) values (?)";
 	private static final String SUBCLASS_INSERT_SQL = "INSERT INTO SUBCLASS_TABLE (ID, SUBCLASS_PROPERTY) values (?,?)";
@@ -175,9 +177,12 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 			final BatchableOperationSpec.BatchableOperationStep step, final int value) {
 		return new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-				PreparedStatement statement = batch.getStatement( SUBCLASS_INSERT_SQL );
+				PreparedStatement statement = batch.getStatement( SUBCLASS_INSERT_SQL, Expectations.NONE );
 				if ( statement == null ) {
 					statement = connection.prepareStatement( SUBCLASS_INSERT_SQL );
 				}
@@ -198,9 +203,11 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 			private Long generatedId;
 
 			@Override
-			public void apply(final Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					final Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-
 				PreparedStatementWithGeneratedKeyInsertOperationSpec.GenerateKeyResultSet generateKeyResultSet = getJdbcSession()
 						.accept(
 								new PreparedStatementWithGeneratedKeyInsertOperationSpec() {

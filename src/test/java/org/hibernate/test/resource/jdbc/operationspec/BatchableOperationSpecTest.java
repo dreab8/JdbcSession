@@ -74,12 +74,13 @@ public class BatchableOperationSpecTest {
 	private final BatchableOperationStep step = mock( BatchableOperationStep.class );
 	private final BatchableOperationSpec.Context batchContext = mock( BatchableOperationSpec.Context.class );
 
+	private final Expectation expectation = mock( Expectation.class );
 	private Connection connection;
 
 	@Before
 	public void setUp() throws SQLException {
 		connection = JDBC_SESSION_OWNER.getJdbcConnectionAccess().obtainConnection();
-		batchKey = new BatchKeyImpl( "{SomeEntity.INSERT}", mock( Expectation.class ) );
+		batchKey = new BatchKeyImpl( "{SomeEntity.INSERT}" );
 		when( operationSpec.getBatchKey() ).thenReturn( batchKey );
 
 		initBatching( mockBatchFactory() );
@@ -100,10 +101,7 @@ public class BatchableOperationSpecTest {
 		jdbcSession.accept( operationSpec, batchContext );
 
 		when( operationSpec.getBatchKey() ).thenReturn(
-				new BatchKeyImpl(
-						"{SomeEntity.UPDATE}",
-						mock( Expectation.class )
-				)
+				new BatchKeyImpl( "{SomeEntity.UPDATE}" )
 		);
 
 		jdbcSession.accept( operationSpec, batchContext );
@@ -113,9 +111,10 @@ public class BatchableOperationSpecTest {
 
 	@Test
 	public void theApplyMethodOfEachStepIsCalled() throws SQLException {
-		BatchableOperationStep step2 = mock( BatchableOperationStep.class );
 
-		List<BatchableOperationStep> steps = Arrays.asList( step, step2 );
+		final BatchableOperationStep step2 = mock( BatchableOperationStep.class );
+
+		final List<BatchableOperationStep> steps = Arrays.asList( step, step2 );
 		when( operationSpec.getSteps() ).thenReturn( steps );
 
 		jdbcSession.accept( operationSpec, batchContext );
@@ -127,7 +126,7 @@ public class BatchableOperationSpecTest {
 
 	@Test
 	public void BatchFactoryShouldBeCallWithTheCorrectParameters() {
-		BatchFactory factory = mockBatchFactory();
+		final BatchFactory factory = mockBatchFactory();
 		initBatching( factory );
 
 		jdbcSession.accept( operationSpec, batchContext );
@@ -159,10 +158,7 @@ public class BatchableOperationSpecTest {
 		jdbcSession.accept( operationSpec, batchContext );
 
 		when( operationSpec.getBatchKey() ).thenReturn(
-				new BatchKeyImpl(
-						"{SomeEntity.UPDATE}",
-						mock( Expectation.class )
-				)
+				new BatchKeyImpl( "{SomeEntity.UPDATE}" )
 		);
 
 		jdbcSession.accept( operationSpec, batchContext );

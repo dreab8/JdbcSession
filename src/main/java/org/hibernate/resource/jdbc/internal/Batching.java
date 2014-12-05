@@ -31,6 +31,7 @@ import java.util.Map;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.internal.CoreLogging;
 import org.hibernate.internal.CoreMessageLogger;
+import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 
 /**
@@ -43,6 +44,7 @@ public class Batching extends AbstractBatchImpl {
 	private int batchPosition;
 
 	private Map<String, PreparedStatement> batchStatements = new LinkedHashMap<String, PreparedStatement>();
+	private Map<String, Expectation> expectations = new LinkedHashMap<String, Expectation>();
 
 	public Batching(
 			BatchKey key,
@@ -62,7 +64,8 @@ public class Batching extends AbstractBatchImpl {
 	}
 
 	@Override
-	public PreparedStatement getStatement(String sql) {
+	public PreparedStatement getStatement(String sql, Expectation expectation) {
+		expectations.put( sql, expectation );
 		return batchStatements.get( sql );
 	}
 
@@ -106,7 +109,7 @@ public class Batching extends AbstractBatchImpl {
 				try {
 					final PreparedStatement statement = entry.getValue();
 					final int[] rowCounts = statement.executeBatch();
-					verifyOutcome( statement, rowCounts );
+					verifyOutcome( expectations.get( entry.getKey() ), statement, rowCounts );
 				}
 				catch (SQLException e) {
 					throw getSqlExceptionHelper().convert( e, "could not execute batch", entry.getKey() );
@@ -119,13 +122,14 @@ public class Batching extends AbstractBatchImpl {
 		}
 	}
 
-	private void verifyOutcome(PreparedStatement statement, int[] rowCounts) throws SQLException {
+	private void verifyOutcome(Expectation expectation, PreparedStatement statement, int[] rowCounts)
+			throws SQLException {
 		final int numberOfRowCounts = rowCounts.length;
 		if ( numberOfRowCounts != batchPosition ) {
 			LOG.unexpectedRowCounts();
 		}
 		for ( int i = 0; i < numberOfRowCounts; i++ ) {
-			getKey().getExpectation().verifyOutcome( rowCounts[i], statement, i );
+			expectation.verifyOutcome( rowCounts[i], statement, i );
 		}
 	}
 

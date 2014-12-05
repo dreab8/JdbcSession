@@ -47,11 +47,10 @@ public interface BatchableOperationSpec {
 	public List<BatchableOperationStep> getSteps();
 
 	public interface BatchableOperationStep {
+		public void apply(Batch batch, Connection connection, Context context)
+				throws SQLException;
 
-
-		public void apply(Batch batch, Connection connection, Context context) throws SQLException;
-
-		//??? remove this method and add a return type to apply method ???
+		//??? remove this method and add a retlurn type to apply method ???
 		public Serializable getGeneratedId();
 	}
 

@@ -23,16 +23,8 @@
  */
 package org.hibernate.resource.jdbc.spi;
 
-import org.hibernate.jdbc.Expectation;
-
 /**
  * @author Andrea Boriero
  */
 public interface BatchKey {
-	/**
-	 * Get the expectation pertaining to the outcome of the {@link org.hibernate.engine.jdbc.batch.spi.Batch} associated with this key.
-	 *
-	 * @return The expectations
-	 */
-	public Expectation getExpectation();
 }

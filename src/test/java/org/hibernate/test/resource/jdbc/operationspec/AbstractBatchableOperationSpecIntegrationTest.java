@@ -21,46 +21,39 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc.internal;
+package org.hibernate.test.resource.jdbc.operationspec;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.hibernate.jdbc.Expectation;
 import org.hibernate.jdbc.Expectations;
-import org.hibernate.resource.jdbc.ResourceRegistry;
+import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
-
-import org.junit.Before;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import org.hibernate.resource.jdbc.spi.BatchFactory;
 
 /**
  * @author Andrea Boriero
  */
-public abstract class AbstractBatchingTest {
+public abstract class AbstractBatchableOperationSpecIntegrationTest extends AbstractOperationSpecIntegrationTest {
 
-	protected static final String SQL_1 = "INSERT INTO ENTITY_1 (ID) VALUES (?) ";
-	protected static final String SQL_2 = "INSERT INTO ENTITY_2 (ID) VALUES (?) ";
-
-	protected ResourceRegistry resourceRegistry;
-	protected final Expectation expectation = mock( Expectation.class );
-
-	@Before
-	public void setUp() throws SQLException {
-		setResourceRegistry();
+	public PreparedStatement getStatement(Batch batch, Connection connection, String sql) throws SQLException {
+		return getStatement( batch, connection, sql, Expectations.NONE );
 	}
 
-	protected abstract void setResourceRegistry();
-
-	protected PreparedStatement getStatement(Batch batch, String sql) throws SQLException {
+	public PreparedStatement getStatement(Batch batch, Connection connection, String sql, Expectation expectation) throws SQLException {
 		PreparedStatement statement = batch.getStatement( sql, expectation );
 		if ( statement == null ) {
-			statement = mock( PreparedStatement.class );
-			when( statement.executeBatch() ).thenReturn( new int[] {0} );
+			statement = connection.prepareStatement( sql );
 		}
 		return statement;
 	}
 
+	protected abstract int getBatchSize();
+
+	@Override
+	protected BatchFactory getBatchFactory() {
+		return new BatchFactoryImpl( getBatchSize() );
+	}
 }

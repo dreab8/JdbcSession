@@ -52,24 +52,22 @@ import static org.hibernate.resource.jdbc.BatchableOperationSpec.InsertContext;
  * @author Andrea Boriero
  */
 public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
-		extends AbstractQueryOperationSpecIntegrationTest {
+		extends AbstractBatchableOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 	private static final String SUPERCLASS_INSERT_SQL = "INSERT INTO SUPERCLASS_TABLE (ID, SUPERCLASS_PROPERTY) values (?,?)";
 	private static final String SUBCLASS_INSERT_SQL = "INSERT INTO SUBCLASS_TABLE (ID, SUBCLASS_PROPERTY) values (?,?)";
 
 	@Test
 	public void testStepsForInsertEntitySpanOnMultibleTables() throws Exception {
-//		final Serializable id = 1L;
-
 		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
 				InsertContext insertContext = (InsertContext) context;
-				PreparedStatement statement = batch.getStatement( SUPERCLASS_INSERT_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( SUPERCLASS_INSERT_SQL );
-				}
+				final PreparedStatement statement = getStatement( batch, connection, SUPERCLASS_INSERT_SQL );
 				statement.setLong( 1, (Long) insertContext.getId() );
 				statement.setString( 2, "unimportant" );
 				batch.addBatch( SUPERCLASS_INSERT_SQL, statement );
@@ -84,13 +82,13 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
 
 		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
 				InsertContext insertContext = (InsertContext) context;
-				PreparedStatement statement = batch.getStatement( SUBCLASS_INSERT_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( SUBCLASS_INSERT_SQL );
-				}
+				final PreparedStatement statement = getStatement( batch, connection, SUBCLASS_INSERT_SQL );
 				statement.setLong( 1, (Long) insertContext.getId() );
 				statement.setString( 2, "0123" );
 				batch.addBatch( SUBCLASS_INSERT_SQL, statement );

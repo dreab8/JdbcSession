@@ -23,17 +23,13 @@
  */
 package org.hibernate.test.resource.jdbc.operationspec;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.hibernate.JDBCException;
-import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
 import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilderImpl;
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
@@ -47,7 +43,7 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Andrea Boriero
  */
-public class ScrollableQueryOperationSpecIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class ScrollableQueryOperationSpecIntegrationTest extends AbstractBatchableOperationSpecIntegrationTest {
 	private static final String BILLING_ADDRESS_INSERT_SQL = "INSERT INTO BillingAddress (ADDRESS_ID, owner) values  (1,'owner')";
 
 	@Test

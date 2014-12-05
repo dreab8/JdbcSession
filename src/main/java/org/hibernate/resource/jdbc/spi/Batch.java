@@ -26,6 +26,8 @@ package org.hibernate.resource.jdbc.spi;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.hibernate.jdbc.Expectation;
+
 /**
  * @author Andrea Boriero
  */
@@ -36,7 +38,7 @@ public interface Batch {
 
 	public void advance();
 
-	public PreparedStatement getStatement(String sql);
+	public PreparedStatement getStatement(String sql, Expectation expectation);
 
 	public void addBatch(String sql, PreparedStatement statement) throws SQLException;
 

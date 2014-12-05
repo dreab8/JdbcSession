@@ -78,10 +78,6 @@ public abstract class AbstractBatchImpl implements Batch {
 		}
 	}
 
-	protected Expectation getExpectation() {
-		return getKey().getExpectation();
-	}
-
 	protected void close(Statement statement) {
 		if ( statement != null ) {
 			ResourceRegistryStandardImpl.close( statement );

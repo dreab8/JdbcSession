@@ -11,8 +11,8 @@ import org.hibernate.HibernateException;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.LogicalConnection;
 import org.hibernate.resource.jdbc.Operation;
-import org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
+import org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec;
 import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
@@ -130,7 +130,11 @@ public class JdbcSessionImpl
 		}
 		try {
 			for ( BatchableOperationStep step : operation.getSteps() ) {
-				step.apply( currentBatch, logicalConnection.getPhysicalConnection(), operationContext );
+				step.apply(
+						currentBatch,
+						logicalConnection.getPhysicalConnection(),
+						operationContext
+				);
 			}
 		}
 		catch (SQLException e) {

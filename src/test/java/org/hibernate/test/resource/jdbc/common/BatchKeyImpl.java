@@ -23,30 +23,16 @@
  */
 package org.hibernate.test.resource.jdbc.common;
 
-import org.hibernate.jdbc.Expectation;
-import org.hibernate.jdbc.Expectations;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 
 /**
  * @author Andrea Boriero
  */
 public class BatchKeyImpl implements BatchKey {
-	private Expectation expectation;
 	private String comparison;
 
-	public BatchKeyImpl(String comparison, Expectation expectation) {
-		this.expectation = expectation;
-		this.comparison = comparison;
-	}
-
 	public BatchKeyImpl(String comparison) {
-		this.expectation = Expectations.NONE;
 		this.comparison = comparison;
-	}
-
-	@Override
-	public Expectation getExpectation() {
-		return expectation;
 	}
 
 	@Override

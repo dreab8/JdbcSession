@@ -43,7 +43,7 @@ public class BatchFactoryImplTest {
 			}
 		};
 
-		key = new BatchKeyImpl( "UNIMPORTANT", batchExpectation );
+		key = new BatchKeyImpl( "UNIMPORTANT" );
 	}
 
 	@Test

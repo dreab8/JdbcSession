@@ -23,17 +23,13 @@
  */
 package org.hibernate.test.resource.jdbc.operationspec;
 
-import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 import org.hibernate.JDBCException;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
-import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilderImpl;
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
@@ -47,7 +43,7 @@ import static org.junit.Assert.assertThat;
 /**
  * @author Andrea Boriero
  */
-public class PreparedStatementQueryOperationSpecIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class PreparedStatementQueryOperationSpecIntegrationTest extends AbstractOperationSpecIntegrationTest {
 
 	private static final String BILLING_ADDRESS_INSERT_SQL = "INSERT INTO BillingAddress (ADDRESS_ID, owner) values  (1,'owner')";
 
@@ -164,11 +160,6 @@ public class PreparedStatementQueryOperationSpecIntegrationTest extends Abstract
 	@Override
 	protected void dropTables() throws SQLException {
 		execute( "DROP table BillingAddress IF EXISTS" );
-	}
-
-	@Override
-	protected int getBatchSize() {
-		return 0;
 	}
 
 	public class BillingAddress {

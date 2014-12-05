@@ -1,5 +1,6 @@
 package org.hibernate.test.resource.jdbc.internal;
 
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
@@ -20,114 +21,140 @@ public class BatchingTest extends AbstractBatchingTest {
 
 	@Test
 	public void statementsWithSameSqlAreExecutedWhenTheBatchSizeIsReached() throws SQLException {
-		Batch batch = getBatch( 2, "{SomeEntity.INSERT}" );
+		final Batch batch = createBatch( 2, "{SomeEntity.INSERT}" );
 
-		batch.addBatch( SQL_1, statementSql1 );
+		final PreparedStatement statement = getStatement( batch, SQL_1 );
 
+		batch.addBatch( SQL_1, statement );
 		batch.advance();
 
-		verify( statementSql1 ).addBatch();
-		verify( statementSql1, never() ).executeBatch();
+		verify( statement ).addBatch();
+		verify( statement, never() ).executeBatch();
 
-		batch.addBatch( SQL_1, statementSql1 );
-
+		batch.addBatch( SQL_1, statement );
 		batch.advance();
 
-		verify( statementSql1, times( 2 ) ).addBatch();
-		verify( statementSql1 ).executeBatch();
-		verify( statementSql1 ).clearBatch();
+		verify( statement, times( 2 ) ).addBatch();
+		verify( statement ).executeBatch();
+		verify( statement ).clearBatch();
 	}
 
 	@Test
 	public void afterTheFirstExecutionTheBatchIsReExecutedOnlyWhenTheBatchSizeIsReachedAgain()
 			throws SQLException {
-		Batch batch = getBatch( 2, "{SomeEntity.INSERT}" );
+		final Batch batch = createBatch( 2, "{SomeEntity.INSERT}" );
 
-		batch.addBatch( SQL_1, statementSql1 );
+		final PreparedStatement statement = getStatement( batch, SQL_1 );
+
+		batch.addBatch( SQL_1, statement );
 		batch.advance();
 
-		batch.addBatch( SQL_1, statementSql1 );
+		batch.addBatch( SQL_1, statement );
 		batch.advance();
 
-		batch.addBatch( SQL_1, statementSql1 );
+		batch.addBatch( SQL_1, statement );
 		batch.advance();
 
-		verify( statementSql1, times( 3 ) ).addBatch();
-		verify( statementSql1, times( 1 ) ).executeBatch();
-		verify( statementSql1, times( 1 ) ).clearBatch();
+		verify( statement, times( 3 ) ).addBatch();
+		verify( statement, times( 1 ) ).executeBatch();
+		verify( statement, times( 1 ) ).clearBatch();
 
-		batch.addBatch( SQL_1, statementSql1 );
+		batch.addBatch( SQL_1, statement );
 		batch.advance();
 
-		verify( statementSql1, times( 4 ) ).addBatch();
-		verify( statementSql1, times( 2 ) ).executeBatch();
-		verify( statementSql1, times( 2 ) ).clearBatch();
+		verify( statement, times( 4 ) ).addBatch();
+		verify( statement, times( 2 ) ).executeBatch();
+		verify( statement, times( 2 ) ).clearBatch();
 	}
 
 	@Test
 	public void batchWithDifferentsSqlStatementsExecutesAllTheStatementsWhenTheBatchSizeIsReached()
 			throws SQLException {
-		Batch batch = getBatch( 2, "{SomeEntity.INSERT}" );
+		final Batch batch = createBatch( 2, "{SomeEntity.INSERT}" );
 
-		batch.addBatch( SQL_1, statementSql1 );
+		final PreparedStatement statement1 = getStatement( batch, SQL_1 );
+
+		batch.addBatch( SQL_1, statement1 );
 		batch.advance();
 
-		verify( statementSql1 ).addBatch();
-		verify( statementSql1, never() ).executeBatch();
+		verify( statement1 ).addBatch();
+		verify( statement1, never() ).executeBatch();
 
-		batch.addBatch( SQL_2, statementSql2 );
+		final PreparedStatement statement2 = getStatement( batch, SQL_2 );
+
+		batch.addBatch( SQL_2, statement2 );
 		batch.advance();
 
-		verify( statementSql2 ).addBatch();
-		verify( statementSql1 ).executeBatch();
-		verify( statementSql2 ).executeBatch();
-		verify( statementSql1 ).clearBatch();
-		verify( statementSql2 ).clearBatch();
+		verify( statement2 ).addBatch();
+
+		verify( statement1 ).executeBatch();
+		verify( statement2 ).executeBatch();
+
+		verify( statement1 ).clearBatch();
+		verify( statement2 ).clearBatch();
 	}
 
 	@Test
 	public void batchExecutionClosesAllTheStatements() throws SQLException {
-		Batch batch = getBatch( 2, "{SomeEntity.INSERT}" );
-		batch.addBatch( SQL_1, statementSql1 );
-		batch.advance();
-		batch.addBatch( SQL_2, statementSql2 );
+		final Batch batch = createBatch( 2, "{SomeEntity.INSERT}" );
+
+		final PreparedStatement statement1 = getStatement( batch, SQL_1 );
+
+		batch.addBatch( SQL_1, statement1 );
 		batch.advance();
 
-		verify( statementSql1 ).close();
-		verify( statementSql2 ).close();
+		final PreparedStatement statement2 = getStatement( batch, SQL_2 );
+
+		batch.addBatch( SQL_2, statement2 );
+		batch.advance();
+
+		verify( statement1 ).close();
+		verify( statement1 ).close();
 	}
 
 	@Test
 	public void batchReleaseClosesAllTheStatements() throws SQLException {
-		Batch batch = getBatch( 3, "{SomeEntity.INSERT}" );
-		batch.addBatch( SQL_1, statementSql1 );
+		final Batch batch = createBatch( 3, "{SomeEntity.INSERT}" );
+
+		final PreparedStatement statement1 = getStatement( batch, SQL_1 );
+
+		batch.addBatch( SQL_1, statement1 );
 		batch.advance();
-		batch.addBatch( SQL_2, statementSql2 );
+
+		final PreparedStatement statement2 = getStatement( batch, SQL_2 );
+
+		batch.addBatch( SQL_2, statement2 );
 		batch.advance();
 
 		batch.release();
 
-		verify( statementSql1 ).close();
-		verify( statementSql2 ).close();
+		verify( statement1 ).close();
+		verify( statement2 ).close();
 	}
 
 	@Test
 	public void batchReleaseNotExecuteTheStatements() throws SQLException {
-		Batch batch = getBatch( 3, "{SomeEntity.INSERT}" );
-		batch.addBatch( SQL_1, statementSql1 );
+		final Batch batch = createBatch( 3, "{SomeEntity.INSERT}" );
+
+		final PreparedStatement statement1 = getStatement( batch, SQL_1 );
+
+		batch.addBatch( SQL_1, statement1 );
 		batch.advance();
-		batch.addBatch( SQL_2, statementSql2 );
+
+		final PreparedStatement statement2 = getStatement( batch, SQL_2 );
+
+		batch.addBatch( SQL_2, statement2 );
 		batch.advance();
 
 		batch.release();
 
-		verify( statementSql1, never() ).executeBatch();
-		verify( statementSql2, never() ).executeBatch();
+		verify( statement1, never() ).executeBatch();
+		verify( statement2, never() ).executeBatch();
 	}
 
-	private Batch getBatch(int batchSize, String keyComparision) {
+	private Batch createBatch(int batchSize, String keyComparision) {
 		return new Batching(
-				new BatchKeyImpl( keyComparision, expectation ),
+				new BatchKeyImpl( keyComparision ),
 				batchSize,
 				mock( SqlExceptionHelper.class )
 		);

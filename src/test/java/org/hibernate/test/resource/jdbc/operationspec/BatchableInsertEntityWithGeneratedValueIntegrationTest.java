@@ -39,7 +39,6 @@ import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilde
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
@@ -56,7 +55,8 @@ import static org.hamcrest.core.Is.is;
 /**
  * @author Andrea Boriero
  */
-public class BatchableInsertEntityWithGeneratedValueIntegrationTest extends AbstractQueryOperationSpecIntegrationTest {
+public class BatchableInsertEntityWithGeneratedValueIntegrationTest
+		extends AbstractBatchableOperationSpecIntegrationTest {
 	private static final int BATCH_SIZE = 10;
 	private static final Long DEFAULT_SECURITY_CODE = 123L;
 
@@ -71,12 +71,12 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest extends Abst
 
 		final BatchableOperationSpec.BatchableOperationStep insertIntoCreditCardTableStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
-				PreparedStatement statement = batch.getStatement( CREDIT_CARD_INSERT_SQL );
-				if ( statement == null ) {
-					statement = connection.prepareStatement( CREDIT_CARD_INSERT_SQL );
-				}
+				final PreparedStatement statement = getStatement( batch, connection, CREDIT_CARD_INSERT_SQL );
 				statement.setLong( 1, (Long) entityId );
 				statement.setString( 2, creditCardToSave.getNumber() );
 				batch.addBatch( CREDIT_CARD_INSERT_SQL, statement );
@@ -90,9 +90,11 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest extends Abst
 		};
 
 		final BatchableOperationSpec.BatchableOperationStep updateCreditCardEntitySecurityCodeGeneratedValueStep = new BatchableOperationSpec.BatchableOperationStep() {
-
 			@Override
-			public void apply(Batch batch, Connection connection, BatchableOperationSpec.Context context)
+			public void apply(
+					Batch batch,
+					Connection connection,
+					BatchableOperationSpec.Context context)
 					throws SQLException {
 
 				PreparedStatementQueryOperationSpec updateGenerateValueOperationSpec = new UpdateGenerateValueOperationSpec(
