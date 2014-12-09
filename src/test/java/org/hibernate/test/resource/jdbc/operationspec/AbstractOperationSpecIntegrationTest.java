@@ -27,11 +27,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-import org.hibernate.jdbc.Expectations;
 import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
-import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchFactory;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 
@@ -97,6 +95,4 @@ public abstract class AbstractOperationSpecIntegrationTest {
 	protected abstract void createTables() throws SQLException;
 
 	protected abstract void dropTables() throws SQLException;
-
-
 }

@@ -33,12 +33,10 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.JDBCException;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
-import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Test;
 
@@ -46,7 +44,6 @@ import org.hibernate.test.resource.jdbc.common.BatchKeyImpl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.hibernate.resource.jdbc.BatchableOperationSpec.InsertContext;
 
 /**
  * @author Andrea Boriero
@@ -64,7 +61,7 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				InsertContext insertContext = (InsertContext) context;
 				final PreparedStatement statement = getStatement( batch, connection, SUPERCLASS_INSERT_SQL );
@@ -85,7 +82,7 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				InsertContext insertContext = (InsertContext) context;
 				final PreparedStatement statement = getStatement( batch, connection, SUBCLASS_INSERT_SQL );
@@ -122,32 +119,7 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( insertIntoSuperclassTableStep, insertIntoSubclassTableStep );
 					}
-				}, new InsertContext() {
-					@Override
-					public Serializable getId() {
-						return 1L;
-					}
-
-					@Override
-					public Object[] getFields() {
-						return new Object[0];
-					}
-
-					@Override
-					public Object getObject() {
-						return null;
-					}
-
-					@Override
-					public SessionImplementor getSessionImplementor() {
-						return null;
-					}
-
-					@Override
-					public GenerationTiming getMatchTiming() {
-						return null;
-					}
-				}
+				}, buildContext(1l)
 		);
 
 		try {

@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.JDBCException;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilderImpl;
@@ -43,7 +42,6 @@ import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
-import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Test;
 
@@ -74,7 +72,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				final PreparedStatement statement = getStatement( batch, connection, CREDIT_CARD_INSERT_SQL );
 				statement.setLong( 1, (Long) entityId );
@@ -94,7 +92,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 
 				PreparedStatementQueryOperationSpec updateGenerateValueOperationSpec = new UpdateGenerateValueOperationSpec(
@@ -139,32 +137,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest
 								updateCreditCardEntitySecurityCodeGeneratedValueStep
 						);
 					}
-				}, new BatchableOperationSpec.InsertContext() {
-					@Override
-					public Serializable getId() {
-						return null;
-					}
-
-					@Override
-					public Object[] getFields() {
-						return new Object[0];
-					}
-
-					@Override
-					public Object getObject() {
-						return null;
-					}
-
-					@Override
-					public SessionImplementor getSessionImplementor() {
-						return null;
-					}
-
-					@Override
-					public GenerationTiming getMatchTiming() {
-						return null;
-					}
-				}
+				}, buildContext()
 		);
 
 		try {

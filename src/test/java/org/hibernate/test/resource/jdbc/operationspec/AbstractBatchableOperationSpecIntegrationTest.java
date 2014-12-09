@@ -23,15 +23,19 @@
  */
 package org.hibernate.test.resource.jdbc.operationspec;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.jdbc.Expectation;
 import org.hibernate.jdbc.Expectations;
 import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchFactory;
+
+import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep.InsertContext;
 
 /**
  * @author Andrea Boriero
@@ -42,7 +46,8 @@ public abstract class AbstractBatchableOperationSpecIntegrationTest extends Abst
 		return getStatement( batch, connection, sql, Expectations.NONE );
 	}
 
-	public PreparedStatement getStatement(Batch batch, Connection connection, String sql, Expectation expectation) throws SQLException {
+	public PreparedStatement getStatement(Batch batch, Connection connection, String sql, Expectation expectation)
+			throws SQLException {
 		PreparedStatement statement = batch.getStatement( sql, expectation );
 		if ( statement == null ) {
 			statement = connection.prepareStatement( sql );
@@ -55,5 +60,38 @@ public abstract class AbstractBatchableOperationSpecIntegrationTest extends Abst
 	@Override
 	protected BatchFactory getBatchFactory() {
 		return new BatchFactoryImpl( getBatchSize() );
+	}
+
+	protected InsertContext buildContext(final Serializable id) {
+		return new InsertContext() {
+			@Override
+			public Serializable getId() {
+				return id;
+			}
+
+			@Override
+			public Object[] getState() {
+				return new Object[0];
+			}
+
+			@Override
+			public Object getEntity() {
+				return null;
+			}
+
+			@Override
+			public SessionImplementor getSessionImplementor() {
+				return null;
+			}
+
+			@Override
+			public Expectation getExpectation() {
+				return null;
+			}
+		};
+	}
+
+	protected InsertContext buildContext() {
+		return buildContext( null );
 	}
 }

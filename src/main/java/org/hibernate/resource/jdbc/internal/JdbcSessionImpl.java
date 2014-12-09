@@ -28,6 +28,7 @@ import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep;
+import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep.Context;
 import static org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec.GenerateKeyResultSet;
 import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
 
@@ -116,7 +117,7 @@ public class JdbcSessionImpl
 	}
 
 	@Override
-	public void accept(BatchableOperationSpec operation, BatchableOperationSpec.Context operationContext) {
+	public void accept(BatchableOperationSpec operation, Context operationContext) {
 		Batch currentBatch = getResourceRegistry().getCurrentBatch();
 		if ( currentBatch != null ) {
 			if ( !currentBatch.getKey().equals( operation.getBatchKey() ) ) {

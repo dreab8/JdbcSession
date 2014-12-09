@@ -51,6 +51,7 @@ import org.hibernate.test.resource.jdbc.common.BatchKeyImpl;
 import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
 import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep;
+import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep.Context;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.inOrder;
@@ -72,7 +73,7 @@ public class BatchableOperationSpecTest {
 
 	private final BatchableOperationSpec operationSpec = mock( BatchableOperationSpec.class );
 	private final BatchableOperationStep step = mock( BatchableOperationStep.class );
-	private final BatchableOperationSpec.Context batchContext = mock( BatchableOperationSpec.Context.class );
+	private final Context batchContext = mock( Context.class );
 
 	private final Expectation expectation = mock( Expectation.class );
 	private Connection connection;

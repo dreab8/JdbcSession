@@ -33,8 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.JDBCException;
-import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.jdbc.Expectation;
 import org.hibernate.jdbc.Expectations;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec;
@@ -44,7 +42,6 @@ import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.StatementBuilder;
-import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Test;
 
@@ -52,6 +49,7 @@ import org.hibernate.test.resource.jdbc.common.BatchKeyImpl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep;
 
 /**
  * @author Andrea Boriero
@@ -66,29 +64,29 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 	@Test
 	public void testTheSubclassTableRowHasGeneratedIdOfTheSuperclassInsertedRow() throws SQLException {
 
-		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep1 = prepareInsertIntoSuperClassTableBatchableOperationStep(
+		final BatchableOperationStep insertIntoSuperclassTableStep1 = prepareInsertIntoSuperClassTableBatchableOperationStep(
 				"123"
 		);
 
-		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep1 = prepareBatchableInsertIntoSubClasstableOperationStep(
+		final BatchableOperationStep insertIntoSubclassTableStep1 = prepareBatchableInsertIntoSubClasstableOperationStep(
 				insertIntoSuperclassTableStep1,
 				123
 		);
 
-		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep2 = prepareInsertIntoSuperClassTableBatchableOperationStep(
+		final BatchableOperationStep insertIntoSuperclassTableStep2 = prepareInsertIntoSuperClassTableBatchableOperationStep(
 				"456"
 		);
 
-		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep2 = prepareBatchableInsertIntoSubClasstableOperationStep(
+		final BatchableOperationStep insertIntoSubclassTableStep2 = prepareBatchableInsertIntoSubClasstableOperationStep(
 				insertIntoSuperclassTableStep2,
 				456
 		);
 
 		getJdbcSession().accept(
-				prepareOperationSpec( insertIntoSuperclassTableStep1, insertIntoSubclassTableStep1 ), getContext()
+				prepareOperationSpec( insertIntoSuperclassTableStep1, insertIntoSubclassTableStep1 ), buildContext()
 		);
 		getJdbcSession().accept(
-				prepareOperationSpec( insertIntoSuperclassTableStep2, insertIntoSubclassTableStep2 ), getContext()
+				prepareOperationSpec( insertIntoSuperclassTableStep2, insertIntoSubclassTableStep2 ), buildContext()
 		);
 
 		try {
@@ -118,38 +116,9 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 		}
 	}
 
-	private BatchableOperationSpec.InsertContext getContext() {
-		return new BatchableOperationSpec.InsertContext() {
-			@Override
-			public Serializable getId() {
-				return null;
-			}
-
-			@Override
-			public Object[] getFields() {
-				return null;
-			}
-
-			@Override
-			public Object getObject() {
-				return null;
-			}
-
-			@Override
-			public SessionImplementor getSessionImplementor() {
-				return null;
-			}
-
-			@Override
-			public GenerationTiming getMatchTiming() {
-				return null;
-			}
-		};
-	}
-
 	private BatchableOperationSpec prepareOperationSpec(
-			final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep,
-			final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep) {
+			final BatchableOperationStep insertIntoSuperclassTableStep,
+			final BatchableOperationStep insertIntoSubclassTableStep) {
 		return new BatchableOperationSpec() {
 			@Override
 			public BatchKey getBatchKey() {
@@ -173,14 +142,14 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 		};
 	}
 
-	private BatchableOperationSpec.BatchableOperationStep prepareBatchableInsertIntoSubClasstableOperationStep(
-			final BatchableOperationSpec.BatchableOperationStep step, final int value) {
-		return new BatchableOperationSpec.BatchableOperationStep() {
+	private BatchableOperationStep prepareBatchableInsertIntoSubClasstableOperationStep(
+			final BatchableOperationStep step, final int value) {
+		return new BatchableOperationStep() {
 			@Override
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				PreparedStatement statement = batch.getStatement( SUBCLASS_INSERT_SQL, Expectations.NONE );
 				if ( statement == null ) {
@@ -198,15 +167,15 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 		};
 	}
 
-	private BatchableOperationSpec.BatchableOperationStep prepareInsertIntoSuperClassTableBatchableOperationStep(final String value) {
-		return new BatchableOperationSpec.BatchableOperationStep() {
+	private BatchableOperationStep prepareInsertIntoSuperClassTableBatchableOperationStep(final String value) {
+		return new BatchableOperationStep() {
 			private Long generatedId;
 
 			@Override
 			public void apply(
 					final Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				PreparedStatementWithGeneratedKeyInsertOperationSpec.GenerateKeyResultSet generateKeyResultSet = getJdbcSession()
 						.accept(

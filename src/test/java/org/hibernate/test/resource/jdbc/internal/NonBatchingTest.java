@@ -37,7 +37,6 @@ public class NonBatchingTest extends AbstractBatchingTest {
 		verify( statement1 ).close();
 	}
 
-
 	@Test
 	public void statementIsClosedWhenANewBatchIsAdded() throws SQLException {
 		final PreparedStatement statement1 = getStatement( batch, SQL_1 );

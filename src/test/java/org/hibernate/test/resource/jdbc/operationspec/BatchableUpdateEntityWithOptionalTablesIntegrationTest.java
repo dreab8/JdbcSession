@@ -71,7 +71,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				final PreparedStatement statement = getStatement( batch, connection, UPDATE_BASE_TABLE_SQL );
 				statement.setLong( 2, id );
@@ -90,7 +90,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				PreparedStatement statement = getStatement( batch, connection, UPDATE_OPTIONAL_TABLE_SQL );
 
@@ -144,48 +144,8 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( updateSuperclassTableStep, insertIntoOptionalTableStep );
 					}
-				}, new BatchableOperationSpec.UpdateContext() {
-					@Override
-					public Serializable getId() {
-						return null;
-					}
-
-					@Override
-					public Object[] getFields() {
-						return new Object[0];
-					}
-
-					@Override
-					public Object getObject() {
-						return null;
-					}
-
-					@Override
-					public int[] getDirtyFields() {
-						return new int[0];
-					}
-
-					@Override
-					public boolean isDirtyCollection() {
-						return false;
-					}
-
-					@Override
-					public Object[] getOldFields() {
-						return new Object[0];
-					}
-
-					@Override
-					public Object getOldVersion() {
-						return null;
-					}
-
-					@Override
-					public Object getrowId() {
-						return null;
-					}
-				}
-
+				},
+				buildContext()
 		);
 
 		try {
@@ -217,7 +177,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				final PreparedStatement statement = getStatement( batch, connection, UPDATE_BASE_TABLE_SQL );
 				statement.setLong( 2, id );
@@ -236,7 +196,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				final PreparedStatement statement = getStatement( batch, connection, UPDATE_OPTIONAL_TABLE_SQL );
 
@@ -290,47 +250,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( updateSuperclassTableStep, insertIntoOptionalTableStep );
 					}
-				}, new BatchableOperationSpec.UpdateContext() {
-					@Override
-					public Serializable getId() {
-						return null;
-					}
-
-					@Override
-					public Object[] getFields() {
-						return new Object[0];
-					}
-
-					@Override
-					public Object getObject() {
-						return null;
-					}
-
-					@Override
-					public int[] getDirtyFields() {
-						return new int[0];
-					}
-
-					@Override
-					public boolean isDirtyCollection() {
-						return false;
-					}
-
-					@Override
-					public Object[] getOldFields() {
-						return new Object[0];
-					}
-
-					@Override
-					public Object getOldVersion() {
-						return null;
-					}
-
-					@Override
-					public Object getrowId() {
-						return null;
-					}
-				}
+				}, buildContext()
 		);
 
 		try {
@@ -361,7 +281,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				final PreparedStatement statement = getStatement( batch, connection, UPDATE_BASE_TABLE_SQL );
 				statement.setLong( 2, id );
@@ -380,7 +300,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				final PreparedStatement statement = getStatement(
 						batch,
@@ -419,47 +339,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( updateSuperclassTableStep, deleteRowFormOptionalTableStep );
 					}
-				}, new BatchableOperationSpec.UpdateContext() {
-					@Override
-					public Serializable getId() {
-						return null;
-					}
-
-					@Override
-					public Object[] getFields() {
-						return new Object[0];
-					}
-
-					@Override
-					public Object getObject() {
-						return null;
-					}
-
-					@Override
-					public int[] getDirtyFields() {
-						return new int[0];
-					}
-
-					@Override
-					public boolean isDirtyCollection() {
-						return false;
-					}
-
-					@Override
-					public Object[] getOldFields() {
-						return new Object[0];
-					}
-
-					@Override
-					public Object getOldVersion() {
-						return null;
-					}
-
-					@Override
-					public Object getrowId() {
-						return null;
-					}
-				}
+				}, buildContext()
 		);
 
 		try {

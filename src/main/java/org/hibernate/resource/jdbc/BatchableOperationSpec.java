@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
@@ -52,48 +53,50 @@ public interface BatchableOperationSpec {
 
 		//??? remove this method and add a retlurn type to apply method ???
 		public Serializable getGeneratedId();
+
+		// ???Operation Parameter or Values instead of Context ???
+		public interface Context {
+		}
+
+		public interface InsertContext extends Context {
+			public Serializable getId();
+
+			public Object[] getState();
+
+			public Object getEntity();
+
+			public SessionImplementor getSessionImplementor();
+
+			public Expectation getExpectation();
+		}
+
+		public interface UpdateContext extends Context {
+			public Serializable getId();
+
+			public Object[] getState();
+
+			public Object getEntity();
+
+			public int[] getDirtyFields();
+
+			public boolean isDirtyCollection();
+
+			public Object[] getOldFields();
+
+			public Object getOldVersion();
+
+			public Object getrowId();
+		}
+
+		public interface DeleteContext extends Context {
+			public Serializable getId();
+
+			public Object[] getState();
+
+			public Object getEntity();
+		}
 	}
 
-	// ???Operation Parameter or Values instead of Context ???
-	public interface Context {
-	}
 
-	public interface InsertContext extends Context {
-		public Serializable getId();
-
-		public Object[] getFields();
-
-		public Object getObject();
-
-		public SessionImplementor getSessionImplementor();
-
-		public GenerationTiming getMatchTiming();
-	}
-
-	public interface UpdateContext extends Context {
-		public Serializable getId();
-
-		public Object[] getFields();
-
-		public Object getObject();
-
-		public int[] getDirtyFields();
-
-		public boolean isDirtyCollection();
-
-		public Object[] getOldFields();
-
-		public Object getOldVersion();
-
-		public Object getrowId();
-	}
-
-	public interface DeleteContext extends Context {
-		public Serializable getId();
-
-		public Object[] getFields();
-
-		public Object getObject();
-	}
 
 }

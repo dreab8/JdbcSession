@@ -31,7 +31,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilderImpl;
@@ -42,7 +41,6 @@ import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
 import org.hibernate.resource.jdbc.spi.StatementExecutor;
-import org.hibernate.tuple.GenerationTiming;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -65,7 +63,7 @@ public class BatchableInsertEntityWithSelectedIdIntegrationTest extends Abstract
 	public void testInsertTableRowAndSelectinId() throws SQLException {
 		final BatchableOperationStep insertStep = prepareBatchableInsertOperationStep( "123" );
 
-		getJdbcSession().accept( prepareOperationSpec( insertStep ), getContext() );
+		getJdbcSession().accept( prepareOperationSpec( insertStep ), buildContext() );
 
 		getJdbcSession().executeBatch();
 		commit();
@@ -92,35 +90,6 @@ public class BatchableInsertEntityWithSelectedIdIntegrationTest extends Abstract
 	@Override
 	protected int getBatchSize() {
 		return BATCH_SIZE;
-	}
-
-	private BatchableOperationSpec.InsertContext getContext() {
-		return new BatchableOperationSpec.InsertContext() {
-			@Override
-			public Serializable getId() {
-				return null;
-			}
-
-			@Override
-			public Object[] getFields() {
-				return null;
-			}
-
-			@Override
-			public Object getObject() {
-				return null;
-			}
-
-			@Override
-			public SessionImplementor getSessionImplementor() {
-				return null;
-			}
-
-			@Override
-			public GenerationTiming getMatchTiming() {
-				return null;
-			}
-		};
 	}
 
 	private BatchableOperationSpec prepareOperationSpec(
@@ -156,7 +125,7 @@ public class BatchableInsertEntityWithSelectedIdIntegrationTest extends Abstract
 			public void apply(
 					Batch batch,
 					Connection connection,
-					BatchableOperationSpec.Context context)
+					Context context)
 					throws SQLException {
 				final PreparedStatement statement = getStatement( batch, connection, INSERT_SQL );
 				statement.setString( 1, value );
