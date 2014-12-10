@@ -85,6 +85,11 @@ public abstract class AbstractBatchableOperationSpecIntegrationTest extends Abst
 			}
 
 			@Override
+			public boolean[] isIncludeProperty() {
+				return new boolean[0];
+			}
+
+			@Override
 			public Expectation getExpectation() {
 				return null;
 			}

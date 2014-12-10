@@ -66,6 +66,8 @@ public interface BatchableOperationSpec {
 
 			public SessionImplementor getSessionImplementor();
 
+			public boolean[] isIncludeProperty();
+
 			public Expectation getExpectation();
 		}
 
