@@ -121,8 +121,8 @@ public class BatchableOperationSpecTest {
 		jdbcSession.accept( operationSpec, batchContext );
 
 		InOrder inOrder = inOrder( step, step2 );
-		inOrder.verify( step ).apply( batch, connection, batchContext );
-		inOrder.verify( step2 ).apply( batch, connection, batchContext );
+		inOrder.verify( step ).apply( jdbcSession, batch, connection, batchContext );
+		inOrder.verify( step2 ).apply( jdbcSession, batch, connection, batchContext );
 	}
 
 	@Test

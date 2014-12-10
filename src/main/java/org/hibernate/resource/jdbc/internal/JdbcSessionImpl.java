@@ -4,6 +4,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import org.jboss.logging.Logger;
 
@@ -117,7 +118,7 @@ public class JdbcSessionImpl
 	}
 
 	@Override
-	public void accept(BatchableOperationSpec operation, Context operationContext) {
+	public void accept(BatchableOperationSpec operation, Context stepsContext) {
 		Batch currentBatch = getResourceRegistry().getCurrentBatch();
 		if ( currentBatch != null ) {
 			if ( !currentBatch.getKey().equals( operation.getBatchKey() ) ) {
@@ -130,11 +131,13 @@ public class JdbcSessionImpl
 			currentBatch = buildBatch( operation );
 		}
 		try {
+			List<BatchableOperationStep> steps = operation.getSteps();
 			for ( BatchableOperationStep step : operation.getSteps() ) {
 				step.apply(
+						this,
 						currentBatch,
 						logicalConnection.getPhysicalConnection(),
-						operationContext
+						stepsContext
 				);
 			}
 		}

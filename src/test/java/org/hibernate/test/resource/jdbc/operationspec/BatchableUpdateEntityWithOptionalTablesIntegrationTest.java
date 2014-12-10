@@ -34,6 +34,7 @@ import java.util.List;
 
 import org.hibernate.JDBCException;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
+import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
@@ -69,7 +70,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -88,7 +89,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 		final BatchableOperationStep insertIntoOptionalTableStep = new BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -175,7 +176,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -194,7 +195,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 		final BatchableOperationStep insertIntoOptionalTableStep = new BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -279,7 +280,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 		final BatchableOperationStep updateSuperclassTableStep = new BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -298,7 +299,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 		final BatchableOperationStep deleteRowFormOptionalTableStep = new BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {

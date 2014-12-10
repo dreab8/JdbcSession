@@ -34,6 +34,7 @@ import java.util.List;
 
 import org.hibernate.JDBCException;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
+import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
@@ -59,7 +60,7 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
 		final BatchableOperationSpec.BatchableOperationStep insertIntoSuperclassTableStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -80,7 +81,7 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
 		final BatchableOperationSpec.BatchableOperationStep insertIntoSubclassTableStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -119,7 +120,7 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( insertIntoSuperclassTableStep, insertIntoSubclassTableStep );
 					}
-				}, buildContext(1l)
+				}, buildContext( 1l )
 		);
 
 		try {

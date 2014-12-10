@@ -33,6 +33,7 @@ import java.util.List;
 
 import org.hibernate.JDBCException;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
+import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilderImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
@@ -70,7 +71,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest
 		final BatchableOperationSpec.BatchableOperationStep insertIntoCreditCardTableStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -90,7 +91,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest
 		final BatchableOperationSpec.BatchableOperationStep updateCreditCardEntitySecurityCodeGeneratedValueStep = new BatchableOperationSpec.BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -100,7 +101,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest
 						(Long) entityId
 				);
 
-				getJdbcSession().accept( updateGenerateValueOperationSpec );
+				session.accept( updateGenerateValueOperationSpec );
 			}
 
 			@Override

@@ -27,6 +27,7 @@ import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 
 import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep;
+import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep.Context;
 import static org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec.GenerateKeyResultSet;
 import static org.hibernate.resource.jdbc.ScrollableQueryOperationSpec.Result;
 
@@ -92,7 +93,7 @@ public interface JdbcSession {
 
 	public Result accept(ScrollableQueryOperationSpec operation);
 
-	public void accept(BatchableOperationSpec operatioon, BatchableOperationStep.Context context);
+	public void accept(BatchableOperationSpec operation, Context stepsContext);
 
 	public GenerateKeyResultSet accept(PreparedStatementWithGeneratedKeyInsertOperationSpec operation);
 

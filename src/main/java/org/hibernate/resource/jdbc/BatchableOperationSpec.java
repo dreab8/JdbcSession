@@ -33,7 +33,6 @@ import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
-import org.hibernate.tuple.GenerationTiming;
 
 /**
  * @author Andrea Borie,ro
@@ -48,7 +47,7 @@ public interface BatchableOperationSpec {
 	public List<BatchableOperationStep> getSteps();
 
 	public interface BatchableOperationStep {
-		public void apply(Batch batch, Connection connection, Context context)
+		public void apply(JdbcSession session, Batch batch, Connection connection, Context context)
 				throws SQLException;
 
 		//??? remove this method and add a retlurn type to apply method ???
@@ -96,7 +95,6 @@ public interface BatchableOperationSpec {
 			public Object getEntity();
 		}
 	}
-
 
 
 }

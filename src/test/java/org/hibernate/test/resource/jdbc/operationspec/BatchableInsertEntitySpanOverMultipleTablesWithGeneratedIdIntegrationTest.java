@@ -35,6 +35,7 @@ import java.util.List;
 import org.hibernate.JDBCException;
 import org.hibernate.jdbc.Expectations;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
+import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.PreparedStatementWithGeneratedKeyInsertOperationSpec;
 import org.hibernate.resource.jdbc.internal.InsertWithReturnColumsStatementBuilder;
 import org.hibernate.resource.jdbc.spi.Batch;
@@ -147,7 +148,7 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 		return new BatchableOperationStep() {
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
@@ -173,11 +174,11 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 
 			@Override
 			public void apply(
-					final Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
-				PreparedStatementWithGeneratedKeyInsertOperationSpec.GenerateKeyResultSet generateKeyResultSet = getJdbcSession()
+				PreparedStatementWithGeneratedKeyInsertOperationSpec.GenerateKeyResultSet generateKeyResultSet = session
 						.accept(
 								new PreparedStatementWithGeneratedKeyInsertOperationSpec() {
 									@Override

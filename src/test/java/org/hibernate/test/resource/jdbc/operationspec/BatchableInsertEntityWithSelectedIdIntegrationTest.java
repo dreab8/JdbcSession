@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
+import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.PreparedStatementQueryOperationSpec;
 import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilderImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
@@ -123,7 +124,7 @@ public class BatchableInsertEntityWithSelectedIdIntegrationTest extends Abstract
 
 			@Override
 			public void apply(
-					Batch batch,
+					JdbcSession session, Batch batch,
 					Connection connection,
 					Context context)
 					throws SQLException {
