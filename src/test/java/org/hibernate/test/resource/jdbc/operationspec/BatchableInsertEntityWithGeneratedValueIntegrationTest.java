@@ -138,7 +138,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest
 								updateCreditCardEntitySecurityCodeGeneratedValueStep
 						);
 					}
-				}, buildContext()
+				}, buildInsertContext( 2 )
 		);
 
 		try {

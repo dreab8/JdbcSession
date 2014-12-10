@@ -120,7 +120,7 @@ public class BatchableInsertEntitySpanOnMultipleTablesWithProvidedIdTest
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( insertIntoSuperclassTableStep, insertIntoSubclassTableStep );
 					}
-				}, buildContext( 1l )
+				}, buildInsertContext( 1l, 2 )
 		);
 
 		try {

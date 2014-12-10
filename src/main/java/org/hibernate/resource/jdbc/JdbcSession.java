@@ -93,7 +93,7 @@ public interface JdbcSession {
 
 	public Result accept(ScrollableQueryOperationSpec operation);
 
-	public void accept(BatchableOperationSpec operation, Context stepsContext);
+	public void accept(BatchableOperationSpec operation, Context[] stepsContext);
 
 	public GenerateKeyResultSet accept(PreparedStatementWithGeneratedKeyInsertOperationSpec operation);
 

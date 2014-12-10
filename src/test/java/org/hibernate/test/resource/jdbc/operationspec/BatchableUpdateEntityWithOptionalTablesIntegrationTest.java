@@ -146,7 +146,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 						return Arrays.asList( updateSuperclassTableStep, insertIntoOptionalTableStep );
 					}
 				},
-				buildContext()
+				buildInsertContext( 2 )
 		);
 
 		try {
@@ -251,7 +251,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( updateSuperclassTableStep, insertIntoOptionalTableStep );
 					}
-				}, buildContext()
+				}, buildInsertContext( 2 )
 		);
 
 		try {
@@ -340,7 +340,7 @@ public class BatchableUpdateEntityWithOptionalTablesIntegrationTest extends
 					public List<BatchableOperationStep> getSteps() {
 						return Arrays.asList( updateSuperclassTableStep, deleteRowFormOptionalTableStep );
 					}
-				}, buildContext()
+				}, buildInsertContext( 2 )
 		);
 
 		try {

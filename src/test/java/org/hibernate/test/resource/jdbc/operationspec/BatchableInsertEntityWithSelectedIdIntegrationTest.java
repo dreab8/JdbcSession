@@ -64,7 +64,7 @@ public class BatchableInsertEntityWithSelectedIdIntegrationTest extends Abstract
 	public void testInsertTableRowAndSelectinId() throws SQLException {
 		final BatchableOperationStep insertStep = prepareBatchableInsertOperationStep( "123" );
 
-		getJdbcSession().accept( prepareOperationSpec( insertStep ), buildContext() );
+		getJdbcSession().accept( prepareOperationSpec( insertStep ), buildInsertContext( 1 ) );
 
 		getJdbcSession().executeBatch();
 		commit();

@@ -35,6 +35,7 @@ import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchFactory;
 
+import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep.Context;
 import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep.InsertContext;
 
 /**
@@ -62,7 +63,19 @@ public abstract class AbstractBatchableOperationSpecIntegrationTest extends Abst
 		return new BatchFactoryImpl( getBatchSize() );
 	}
 
-	protected InsertContext buildContext(final Serializable id) {
+	protected Context[] buildInsertContext(final Serializable id, int steps) {
+		Context[] context = new Context[steps];
+		for ( int i = 0; i < steps; i++ ) {
+			context[i] = buildInsertContext( id );
+		}
+		return context;
+	}
+
+	protected Context[] buildInsertContext(int steps) {
+		return buildInsertContext( null, steps );
+	}
+
+	protected Context buildInsertContext(final Serializable id) {
 		return new InsertContext() {
 			@Override
 			public Serializable getId() {
@@ -96,7 +109,7 @@ public abstract class AbstractBatchableOperationSpecIntegrationTest extends Abst
 		};
 	}
 
-	protected InsertContext buildContext() {
-		return buildContext( null );
+	protected Context buildInsertContext() {
+		return buildInsertContext( null );
 	}
 }

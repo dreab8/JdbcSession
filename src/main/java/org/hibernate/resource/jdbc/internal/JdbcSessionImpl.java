@@ -118,7 +118,7 @@ public class JdbcSessionImpl
 	}
 
 	@Override
-	public void accept(BatchableOperationSpec operation, Context stepsContext) {
+	public void accept(BatchableOperationSpec operation, Context[] stepsContext) {
 		Batch currentBatch = getResourceRegistry().getCurrentBatch();
 		if ( currentBatch != null ) {
 			if ( !currentBatch.getKey().equals( operation.getBatchKey() ) ) {
@@ -132,13 +132,8 @@ public class JdbcSessionImpl
 		}
 		try {
 			List<BatchableOperationStep> steps = operation.getSteps();
-			for ( BatchableOperationStep step : operation.getSteps() ) {
-				step.apply(
-						this,
-						currentBatch,
-						logicalConnection.getPhysicalConnection(),
-						stepsContext
-				);
+			for ( int i = 0; i < steps.size(); i++ ) {
+				steps.get( i ).apply( this, currentBatch, logicalConnection.getPhysicalConnection(), stepsContext[i] );
 			}
 		}
 		catch (SQLException e) {

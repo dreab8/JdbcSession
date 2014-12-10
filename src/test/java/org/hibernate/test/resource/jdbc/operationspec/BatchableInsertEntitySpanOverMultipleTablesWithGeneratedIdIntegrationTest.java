@@ -84,10 +84,12 @@ public class BatchableInsertEntitySpanOverMultipleTablesWithGeneratedIdIntegrati
 		);
 
 		getJdbcSession().accept(
-				prepareOperationSpec( insertIntoSuperclassTableStep1, insertIntoSubclassTableStep1 ), buildContext()
+				prepareOperationSpec( insertIntoSuperclassTableStep1, insertIntoSubclassTableStep1 ),
+				buildInsertContext( 2 )
 		);
 		getJdbcSession().accept(
-				prepareOperationSpec( insertIntoSuperclassTableStep2, insertIntoSubclassTableStep2 ), buildContext()
+				prepareOperationSpec( insertIntoSuperclassTableStep2, insertIntoSubclassTableStep2 ),
+				buildInsertContext( 2 )
 		);
 
 		try {
