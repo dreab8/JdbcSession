@@ -35,11 +35,11 @@ import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.ResourceRegistry;
-import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
+import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.internal.Batching;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
-import org.hibernate.resource.jdbc.spi.BatchFactory;
+import org.hibernate.resource.jdbc.spi.BatchBuilder;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 
@@ -128,7 +128,7 @@ public class BatchableOperationSpecTest {
 
 	@Test
 	public void BatchFactoryShouldBeCallWithTheCorrectParameters() {
-		final BatchFactory factory = mockBatchFactory();
+		final BatchBuilder factory = mockBatchFactory();
 		initBatching( factory );
 
 		jdbcSession.accept( operationSpec, new Context[] {batchContext} );
@@ -169,29 +169,29 @@ public class BatchableOperationSpecTest {
 		verify( resourceRegistry ).register( batch2 );
 	}
 
-	private void initBatching(BatchFactory factory) {
+	private void initBatching(BatchBuilder factory) {
 		initJdbSession( factory );
 	}
 
-	private void initJdbSession(BatchFactory factory) {
-		JDBC_SESSION_OWNER.setBatchFactory( factory );
+	private void initJdbSession(BatchBuilder factory) {
+		JDBC_SESSION_OWNER.setBatchBuilder( factory );
 		jdbcSession = JdbcSessionFactory.INSTANCE.create( JDBC_SESSION_OWNER, new ResourceRegistryStandardImpl() );
 
 		when( operationSpec.foregoBatching() ).thenReturn( true );
 	}
 
-	private void initJdbSession(BatchFactory factory, ResourceRegistry registry) {
-		JDBC_SESSION_OWNER.setBatchFactory( factory );
+	private void initJdbSession(BatchBuilder factory, ResourceRegistry registry) {
+		JDBC_SESSION_OWNER.setBatchBuilder( factory );
 		jdbcSession = JdbcSessionFactory.INSTANCE.create( JDBC_SESSION_OWNER, registry );
 
 		when( operationSpec.foregoBatching() ).thenReturn( true );
 	}
 
-	private BatchFactory mockBatchFactory() {
+	private BatchBuilder mockBatchFactory() {
 		batch = mock( Batching.class );
 		batch2 = mock( Batching.class );
 		when( batch.getKey() ).thenReturn( batchKey );
-		final BatchFactory factory = mock( BatchFactoryImpl.class );
+		final BatchBuilder factory = mock( BatchBuilderImpl.class );
 		when( factory.buildBatch( any( BatchKey.class ), any( SqlExceptionHelper.class ), anyBoolean() ) ).thenReturn(
 				batch, batch2
 		);

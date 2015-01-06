@@ -28,9 +28,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
+import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
-import org.hibernate.resource.jdbc.spi.BatchFactory;
+import org.hibernate.resource.jdbc.spi.BatchBuilder;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 
 import org.junit.After;
@@ -63,12 +63,12 @@ public abstract class AbstractOperationSpecIntegrationTest {
 
 	private JdbcSession createJdbSession() {
 		JdbcSessionOwnerTestingImpl JDBC_SESSION_OWNER = new JdbcSessionOwnerTestingImpl();
-		JDBC_SESSION_OWNER.setBatchFactory( getBatchFactory() );
+		JDBC_SESSION_OWNER.setBatchBuilder( getBatchFactory() );
 		return JdbcSessionFactory.INSTANCE.create( JDBC_SESSION_OWNER, new ResourceRegistryStandardImpl() );
 	}
 
-	protected BatchFactory getBatchFactory() {
-		return new BatchFactoryImpl( 1 );
+	protected BatchBuilder getBatchFactory() {
+		return new BatchBuilderImpl( 1 );
 	}
 
 	public JdbcSession getJdbcSession() {

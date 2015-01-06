@@ -23,20 +23,41 @@
  */
 package org.hibernate.resource.jdbc.internal;
 
+import java.util.Map;
+
+import org.hibernate.cfg.Environment;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.hibernate.internal.util.config.ConfigurationHelper;
 import org.hibernate.resource.jdbc.spi.Batch;
-import org.hibernate.resource.jdbc.spi.BatchFactory;
+import org.hibernate.resource.jdbc.spi.BatchBuilder;
 import org.hibernate.resource.jdbc.spi.BatchKey;
+import org.hibernate.service.spi.Configurable;
 
 /**
  * @author Andrea Boriero
  */
-public class BatchFactoryImpl implements BatchFactory {
+public class BatchBuilderImpl implements BatchBuilder, Configurable {
 
 	private int batchSize;
 
-	public BatchFactoryImpl(int batchSize) {
+	/**
+	 * Constructs a BatchBuilderImpl
+	 */
+	public BatchBuilderImpl() {
+	}
+
+	/**
+	 * Constructs a BatchBuilderImpl
+	 *
+	 * @param batchSize The batch size to use.
+	 */
+	public BatchBuilderImpl(int batchSize) {
 		this.batchSize = batchSize;
+	}
+
+	@Override
+	public void configure(Map configurationValues) {
+		batchSize = ConfigurationHelper.getInt( Environment.STATEMENT_BATCH_SIZE, configurationValues, batchSize );
 	}
 
 	@Override
@@ -45,6 +66,23 @@ public class BatchFactoryImpl implements BatchFactory {
 		return batchSize > 1 && foregoBatching
 				? new Batching( key, batchSize, exceptionHelper )
 				: new NonBatching( key, exceptionHelper );
+	}
+
+	@Override
+	public String getManagementDomain() {
+		// use Hibernate default domain
+		return null;
+	}
+
+	@Override
+	public String getManagementServiceType() {
+		// use Hibernate default scheme
+		return null;
+	}
+
+	@Override
+	public Object getManagementBean() {
+		return this;
 	}
 
 }

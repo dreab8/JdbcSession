@@ -24,11 +24,13 @@
 package org.hibernate.resource.jdbc.spi;
 
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
+import org.hibernate.service.Service;
+import org.hibernate.service.spi.Manageable;
 
 /**
  * @author Andrea Boriero
  */
-public interface BatchFactory {
+public interface BatchBuilder extends Service, Manageable {
 
 	public Batch buildBatch(BatchKey key, SqlExceptionHelper exceptionHelper, boolean foregoBatching);
 }

@@ -18,7 +18,7 @@ import org.hibernate.resource.jdbc.QueryOperationSpec;
 import org.hibernate.resource.jdbc.ResourceRegistry;
 import org.hibernate.resource.jdbc.ScrollableQueryOperationSpec;
 import org.hibernate.resource.jdbc.spi.Batch;
-import org.hibernate.resource.jdbc.spi.BatchFactory;
+import org.hibernate.resource.jdbc.spi.BatchBuilder;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
@@ -44,7 +44,7 @@ public class JdbcSessionImpl
 	private final JdbcSessionContext context;
 	private final LogicalConnectionImplementor logicalConnection;
 	private final TransactionCoordinator transactionCoordinator;
-	private BatchFactory batchFactory;
+	private BatchBuilder batchBuilder;
 
 	private boolean closed;
 
@@ -52,11 +52,11 @@ public class JdbcSessionImpl
 			JdbcSessionContext context,
 			LogicalConnectionImplementor logicalConnection,
 			TransactionCoordinatorBuilder transactionCoordinatorBuilder,
-			BatchFactory batchFactory) {
+			BatchBuilder batchBuilder) {
 		this.context = context;
 		this.logicalConnection = logicalConnection;
 		this.transactionCoordinator = transactionCoordinatorBuilder.buildTransactionCoordinator( this );
-		this.batchFactory = batchFactory;
+		this.batchBuilder = batchBuilder;
 	}
 
 	@Override
@@ -249,7 +249,7 @@ public class JdbcSessionImpl
 	}
 
 	private Batch buildBatch(BatchableOperationSpec operation) {
-		final Batch batch = batchFactory.buildBatch(
+		final Batch batch = batchBuilder.buildBatch(
 				operation.getBatchKey(),
 				context.getSqlExceptionHelper(),
 				operation.foregoBatching()

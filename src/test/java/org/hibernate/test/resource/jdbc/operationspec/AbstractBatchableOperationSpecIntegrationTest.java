@@ -31,9 +31,9 @@ import java.sql.SQLException;
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.jdbc.Expectation;
 import org.hibernate.jdbc.Expectations;
-import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
+import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.spi.Batch;
-import org.hibernate.resource.jdbc.spi.BatchFactory;
+import org.hibernate.resource.jdbc.spi.BatchBuilder;
 
 import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep.Context;
 import static org.hibernate.resource.jdbc.BatchableOperationSpec.BatchableOperationStep.InsertContext;
@@ -59,8 +59,8 @@ public abstract class AbstractBatchableOperationSpecIntegrationTest extends Abst
 	protected abstract int getBatchSize();
 
 	@Override
-	protected BatchFactory getBatchFactory() {
-		return new BatchFactoryImpl( getBatchSize() );
+	protected BatchBuilder getBatchFactory() {
+		return new BatchBuilderImpl( getBatchSize() );
 	}
 
 	protected Context[] buildInsertContext(final Serializable id, int steps) {

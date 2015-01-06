@@ -36,7 +36,7 @@ public interface JdbcSessionOwner {
 	 */
 	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder();
 
-	public BatchFactory getBatchFactory();
+	public BatchBuilder getBatchBuilder();
 
 	public JdbcSessionContext getJdbcSessionContext();
 	public JdbcConnectionAccess getJdbcConnectionAccess();

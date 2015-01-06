@@ -29,10 +29,11 @@ import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
+import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl;
 import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
+import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
 
@@ -89,10 +90,9 @@ public abstract class AbstractJtaScenarioTests {
 						.setAutoJoinTransactions( autoJoin )
 						.setPreferUserTransactions( preferUserTransactions() )
 						.setPerformJtaThreadTracking( false ),
-				new BatchFactoryImpl( batchSize )
+				new BatchBuilderImpl( batchSize )
 		);
 	}
-
 
 	@Test
 	public void basicBmtUsageTest() throws Exception {

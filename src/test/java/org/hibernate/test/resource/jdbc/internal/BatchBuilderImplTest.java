@@ -6,11 +6,11 @@ import java.sql.SQLException;
 import org.hibernate.HibernateException;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.jdbc.Expectation;
-import org.hibernate.resource.jdbc.internal.BatchFactoryImpl;
+import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.internal.Batching;
 import org.hibernate.resource.jdbc.internal.NonBatching;
 import org.hibernate.resource.jdbc.spi.Batch;
-import org.hibernate.resource.jdbc.spi.BatchFactory;
+import org.hibernate.resource.jdbc.spi.BatchBuilder;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 
 import org.junit.Before;
@@ -21,7 +21,7 @@ import org.hibernate.test.resource.jdbc.common.BatchKeyImpl;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-public class BatchFactoryImplTest {
+public class BatchBuilderImplTest {
 	private BatchKey key;
 
 	@Before
@@ -48,7 +48,7 @@ public class BatchFactoryImplTest {
 
 	@Test
 	public void shouldReturnABatchingInstanceIfBattchSizeIsGreaterThanOneAndForegoBatchingIsTrue() {
-		BatchFactory factory = new BatchFactoryImpl( 2 );
+		BatchBuilder factory = new BatchBuilderImpl( 2 );
 
 		Batch batch = factory.buildBatch(
 				key,
@@ -61,7 +61,7 @@ public class BatchFactoryImplTest {
 
 	@Test
 	public void shouldReturnANonBatchingInstanceIfBattchSizeIsGreaterThanOneAndForegoBatchingIsFalse() {
-		BatchFactory factory = new BatchFactoryImpl( 2 );
+		BatchBuilder factory = new BatchBuilderImpl( 2 );
 
 		Batch batch = factory.buildBatch(
 				key,
@@ -74,7 +74,7 @@ public class BatchFactoryImplTest {
 
 	@Test
 	public void shouldReturnANonBatchingInstanceIfBattchSiezeIsOneForegoBatchingIsTrue() {
-		BatchFactory factory = new BatchFactoryImpl( 1 );
+		BatchBuilder factory = new BatchBuilderImpl( 1 );
 
 		Batch batch = factory.buildBatch(
 				key,
@@ -87,7 +87,7 @@ public class BatchFactoryImplTest {
 
 	@Test
 	public void shouldReturnANonBatchingInstanceIfBattchSiezeIsOneForegoBatchingIsFalse() {
-		BatchFactory factory = new BatchFactoryImpl( 1 );
+		BatchBuilder factory = new BatchBuilderImpl( 1 );
 
 		Batch batch = factory.buildBatch(
 				key,
