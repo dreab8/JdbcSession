@@ -130,13 +130,6 @@ public class ScrollableQueryOperationSpecIntegrationTest extends AbstractBatchab
 		}
 	}
 
-	private class SimpleStatementExecutor implements StatementExecutor {
-		@Override
-		public ResultSet execute(PreparedStatement statement) throws SQLException {
-			return statement.executeQuery();
-		}
-	}
-
 	@Override
 	protected void createTables() throws SQLException {
 		final String createBillingAddressTableSql = "create table BillingAddress (" +

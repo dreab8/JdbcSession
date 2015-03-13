@@ -22,6 +22,7 @@ import org.hibernate.resource.jdbc.spi.BatchBuilder;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionImplementor;
+import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
@@ -45,22 +46,22 @@ public class JdbcSessionImpl
 	private final LogicalConnectionImplementor logicalConnection;
 	private final TransactionCoordinator transactionCoordinator;
 	private BatchBuilder batchBuilder;
+	private final JdbcSessionOwner owner;
 
 	private boolean closed;
 
 	public JdbcSessionImpl(
-			JdbcSessionContext context,
-			LogicalConnectionImplementor logicalConnection,
-			TransactionCoordinatorBuilder transactionCoordinatorBuilder,
-			BatchBuilder batchBuilder) {
-		this.context = context;
+			JdbcSessionOwner owner,
+			LogicalConnectionImplementor logicalConnection) {
+		this.owner = owner;
+		this.context = owner.getJdbcSessionContext();
 		this.logicalConnection = logicalConnection;
-		this.transactionCoordinator = transactionCoordinatorBuilder.buildTransactionCoordinator( this );
-		this.batchBuilder = batchBuilder;
+		this.transactionCoordinator = owner.getTransactionCoordinatorBuilder().buildTransactionCoordinator( this );
+		this.batchBuilder = owner.getBatchBuilder();
 	}
 
 	@Override
-	public LogicalConnection getLogicalConnection() {
+	public LogicalConnectionImplementor getLogicalConnection() {
 		return logicalConnection;
 	}
 
@@ -187,7 +188,9 @@ public class JdbcSessionImpl
 	public Result accept(ScrollableQueryOperationSpec operation) {
 		final PreparedStatement statement = prepareStatement( operation );
 		try {
-			final ResultSet resultSet = operation.getStatementExecutor().execute( statement );
+			context.getObserver().jdbcExecuteStatementStart();
+			final ResultSet resultSet = operation.getStatementExecutor().execute( statement, getSessionContext() );
+			context.getObserver().jdbcExecuteStatementEnd();
 
 			register( resultSet, statement );
 
@@ -214,7 +217,9 @@ public class JdbcSessionImpl
 		final PreparedStatement statement = prepareStatement( operation );
 		ResultSet resultSet = null;
 		try {
-			resultSet = operation.getStatementExecutor().execute( statement );
+			context.getObserver().jdbcExecuteStatementStart();
+			resultSet = operation.getStatementExecutor().execute( statement, getSessionContext() );
+			context.getObserver().jdbcExecuteStatementEnd();
 			return operation.getResultSetProcessor().extractResults( resultSet );
 		}
 		catch (SQLException e) {
@@ -267,7 +272,7 @@ public class JdbcSessionImpl
 	}
 
 	private PreparedStatement prepareStatement(QueryOperationSpec operation) {
-
+		context.getObserver().jdbcPrepareStatementStart();
 		final PreparedStatement statement = operation.getQueryStatementBuilder().buildQueryStatement(
 				logicalConnection.getPhysicalConnection(),
 				getSessionContext(),
@@ -275,7 +280,7 @@ public class JdbcSessionImpl
 				operation.getResultSetType(),
 				operation.getResultSetConcurrency()
 		);
-
+		context.getObserver().jdbcPrepareStatementEnd();
 		getResourceRegistry().register( statement, operation.isCancellable() );
 
 		try {
@@ -325,5 +330,10 @@ public class JdbcSessionImpl
 		// todo : implement
 		// for now, just log...
 		log.tracef( "JdbcSessionImpl#afterTransactionCompletion(%s)", successful );
+	}
+
+	@Override
+	public JdbcSessionOwner getJdbcSessionOwner() {
+		return owner;
 	}
 }

@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2014, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,36 +21,22 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.jdbc.spi;
+package org.hibernate.resource.jdbc.internal;
 
-import java.io.Serializable;
-import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- * Provides centralized access to JDBC connections, hiding the complexity of accounting for any context specific
- * info (multi-tenancy e.g.).
- *<p/>
- * todo : NOTE that this is a moving of org.hibernate.engine.jdbc.spi.JdbcConnectionAccess
- *
- * @author Steve Ebersole
- */
-public interface JdbcConnectionAccess extends Serializable {
-	/**
-	 * Obtain a JDBC connection
-	 *
-	 * @return The obtained connection
-	 *
-	 * @throws java.sql.SQLException Indicates a problem getting the connection
-	 */
-	public Connection obtainConnection() throws SQLException;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
-	/**
-	 * Release a previously obtained connection
-	 *
-	 * @param connection The connection to release
-	 *
-	 * @throws java.sql.SQLException Indicates a problem releasing the connection
-	 */
-	public void releaseConnection(Connection connection) throws SQLException;
+/**
+ * @author Andrea Boriero
+ */
+public class StatementExecutorImpl implements StatementExecutor<PreparedStatement> {
+	@Override
+	public ResultSet execute(
+			PreparedStatement statement, JdbcSessionContext context) throws SQLException {
+		return statement.executeQuery();
+	}
 }

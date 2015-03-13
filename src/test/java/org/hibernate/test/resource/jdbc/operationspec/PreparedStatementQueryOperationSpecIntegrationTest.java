@@ -127,13 +127,6 @@ public class PreparedStatementQueryOperationSpecIntegrationTest extends Abstract
 		}
 	}
 
-	private class SimpleStatementExecutor implements StatementExecutor {
-		@Override
-		public ResultSet execute(PreparedStatement statement) throws SQLException {
-			return statement.executeQuery();
-		}
-	}
-
 	private class SimpleResultSetProcessor implements ResultSetProcessor {
 		@Override
 		public Object extractResults(ResultSet resultSet) throws SQLException {

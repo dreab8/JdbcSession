@@ -25,13 +25,16 @@ package org.hibernate.test.resource.jdbc.operationspec;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.hibernate.resource.jdbc.JdbcSession;
 import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.internal.ResourceRegistryStandardImpl;
 import org.hibernate.resource.jdbc.spi.BatchBuilder;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
+import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
 import org.junit.After;
 import org.junit.Before;
@@ -95,4 +98,12 @@ public abstract class AbstractOperationSpecIntegrationTest {
 	protected abstract void createTables() throws SQLException;
 
 	protected abstract void dropTables() throws SQLException;
+
+	protected class SimpleStatementExecutor implements StatementExecutor {
+		@Override
+		public ResultSet execute(
+				PreparedStatement statement, JdbcSessionContext context) throws SQLException {
+			return statement.executeQuery();
+		}
+	}
 }

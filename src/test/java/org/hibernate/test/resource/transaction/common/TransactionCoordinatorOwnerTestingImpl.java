@@ -23,7 +23,10 @@
  */
 package org.hibernate.test.resource.transaction.common;
 
+import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
+
+import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
 /**
  * @author Steve Ebersole
@@ -84,5 +87,10 @@ public class TransactionCoordinatorOwnerTestingImpl implements TransactionCoordi
 			failedCompletionCount++;
 		}
 
+	}
+
+	@Override
+	public JdbcSessionOwner getJdbcSessionOwner() {
+		return new JdbcSessionOwnerTestingImpl();
 	}
 }

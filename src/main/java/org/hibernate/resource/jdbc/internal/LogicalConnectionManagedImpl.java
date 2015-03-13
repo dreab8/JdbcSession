@@ -5,9 +5,9 @@ import java.sql.SQLException;
 
 import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.ResourceClosedException;
+import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.resource.jdbc.ResourceRegistry;
-import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.jdbc.spi.JdbcObserver;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.LogicalConnectionImplementor;

@@ -30,6 +30,6 @@ import java.sql.SQLException;
 /**
  * @author Andrea Boriero
  */
-public interface StatementExecutor {
-	ResultSet execute(PreparedStatement statement) throws SQLException;
+public interface StatementExecutor<T extends PreparedStatement> {
+	ResultSet execute(T statement, JdbcSessionContext context) throws SQLException;
 }

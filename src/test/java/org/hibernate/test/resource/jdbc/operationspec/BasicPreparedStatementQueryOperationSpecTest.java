@@ -67,7 +67,7 @@ public class BasicPreparedStatementQueryOperationSpecTest
 				any( ResultSetType.class ),
 				any( ResultSetConcurrency.class )
 		);
-		verify( statementExecutor ).execute( statement );
+		verify( statementExecutor ).execute( statement, jdbcSession.getSessionContext() );
 		verify( resultSetProcessor ).extractResults( resultSet );
 	}
 

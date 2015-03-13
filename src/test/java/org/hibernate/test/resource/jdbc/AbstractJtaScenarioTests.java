@@ -23,27 +23,26 @@
  */
 package org.hibernate.test.resource.jdbc;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
+import java.sql.Connection;
+import java.sql.SQLException;
 
+import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl;
-import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
-import org.hibernate.resource.jdbc.spi.JdbcSessionFactory;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
 import org.hibernate.resource.transaction.backend.jta.internal.JtaTransactionCoordinatorImpl;
+
+import org.junit.Before;
+import org.junit.Test;
 
 import org.hibernate.test.resource.common.SynchronizationCollectorImpl;
 import org.hibernate.test.resource.jdbc.common.ConnectionProviderJtaAwareImpl;
 import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
+import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 import org.hibernate.test.resource.transaction.common.JtaPlatformStandardTestingImpl;
-
-import org.junit.Before;
-import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -53,7 +52,7 @@ import static org.junit.Assert.assertTrue;
  * @author Steve Ebersole
  */
 public abstract class AbstractJtaScenarioTests {
-	private int batchSize ;
+	private int batchSize;
 
 	protected abstract boolean preferUserTransactions();
 
@@ -69,28 +68,36 @@ public abstract class AbstractJtaScenarioTests {
 	}
 
 	private JdbcSession buildJdbcSession(final boolean autoJoin) {
-		return new JdbcSessionImpl(
-				JdbcSessionContextStandardTestingImpl.INSTANCE,
-				new LogicalConnectionManagedImpl(
-						new JdbcConnectionAccess() {
-							@Override
-							public Connection obtainConnection() throws SQLException {
-								return connectionProvider.getConnection();
-							}
+		LogicalConnectionManagedImpl logicalConnectionManaged = new LogicalConnectionManagedImpl(
+				new JdbcConnectionAccess() {
+					@Override
+					public Connection obtainConnection() throws SQLException {
+						return connectionProvider.getConnection();
+					}
 
-							@Override
-							public void releaseConnection(Connection connection) throws SQLException {
-								connectionProvider.closeConnection( connection );
-							}
-						},
-						JdbcSessionContextStandardTestingImpl.INSTANCE
-				),
+					@Override
+					public void releaseConnection(Connection connection) throws SQLException {
+						connectionProvider.closeConnection( connection );
+					}
+
+					@Override
+					public boolean supportsAggressiveRelease() {
+						return false;
+					}
+				},
+				JdbcSessionContextStandardTestingImpl.INSTANCE
+		);
+		JdbcSessionOwnerTestingImpl jdbcSessionOwner = new JdbcSessionOwnerTestingImpl(
 				TransactionCoordinatorBuilderFactory.INSTANCE.forJta()
 						.setJtaPlatform( JtaPlatformStandardTestingImpl.INSTANCE )
 						.setAutoJoinTransactions( autoJoin )
 						.setPreferUserTransactions( preferUserTransactions() )
-						.setPerformJtaThreadTracking( false ),
-				new BatchBuilderImpl( batchSize )
+						.setPerformJtaThreadTracking( false )
+		);
+		jdbcSessionOwner.setJdbcSessionContext( JdbcSessionContextStandardTestingImpl.INSTANCE );
+		return new JdbcSessionImpl(
+				jdbcSessionOwner,
+				logicalConnectionManaged
 		);
 	}
 

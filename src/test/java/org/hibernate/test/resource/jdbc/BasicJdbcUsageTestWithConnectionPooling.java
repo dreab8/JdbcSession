@@ -26,18 +26,17 @@ package org.hibernate.test.resource.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionManagedImpl;
-import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
-
-import org.hibernate.test.resource.common.DatabaseConnectionInfo;
-import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
 
 import org.junit.After;
 import org.junit.Before;
+
+import org.hibernate.test.resource.common.DatabaseConnectionInfo;
+import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
+import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
 /**
  * @author Steve Ebersole
@@ -61,7 +60,7 @@ public class BasicJdbcUsageTestWithConnectionPooling extends AbstractBasicJdbcUs
 		jdbcConnection = DatabaseConnectionInfo.INSTANCE.makeConnection();
 
 		jdbcSession = new JdbcSessionImpl(
-				JdbcSessionContextStandardTestingImpl.INSTANCE,
+				new JdbcSessionOwnerTestingImpl(),
 				new LogicalConnectionManagedImpl(
 						new JdbcConnectionAccess() {
 							@Override
@@ -72,11 +71,14 @@ public class BasicJdbcUsageTestWithConnectionPooling extends AbstractBasicJdbcUs
 							@Override
 							public void releaseConnection(Connection connection) throws SQLException {
 							}
+
+							@Override
+							public boolean supportsAggressiveRelease() {
+								return false;
+							}
 						},
 						JdbcSessionContextStandardTestingImpl.INSTANCE
-				),
-				TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal(),
-				new BatchBuilderImpl( 0 )
+				)
 		);
 	}
 

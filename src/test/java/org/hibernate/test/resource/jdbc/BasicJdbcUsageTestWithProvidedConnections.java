@@ -26,16 +26,14 @@ package org.hibernate.test.resource.jdbc;
 import java.sql.Connection;
 
 import org.hibernate.resource.jdbc.JdbcSession;
-import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.internal.JdbcSessionImpl;
 import org.hibernate.resource.jdbc.internal.LogicalConnectionProvidedImpl;
-import org.hibernate.resource.transaction.TransactionCoordinatorBuilderFactory;
-
-import org.hibernate.test.resource.common.DatabaseConnectionInfo;
-import org.hibernate.test.resource.jdbc.common.JdbcSessionContextStandardTestingImpl;
 
 import org.junit.After;
 import org.junit.Before;
+
+import org.hibernate.test.resource.common.DatabaseConnectionInfo;
+import org.hibernate.test.resource.jdbc.common.JdbcSessionOwnerTestingImpl;
 
 /**
  * @author Steve Ebersole
@@ -59,10 +57,8 @@ public class BasicJdbcUsageTestWithProvidedConnections extends AbstractBasicJdbc
 		jdbcConnection = DatabaseConnectionInfo.INSTANCE.makeConnection();
 
 		jdbcSession = new JdbcSessionImpl(
-				JdbcSessionContextStandardTestingImpl.INSTANCE,
-				new LogicalConnectionProvidedImpl( jdbcConnection ),
-				TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal(),
-				new BatchBuilderImpl( 0 )
+				new JdbcSessionOwnerTestingImpl(),
+				new LogicalConnectionProvidedImpl( jdbcConnection )
 		);
 	}
 

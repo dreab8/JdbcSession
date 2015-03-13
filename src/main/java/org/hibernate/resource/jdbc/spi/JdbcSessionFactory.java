@@ -49,20 +49,16 @@ public class JdbcSessionFactory {
 				owner.getJdbcSessionContext()
 		);
 		return new JdbcSessionImpl(
-				owner.getJdbcSessionContext(),
-				logicalConnection,
-				owner.getTransactionCoordinatorBuilder(),
-				owner.getBatchBuilder()
+				owner,
+				logicalConnection
 		);
 	}
 
 	public JdbcSession create(JdbcSessionOwner owner, Connection jdbcConnection) {
 		final LogicalConnectionProvidedImpl logicalConnection = new LogicalConnectionProvidedImpl( jdbcConnection );
 		return new JdbcSessionImpl(
-				owner.getJdbcSessionContext(),
-				logicalConnection,
-				owner.getTransactionCoordinatorBuilder(),
-				owner.getBatchBuilder()
+				owner,
+				logicalConnection
 		);
 	}
 
@@ -73,10 +69,8 @@ public class JdbcSessionFactory {
 				resourceRegistry
 		);
 		return new JdbcSessionImpl(
-				owner.getJdbcSessionContext(),
-				logicalConnection,
-				owner.getTransactionCoordinatorBuilder(),
-				owner.getBatchBuilder()
+				owner,
+				logicalConnection
 		);
 	}
 }

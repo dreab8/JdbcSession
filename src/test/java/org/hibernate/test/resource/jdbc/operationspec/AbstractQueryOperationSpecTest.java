@@ -87,7 +87,7 @@ public abstract class AbstractQueryOperationSpecTest<T extends QueryOperationSpe
 		when( operationSpec.getParameterBindings() ).thenReturn( parameterBindings );
 		when( operationSpec.getQueryStatementBuilder() ).thenReturn( queryStatementBuilder );
 		when( operationSpec.getStatementExecutor() ).thenReturn( statementExecutor );
-		when( statementExecutor.execute( any( PreparedStatement.class ) ) ).thenReturn(
+		when( statementExecutor.execute( any( PreparedStatement.class ), any( JdbcSessionContext.class ) ) ).thenReturn(
 				resultSet
 		);
 		when(
@@ -153,7 +153,7 @@ public abstract class AbstractQueryOperationSpecTest<T extends QueryOperationSpe
 	public void statementExecutorMethodIsCalledWithTheExpectedParameters() throws SQLException {
 		jdbSessionAccept();
 
-		verify( statementExecutor ).execute( statement );
+		verify( statementExecutor ).execute( statement, jdbcSession.getSessionContext() );
 	}
 
 	private void mockOperationMethods(

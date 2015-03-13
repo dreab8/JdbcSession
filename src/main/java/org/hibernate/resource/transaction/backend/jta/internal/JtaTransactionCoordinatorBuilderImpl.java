@@ -24,6 +24,7 @@
 package org.hibernate.resource.transaction.backend.jta.internal;
 
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
 import org.hibernate.resource.transaction.TransactionCoordinatorJtaBuilder;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
@@ -38,6 +39,7 @@ public class JtaTransactionCoordinatorBuilderImpl implements TransactionCoordina
 	private boolean autoJoinTransactions = true;
 	private boolean preferUserTransactions;
 	private boolean performJtaThreadTracking = true;
+	private JdbcSessionOwner sessionOwner;
 
 	@Override
 	public TransactionCoordinatorJtaBuilder setJtaPlatform(JtaPlatform jtaPlatform) {

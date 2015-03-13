@@ -24,6 +24,7 @@
 package org.hibernate.resource.jdbc.spi;
 
 import org.hibernate.ConnectionReleaseMode;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.engine.jdbc.spi.SqlStatementLogger;
 
@@ -45,6 +46,14 @@ public interface JdbcSessionContext {
 	public SqlExceptionHelper getSqlExceptionHelper();
 	public SqlStatementLogger getSqlStatementLogger();
 	public JdbcObserver getObserver();
+
+	/**
+	 * Retrieve the JDBC services for this environment.
+	 *
+	 * @return The JDBC services
+	 */
+	public JdbcServices getJdbcServices();
+
 
 	public static enum ConnectionAcquisitionMode {
 		IMMEDIATELY,

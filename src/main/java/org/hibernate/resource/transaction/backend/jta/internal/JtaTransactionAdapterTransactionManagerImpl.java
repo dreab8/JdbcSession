@@ -26,6 +26,7 @@ package org.hibernate.resource.transaction.backend.jta.internal;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.TransactionException;
+import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
 
 import org.jboss.logging.Logger;
 
@@ -77,5 +78,15 @@ public class JtaTransactionAdapterTransactionManagerImpl implements JtaTransacti
 		catch (Exception e) {
 			throw new TransactionException( "JTA TransactionManager#rollback failed", e );
 		}
+	}
+
+	@Override
+	public boolean isActive() {
+		return JtaStatusHelper.isActive(transactionManager);
+	}
+
+	@Override
+	public boolean isInitiator() {
+		return false;
 	}
 }

@@ -25,12 +25,14 @@ package org.hibernate.resource.transaction.backend.store.internal;
 
 import javax.transaction.Status;
 
+import org.hibernate.engine.transaction.spi.IsolationDelegate;
 import org.hibernate.internal.CoreMessageLogger;
+import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
+import org.hibernate.resource.transaction.SynchronizationRegistry;
+import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
 import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
-import org.hibernate.resource.transaction.SynchronizationRegistry;
-import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 import static org.hibernate.internal.CoreLogging.messageLogger;
@@ -40,14 +42,13 @@ import static org.hibernate.internal.CoreLogging.messageLogger;
  * specific ResourceLocalTransaction.
  *
  * @author Steve Ebersole
- *
  * @see org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction
  */
 public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoordinator {
 	private static final CoreMessageLogger log = messageLogger( ResourceLocalTransactionCoordinatorImpl.class );
 
 	private final DataStoreTransactionAccess dataStoreTransactionAccess;
-	private final TransactionCoordinatorOwner owner;
+	private final TransactionCoordinatorOwner transactionCoordinatorOwner;
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
 
 	private TransactionDriverControlImpl physicalTransactionDelegate;
@@ -56,13 +57,13 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 	 * Construct a ResourceLocalTransactionCoordinatorImpl instance.  package-protected to ensure access goes through
 	 * builder.
 	 *
-	 * @param owner The owner
+	 * @param owner The transactionCoordinatorOwner
 	 */
 	ResourceLocalTransactionCoordinatorImpl(
 			TransactionCoordinatorOwner owner,
-		DataStoreTransactionAccess dataStoreTransactionAccess) {
+			DataStoreTransactionAccess dataStoreTransactionAccess) {
 		this.dataStoreTransactionAccess = dataStoreTransactionAccess;
-		this.owner = owner;
+		this.transactionCoordinatorOwner = owner;
 	}
 
 	@Override
@@ -98,6 +99,26 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 		return synchronizationRegistry;
 	}
 
+	@Override
+	public boolean isInitiator() {
+		return isActive();
+	}
+
+	@Override
+	public boolean isActive() {
+		return transactionCoordinatorOwner.isActive();
+	}
+
+	@Override
+	public IsolationDelegate createIsolationDelegate() {
+		final JdbcSessionOwner jdbcSessionOwner = transactionCoordinatorOwner.getJdbcSessionOwner();
+
+		return new JdbcIsolationDelegate(
+				jdbcSessionOwner.getJdbcConnectionAccess(),
+				jdbcSessionOwner.getJdbcSessionContext().getSqlExceptionHelper()
+		);
+	}
+
 
 	// PhysicalTransactionDelegate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -107,16 +128,16 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 
 	private void beforeCompletionCallback() {
 		log.trace( "ResourceLocalTransactionCoordinatorImpl#beforeCompletionCallback" );
-		owner.beforeTransactionCompletion();
+		transactionCoordinatorOwner.beforeTransactionCompletion();
 		synchronizationRegistry.notifySynchronizationsBeforeTransactionCompletion();
 	}
 
 	private void afterCompletionCallback(boolean successful) {
 		log.tracef( "ResourceLocalTransactionCoordinatorImpl#afterCompletionCallback(%s)", successful );
-		final int statusToSend =  successful ? Status.STATUS_COMMITTED : Status.STATUS_UNKNOWN;
+		final int statusToSend = successful ? Status.STATUS_COMMITTED : Status.STATUS_UNKNOWN;
 		synchronizationRegistry.notifySynchronizationsAfterTransactionCompletion( statusToSend );
 
-		owner.afterTransactionCompletion( successful );
+		transactionCoordinatorOwner.afterTransactionCompletion( successful );
 
 		invalidateDelegate();
 	}

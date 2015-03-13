@@ -23,6 +23,7 @@
  */
 package org.hibernate.resource.jdbc.spi;
 
+import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 
 /**
@@ -39,6 +40,7 @@ public interface JdbcSessionOwner {
 	public BatchBuilder getBatchBuilder();
 
 	public JdbcSessionContext getJdbcSessionContext();
+
 	public JdbcConnectionAccess getJdbcConnectionAccess();
 
 	/**

@@ -23,6 +23,8 @@
  */
 package org.hibernate.resource.transaction.spi;
 
+import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
+
 /**
  * Models an owner of a TransactionCoordinator.  Mainly used in 2 ways:<ul>
  *     <li>
@@ -54,4 +56,6 @@ public interface TransactionCoordinatorOwner {
 	 * @param successful Was the transaction successful?
 	 */
 	public void afterTransactionCompletion(boolean successful);
+
+	public JdbcSessionOwner getJdbcSessionOwner();
 }

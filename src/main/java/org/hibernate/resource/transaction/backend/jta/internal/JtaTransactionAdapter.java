@@ -47,4 +47,8 @@ public interface JtaTransactionAdapter {
 	 * Call rollback on the underlying transaction object
 	 */
 	public void rollback();
+
+	public boolean isActive();
+
+	public boolean isInitiator();
 }

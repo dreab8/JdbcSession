@@ -4,19 +4,22 @@ import javax.transaction.Status;
 import javax.transaction.TransactionManager;
 import javax.transaction.UserTransaction;
 
+import org.jboss.logging.Logger;
+
 import org.hibernate.TransactionException;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.engine.transaction.spi.IsolationDelegate;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
-import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
-import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.RegisteredSynchronization;
+import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinator;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinatorNonTrackingImpl;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinatorTrackingImpl;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackTarget;
-import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinator;
-
-import org.jboss.logging.Logger;
+import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
+import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 
 import static org.hibernate.internal.CoreLogging.logger;
 
@@ -28,7 +31,7 @@ import static org.hibernate.internal.CoreLogging.logger;
 public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, SynchronizationCallbackTarget {
 	private static final Logger log = logger( JtaTransactionCoordinatorImpl.class );
 
-	private final TransactionCoordinatorOwner owner;
+	private final TransactionCoordinatorOwner transactionCoordinatorOwner;
 	private final JtaPlatform jtaPlatform;
 	private final boolean autoJoinTransactions;
 	private final boolean preferUserTransactions;
@@ -44,7 +47,7 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 	 * Construct a JtaTransactionCoordinatorImpl instance.  package-protected to ensure access goes through
 	 * builder.
 	 *
-	 * @param owner The owner
+	 * @param owner The transactionCoordinatorOwner
 	 * @param jtaPlatform The JtaPlatform to use
 	 * @param autoJoinTransactions Should JTA transactions be auto-joined?  Or should we wait for explicit join calls?
 	 * @param preferUserTransactions Should we prefer using UserTransaction, as opposed to TransactionManager?
@@ -56,7 +59,7 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 			boolean autoJoinTransactions,
 			boolean preferUserTransactions,
 			boolean performJtaThreadTracking) {
-		this.owner = owner;
+		this.transactionCoordinatorOwner = owner;
 		this.jtaPlatform = jtaPlatform;
 		this.autoJoinTransactions = autoJoinTransactions;
 		this.preferUserTransactions = preferUserTransactions;
@@ -212,17 +215,32 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 		return synchronizationRegistry;
 	}
 
+	@Override
+	public boolean isInitiator() {
+		return physicalTransactionDelegate.isInitiator();
+	}
+
+	@Override
+	public boolean isActive() {
+		return transactionCoordinatorOwner.isActive();
+	}
+
+	@Override
+	public IsolationDelegate createIsolationDelegate() {
+		final JdbcSessionOwner jdbcSessionOwner = transactionCoordinatorOwner.getJdbcSessionOwner();
+
+		return new JtaIsolationDelegate(
+				jdbcSessionOwner.getJdbcConnectionAccess(),
+				jdbcSessionOwner.getJdbcSessionContext().getSqlExceptionHelper(),
+				jtaPlatform.retrieveTransactionManager()
+		);
+	}
 
 	// SynchronizationCallbackTarget ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	@Override
-	public boolean isActive() {
-		return owner.isActive();
-	}
-
-	@Override
 	public void beforeCompletion() {
-		owner.beforeTransactionCompletion();
+		transactionCoordinatorOwner.beforeTransactionCompletion();
 		synchronizationRegistry.notifySynchronizationsBeforeTransactionCompletion();
 	}
 
@@ -231,7 +249,7 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 		final int statusToSend =  successful ? Status.STATUS_COMMITTED : Status.STATUS_UNKNOWN;
 		synchronizationRegistry.notifySynchronizationsAfterTransactionCompletion( statusToSend );
 
-		owner.afterTransactionCompletion( successful );
+		transactionCoordinatorOwner.afterTransactionCompletion( successful );
 
 		if ( physicalTransactionDelegate != null ) {
 			physicalTransactionDelegate.invalidate();
@@ -288,6 +306,10 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 			// we don't have to perform any after completion processing here.  We leave that for
 			// the Synchronization callbacks
 			jtaTransactionAdapter.rollback();
+		}
+
+		public boolean isInitiator(){
+			return jtaTransactionAdapter.isInitiator();
 		}
 	}
 

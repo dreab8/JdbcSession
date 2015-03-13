@@ -23,9 +23,11 @@
  */
 package org.hibernate.resource.transaction.backend.jta.internal;
 
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.hibernate.TransactionException;
+import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
 
 import org.jboss.logging.Logger;
 
@@ -77,5 +79,22 @@ public class JtaTransactionAdapterUserTransactionImpl implements JtaTransactionA
 		catch (Exception e) {
 			throw new TransactionException( "JTA UserTransaction#rollback failed", e );
 		}
+	}
+
+	@Override
+	public boolean isActive() {
+		final int status;
+		try {
+			status = userTransaction.getStatus();
+		}
+		catch ( SystemException se ) {
+			throw new TransactionException( "Could not determine transaction status: ", se );
+		}
+		return JtaStatusHelper.isActive( status );
+	}
+
+	@Override
+	public boolean isInitiator() {
+		return false;
 	}
 }

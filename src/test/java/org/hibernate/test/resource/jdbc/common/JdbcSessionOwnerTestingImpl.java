@@ -26,9 +26,9 @@ package org.hibernate.test.resource.jdbc.common;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.jdbc.internal.BatchBuilderImpl;
 import org.hibernate.resource.jdbc.spi.BatchBuilder;
-import org.hibernate.resource.jdbc.spi.JdbcConnectionAccess;
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
 import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
@@ -53,8 +53,18 @@ public class JdbcSessionOwnerTestingImpl implements JdbcSessionOwner {
 		public void releaseConnection(Connection connection) throws SQLException {
 			connection.close();
 		}
+
+		@Override
+		public boolean supportsAggressiveRelease() {
+			return false;
+		}
 	};
+
 	private TransactionCoordinatorBuilder transactionCoordinatorBuilder = TransactionCoordinatorBuilderFactory.INSTANCE.forResourceLocal();
+
+	public JdbcSessionOwnerTestingImpl(TransactionCoordinatorBuilder transactionCoordinatorBuilder) {
+		this.transactionCoordinatorBuilder = 	transactionCoordinatorBuilder;
+	}
 
 	public JdbcSessionOwnerTestingImpl() {
 	}

@@ -23,6 +23,8 @@
  */
 package org.hibernate.resource.transaction;
 
+import org.hibernate.engine.transaction.spi.IsolationDelegate;
+
 /**
  * Models the coordination of all transaction related flows.
  *
@@ -62,6 +64,33 @@ public interface TransactionCoordinator {
 	 * @return The local Synchronization registry
 	 */
 	public SynchronizationRegistry getLocalSynchronizations();
+
+	/**
+	 * Is this transaction the initiator of any underlying transaction?
+	 *
+	 * @return {@code true} if this transaction initiated the underlying transaction; {@code false} otherwise.
+	 */
+	public boolean isInitiator();
+
+	/**
+	 * Is this transaction still active?
+	 * <p/>
+	 * Answers on a best effort basis.  For example, in the case of JDBC based transactions we cannot know that a
+	 * transaction is active when it is initiated directly through the JDBC {@link java.sql.Connection}, only when
+	 * it is initiated from here.
+	 *
+	 * @return {@code true} if the transaction is still active; {@code false} otherwise.
+	 *
+	 * @throws org.hibernate.HibernateException Indicates a problem checking the transaction status.
+	 */
+	public boolean isActive();
+
+	/**
+	 * Retrieve an isolation delegate appropriate for this transaction strategy.
+	 *
+	 * @return An isolation delegate.
+	 */
+	public IsolationDelegate createIsolationDelegate();
 
 	/**
 	 * Provides the means for "local transactions" (as transaction drivers) to control the

@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2013, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,35 +21,23 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.test.resource.jdbc.common;
+package org.hibernate.resource.jdbc.internal;
 
-import java.sql.Connection;
+import java.sql.CallableStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.hibernate.HibernateException;
-import org.hibernate.engine.jdbc.spi.JdbcConnectionAccess;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
+import org.hibernate.resource.jdbc.spi.StatementExecutor;
 
 /**
- * @author Steve Ebersole
+ * @author Andrea Boriero
  */
-public class ProvidedOnlyConnectionAccess implements JdbcConnectionAccess {
-	/**
-	 * Singleton access
-	 */
-	public static final ProvidedOnlyConnectionAccess INSTANCE = new ProvidedOnlyConnectionAccess();
+public class CallableStatementExecutorImpl implements StatementExecutor<CallableStatement> {
 
 	@Override
-	public Connection obtainConnection() throws SQLException {
-		throw new HibernateException( "JDBC Connection should have been provided" );
-	}
-
-	@Override
-	public void releaseConnection(Connection connection) throws SQLException {
-		throw new HibernateException( "JDBC Connection should have been provided" );
-	}
-
-	@Override
-	public boolean supportsAggressiveRelease() {
-		return false;
+	public ResultSet execute(
+			final CallableStatement statement, final JdbcSessionContext context) throws SQLException {
+		return context.getJdbcServices().getDialect().getResultSet( statement );
 	}
 }

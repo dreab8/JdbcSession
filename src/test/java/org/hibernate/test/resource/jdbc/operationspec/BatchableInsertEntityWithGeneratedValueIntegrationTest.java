@@ -39,6 +39,7 @@ import org.hibernate.resource.jdbc.internal.StandardQueryPreparedStatementBuilde
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.ParameterBindings;
 import org.hibernate.resource.jdbc.spi.QueryStatementBuilder;
 import org.hibernate.resource.jdbc.spi.ResultSetProcessor;
@@ -222,7 +223,7 @@ public class BatchableInsertEntityWithGeneratedValueIntegrationTest
 			return new StatementExecutor() {
 				@Override
 				public ResultSet execute(
-						PreparedStatement statement) throws SQLException {
+						PreparedStatement statement, JdbcSessionContext context) throws SQLException {
 					return statement.executeQuery();
 				}
 			};

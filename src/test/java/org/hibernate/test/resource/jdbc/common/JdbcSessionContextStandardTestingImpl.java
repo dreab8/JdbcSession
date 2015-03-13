@@ -24,6 +24,7 @@
 package org.hibernate.test.resource.jdbc.common;
 
 import org.hibernate.ConnectionReleaseMode;
+import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.jdbc.spi.SqlExceptionHelper;
 import org.hibernate.engine.jdbc.spi.SqlStatementLogger;
 import org.hibernate.resource.jdbc.spi.JdbcObserver;
@@ -86,5 +87,10 @@ public class JdbcSessionContextStandardTestingImpl implements JdbcSessionContext
 	@Override
 	public JdbcObserver getObserver() {
 		return JdbcObserverNoOpImpl.INSTANCE;
+	}
+
+	@Override
+	public JdbcServices getJdbcServices() {
+		return null;
 	}
 }
