@@ -9,6 +9,7 @@ import java.util.List;
 import org.jboss.logging.Logger;
 
 import org.hibernate.HibernateException;
+import org.hibernate.SessionException;
 import org.hibernate.resource.jdbc.BatchableOperationSpec;
 import org.hibernate.resource.jdbc.LogicalConnection;
 import org.hibernate.resource.jdbc.Operation;
@@ -119,7 +120,7 @@ public class JdbcSessionImpl
 	}
 
 	@Override
-	public void accept(BatchableOperationSpec operation, Context[] stepsContext) {
+	public void accept(BatchableOperationSpec operation, List<? extends Context> stepsContext) {
 		Batch currentBatch = getResourceRegistry().getCurrentBatch();
 		if ( currentBatch != null ) {
 			if ( !currentBatch.getKey().equals( operation.getBatchKey() ) ) {
@@ -134,7 +135,7 @@ public class JdbcSessionImpl
 		try {
 			List<BatchableOperationStep> steps = operation.getSteps();
 			for ( int i = 0; i < steps.size(); i++ ) {
-				steps.get( i ).apply( this, currentBatch, logicalConnection.getPhysicalConnection(), stepsContext[i] );
+				steps.get( i ).apply( this, currentBatch, logicalConnection.getPhysicalConnection(), stepsContext.get( i ) );
 			}
 		}
 		catch (SQLException e) {

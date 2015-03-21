@@ -27,6 +27,8 @@ import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.jdbc.Expectation;
@@ -63,15 +65,15 @@ public abstract class AbstractBatchableOperationSpecIntegrationTest extends Abst
 		return new BatchBuilderImpl( getBatchSize() );
 	}
 
-	protected Context[] buildInsertContext(final Serializable id, int steps) {
-		Context[] context = new Context[steps];
+	protected List<Context> buildInsertContext(final Serializable id, int steps) {
+		List<Context> contexts = new ArrayList<Context>();
 		for ( int i = 0; i < steps; i++ ) {
-			context[i] = buildInsertContext( id );
+			contexts.add( buildInsertContext( id ) );
 		}
-		return context;
+		return contexts;
 	}
 
-	protected Context[] buildInsertContext(int steps) {
+	protected List<Context> buildInsertContext(int steps) {
 		return buildInsertContext( null, steps );
 	}
 
@@ -97,15 +99,6 @@ public abstract class AbstractBatchableOperationSpecIntegrationTest extends Abst
 				return null;
 			}
 
-			@Override
-			public boolean[] isIncludeProperty() {
-				return new boolean[0];
-			}
-
-			@Override
-			public Expectation getExpectation() {
-				return null;
-			}
 		};
 	}
 

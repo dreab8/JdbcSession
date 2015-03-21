@@ -23,6 +23,8 @@
  */
 package org.hibernate.resource.jdbc;
 
+import java.util.List;
+
 import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 
@@ -93,7 +95,7 @@ public interface JdbcSession {
 
 	public Result accept(ScrollableQueryOperationSpec operation);
 
-	public void accept(BatchableOperationSpec operation, Context[] stepsContext);
+	public void accept(BatchableOperationSpec operation, List<? extends Context> stepsContext);
 
 	public GenerateKeyResultSet accept(PreparedStatementWithGeneratedKeyInsertOperationSpec operation);
 

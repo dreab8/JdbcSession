@@ -33,7 +33,7 @@ import org.hibernate.resource.jdbc.spi.StatementExecutor;
 /**
  * @author Andrea Boriero
  */
-public class StatementExecutorImpl implements StatementExecutor<PreparedStatement> {
+public class StandardStatementExecutorImpl implements StatementExecutor<PreparedStatement> {
 	@Override
 	public ResultSet execute(
 			PreparedStatement statement, JdbcSessionContext context) throws SQLException {

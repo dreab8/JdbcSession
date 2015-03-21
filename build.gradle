@@ -1,5 +1,5 @@
 apply plugin: 'java'
-
+apply plugin: 'maven-publish'
 apply plugin: "jacoco"
 apply plugin: 'checkstyle'
 apply plugin: 'findbugs'
@@ -17,7 +17,7 @@ task wrapper(type: Wrapper) {
 
 repositories {
     mavenCentral()
-//    mavenLocal()
+    mavenLocal()
 
     maven {
         name 'jboss-nexus'
@@ -81,4 +81,28 @@ findbugs {
 }
 pmd {
 	ignoreFailures = true
+}
+
+publishing {
+    publications {
+        mavenJava( MavenPublication ) {
+            from components.java
+
+            artifact sourcesJar {
+                classifier "sources"
+            }
+
+//            // TEMPORARY : currently Gradle Publishing feature is exporting dependencies as 'runtime' scope,
+//            //      rather than 'compile'; fix that.
+//            asNode().dependencies[0].dependency.each {
+//                it.scope[0].value = 'compile'
+//            }
+        }
+    }
+
+}
+
+task sourcesJar(type: Jar, dependsOn: compileJava) {
+    from sourceSets.main.allSource
+    classifier = 'sources'
 }

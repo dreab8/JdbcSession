@@ -29,13 +29,12 @@ import java.sql.SQLException;
 import java.util.List;
 
 import org.hibernate.engine.spi.SessionImplementor;
-import org.hibernate.jdbc.Expectation;
 import org.hibernate.resource.jdbc.spi.Batch;
 import org.hibernate.resource.jdbc.spi.BatchKey;
 import org.hibernate.resource.jdbc.spi.BatchObserver;
 
 /**
- * @author Andrea Borie,ro
+ * @author Andrea Boriero
  */
 public interface BatchableOperationSpec {
 	public BatchKey getBatchKey();
@@ -65,10 +64,6 @@ public interface BatchableOperationSpec {
 			public Object getEntity();
 
 			public SessionImplementor getSessionImplementor();
-
-			public boolean[] isIncludeProperty();
-
-			public Expectation getExpectation();
 		}
 
 		public interface UpdateContext extends Context {
@@ -76,17 +71,15 @@ public interface BatchableOperationSpec {
 
 			public Object[] getState();
 
-			public Object getEntity();
-
-			public int[] getDirtyFields();
-
-			public boolean isDirtyCollection();
-
 			public Object[] getOldFields();
 
 			public Object getOldVersion();
 
 			public Object getrowId();
+
+			boolean[] getIncludeProperty();
+
+			SessionImplementor getSessionImplementor();
 		}
 
 		public interface DeleteContext extends Context {
@@ -94,9 +87,9 @@ public interface BatchableOperationSpec {
 
 			public Object[] getState();
 
-			public Object getEntity();
+			public Object getVersion();
+
+			SessionImplementor getSessionImplementor();
 		}
 	}
-
-
 }
