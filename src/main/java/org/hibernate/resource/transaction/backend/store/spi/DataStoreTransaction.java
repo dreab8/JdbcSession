@@ -23,6 +23,8 @@
  */
 package org.hibernate.resource.transaction.backend.store.spi;
 
+import org.hibernate.resource.transaction.spi.TransactionStatus;
+
 /**
  * Models access to the resource transaction of the underlying data store (JDBC).
  *
@@ -43,4 +45,6 @@ public interface DataStoreTransaction {
 	 * Rollback the resource transaction
 	 */
 	public void rollback();
+
+	public TransactionStatus getStatus();
 }

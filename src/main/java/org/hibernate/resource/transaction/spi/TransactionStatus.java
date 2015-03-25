@@ -1,7 +1,7 @@
 /*
  * Hibernate, Relational Persistence for Idiomatic Java
  *
- * Copyright (c) 2014, Red Hat Inc. or third-party contributors as
+ * Copyright (c) {DATE}, Red Hat Inc. or third-party contributors as
  * indicated by the @author tags or express copyright attribution
  * statements applied by the authors.  All third-party contributions are
  * distributed under license by Red Hat Inc.
@@ -21,34 +21,47 @@
  * 51 Franklin Street, Fifth Floor
  * Boston, MA  02110-1301  USA
  */
-package org.hibernate.resource.transaction.backend.jta.internal;
-
-import org.hibernate.resource.transaction.spi.TransactionStatus;
+package org.hibernate.resource.transaction.spi;
 
 /**
- * Adapter for abstracting the physical means of interacting with JTA transactions.
- * <p/>
- * JTA transactions can concretely be interacted with through {@link javax.transaction.UserTransaction}
- * or {@link javax.transaction.Transaction} depending on environment and situation.  This adapter hides
- * this difference.
+ * Enumeration of statuses in which a transaction facade ({@link org.hibernate.Transaction}) might be.
  *
- * @author Steve Ebersole
+ * @author Andrea Boriero
  */
-public interface JtaTransactionAdapter {
+public enum TransactionStatus {
 	/**
-	 * Call begin on the underlying transaction object
+	 * The transaction has not yet been begun
 	 */
-	public void begin();
-
+	NOT_ACTIVE,
 	/**
-	 * Call commit on the underlying transaction object
+	 * The transaction has been begun, but not yet completed.
 	 */
-	public void commit();
-
+	ACTIVE,
 	/**
-	 * Call rollback on the underlying transaction object
+	 * The transaction has been competed successfully.
 	 */
-	public void rollback();
-
-	public TransactionStatus getStatus();
+	COMMITTED,
+	/**
+	 * The transaction has been rolled back.
+	 */
+	ROLLED_BACK,
+	/**
+	 * The transaction  has been marked for  rollback only.
+	 */
+	MARKED_ROLLBACK,
+	/**
+	 * The transaction attempted to commit, but failed.
+	 */
+	FAILED_COMMIT,
+	/**
+	 * Status code indicating a transaction that has begun the second
+	 * phase of the two-phase commit protocol, but not yet completed
+	 * this phase
+	 */
+	COMMITTING,
+	/**
+	 *  Status code indicating a transaction that is in the process of
+	 *  rolling back.
+	 */
+	 ROLLING_BACK
 }

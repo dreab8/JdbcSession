@@ -23,11 +23,15 @@
  */
 package org.hibernate.resource.transaction.backend.store.internal;
 
+import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.HibernateException;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
 import org.hibernate.resource.transaction.TransactionCoordinatorResourceLocalBuilder;
+
+import static org.hibernate.resource.jdbc.spi.JdbcSessionContext.ConnectionAcquisitionMode;
 
 /**
  * Concrete builder for resource-local TransactionCoordinator instances.
@@ -45,16 +49,31 @@ public class ResourceLocalTransactionCoordinatorBuilderImpl implements Transacti
 	@Override
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner) {
 		if ( providedDataStoreTransactionAccess != null ) {
-			return new ResourceLocalTransactionCoordinatorImpl( owner, providedDataStoreTransactionAccess );
+			return new ResourceLocalTransactionCoordinatorImpl( this, owner, providedDataStoreTransactionAccess );
 		}
 		else {
 			if ( owner instanceof DataStoreTransactionAccess ) {
-				return new ResourceLocalTransactionCoordinatorImpl( owner, (DataStoreTransactionAccess) owner );
+				return new ResourceLocalTransactionCoordinatorImpl( this, owner, (DataStoreTransactionAccess) owner );
 			}
 		}
 
 		throw new HibernateException(
 				"Could not determine ResourceLocalTransactionAccess to use in building TransactionCoordinator"
 		);
+	}
+
+	@Override
+	public boolean isJta() {
+		return false;
+	}
+
+	@Override
+	public ConnectionReleaseMode getDefaultConnectionReleaseMode() {
+		return ConnectionReleaseMode.ON_CLOSE;
+	}
+
+	@Override
+	public ConnectionAcquisitionMode getDefaultConnectionAcquisitionMode() {
+		return null;
 	}
 }

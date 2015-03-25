@@ -9,10 +9,10 @@ import org.jboss.logging.Logger;
 import org.hibernate.TransactionException;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
 import org.hibernate.engine.transaction.spi.IsolationDelegate;
-import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.RegisteredSynchronization;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinator;
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackCoordinatorNonTrackingImpl;
@@ -20,6 +20,7 @@ import org.hibernate.resource.transaction.backend.jta.internal.synchronization.S
 import org.hibernate.resource.transaction.backend.jta.internal.synchronization.SynchronizationCallbackTarget;
 import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 import static org.hibernate.internal.CoreLogging.logger;
 
@@ -31,6 +32,7 @@ import static org.hibernate.internal.CoreLogging.logger;
 public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, SynchronizationCallbackTarget {
 	private static final Logger log = logger( JtaTransactionCoordinatorImpl.class );
 
+	private final TransactionCoordinatorBuilder transactionCoordinatorBuilder;
 	private final TransactionCoordinatorOwner transactionCoordinatorOwner;
 	private final JtaPlatform jtaPlatform;
 	private final boolean autoJoinTransactions;
@@ -54,11 +56,13 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 	 * @param performJtaThreadTracking Should we perform thread tracking?
 	 */
 	JtaTransactionCoordinatorImpl(
+			TransactionCoordinatorBuilder transactionCoordinatorBuilder,
 			TransactionCoordinatorOwner owner,
 			JtaPlatform jtaPlatform,
 			boolean autoJoinTransactions,
 			boolean preferUserTransactions,
 			boolean performJtaThreadTracking) {
+		this.transactionCoordinatorBuilder = transactionCoordinatorBuilder;
 		this.transactionCoordinatorOwner = owner;
 		this.jtaPlatform = jtaPlatform;
 		this.autoJoinTransactions = autoJoinTransactions;
@@ -216,11 +220,6 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 	}
 
 	@Override
-	public boolean isInitiator() {
-		return physicalTransactionDelegate.isInitiator();
-	}
-
-	@Override
 	public boolean isActive() {
 		return transactionCoordinatorOwner.isActive();
 	}
@@ -234,6 +233,11 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 				jdbcSessionOwner.getJdbcSessionContext().getSqlExceptionHelper(),
 				jtaPlatform.retrieveTransactionManager()
 		);
+	}
+
+	@Override
+	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder() {
+		return this.transactionCoordinatorBuilder;
 	}
 
 	// SynchronizationCallbackTarget ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -308,8 +312,9 @@ public class JtaTransactionCoordinatorImpl implements TransactionCoordinator, Sy
 			jtaTransactionAdapter.rollback();
 		}
 
-		public boolean isInitiator(){
-			return jtaTransactionAdapter.isInitiator();
+		@Override
+		public TransactionStatus getStatus() {
+			return jtaTransactionAdapter.getStatus();
 		}
 	}
 

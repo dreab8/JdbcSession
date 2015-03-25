@@ -23,8 +23,12 @@
  */
 package org.hibernate.resource.transaction;
 
+import org.hibernate.ConnectionReleaseMode;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
+
+import static org.hibernate.resource.jdbc.spi.JdbcSessionContext.ConnectionAcquisitionMode;
 
 /**
  * Builder for TransactionCoordinator instances
@@ -33,4 +37,10 @@ import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
  */
 public interface TransactionCoordinatorBuilder {
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner);
+
+	public boolean isJta();
+
+	public ConnectionReleaseMode getDefaultConnectionReleaseMode();
+
+	public ConnectionAcquisitionMode getDefaultConnectionAcquisitionMode();
 }

@@ -28,6 +28,7 @@ import javax.transaction.UserTransaction;
 
 import org.hibernate.TransactionException;
 import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 import org.jboss.logging.Logger;
 
@@ -82,19 +83,12 @@ public class JtaTransactionAdapterUserTransactionImpl implements JtaTransactionA
 	}
 
 	@Override
-	public boolean isActive() {
-		final int status;
+	public TransactionStatus getStatus() {
 		try {
-			status = userTransaction.getStatus();
+			return StatusTranslator.translate( userTransaction.getStatus() );
 		}
-		catch ( SystemException se ) {
-			throw new TransactionException( "Could not determine transaction status: ", se );
+		catch (SystemException e) {
+			throw new TransactionException( "JTA TransactionManager#getStatus failed", e );
 		}
-		return JtaStatusHelper.isActive( status );
-	}
-
-	@Override
-	public boolean isInitiator() {
-		return false;
 	}
 }

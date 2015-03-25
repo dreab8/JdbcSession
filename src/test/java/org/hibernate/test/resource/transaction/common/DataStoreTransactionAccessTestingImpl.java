@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import org.hibernate.TransactionException;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 
@@ -38,6 +39,7 @@ import org.hibernate.test.resource.common.DatabaseConnectionInfo;
 public class DataStoreTransactionAccessTestingImpl
 		extends TransactionCoordinatorOwnerTestingImpl
 		implements DataStoreTransactionAccess, DataStoreTransaction {
+	private TransactionStatus status = TransactionStatus.NOT_ACTIVE;
 
 	private final Connection jdbcConnection;
 
@@ -58,6 +60,7 @@ public class DataStoreTransactionAccessTestingImpl
 	public void begin() {
 		try {
 			jdbcConnection.setAutoCommit( false );
+			status = TransactionStatus.ACTIVE;
 		}
 		catch( SQLException e ) {
 			throw new TransactionException( "JDBC begin transaction failed: ", e );
@@ -68,8 +71,10 @@ public class DataStoreTransactionAccessTestingImpl
 	public void commit() {
 		try {
 			jdbcConnection.commit();
+			status = TransactionStatus.COMMITTED;
 		}
 		catch( SQLException e ) {
+			status = TransactionStatus.FAILED_COMMIT;
 			throw new TransactionException( "JDBC begin transaction failed: ", e );
 		}
 	}
@@ -78,9 +83,15 @@ public class DataStoreTransactionAccessTestingImpl
 	public void rollback() {
 		try {
 			jdbcConnection.rollback();
+			status = TransactionStatus.ROLLED_BACK;
 		}
 		catch( SQLException e ) {
 			throw new TransactionException( "JDBC begin transaction failed: ", e );
 		}
+	}
+
+	@Override
+	public TransactionStatus getStatus() {
+		return status;
 	}
 }

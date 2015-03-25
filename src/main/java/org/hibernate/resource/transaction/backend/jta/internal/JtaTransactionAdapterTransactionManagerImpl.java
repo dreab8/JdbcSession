@@ -23,10 +23,11 @@
  */
 package org.hibernate.resource.transaction.backend.jta.internal;
 
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 import org.hibernate.TransactionException;
-import org.hibernate.engine.transaction.internal.jta.JtaStatusHelper;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 import org.jboss.logging.Logger;
 
@@ -81,12 +82,12 @@ public class JtaTransactionAdapterTransactionManagerImpl implements JtaTransacti
 	}
 
 	@Override
-	public boolean isActive() {
-		return JtaStatusHelper.isActive(transactionManager);
-	}
-
-	@Override
-	public boolean isInitiator() {
-		return false;
+	public TransactionStatus getStatus() {
+		try {
+			return StatusTranslator.translate( transactionManager.getStatus() );
+		}
+		catch (SystemException e) {
+			throw new TransactionException( "JTA TransactionManager#getStatus failed", e );
+		}
 	}
 }

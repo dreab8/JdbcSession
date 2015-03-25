@@ -30,10 +30,12 @@ import org.hibernate.internal.CoreMessageLogger;
 import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
 import org.hibernate.resource.transaction.SynchronizationRegistry;
 import org.hibernate.resource.transaction.TransactionCoordinator;
+import org.hibernate.resource.transaction.TransactionCoordinatorBuilder;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransaction;
 import org.hibernate.resource.transaction.backend.store.spi.DataStoreTransactionAccess;
 import org.hibernate.resource.transaction.internal.SynchronizationRegistryStandardImpl;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 import static org.hibernate.internal.CoreLogging.messageLogger;
 
@@ -47,6 +49,7 @@ import static org.hibernate.internal.CoreLogging.messageLogger;
 public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoordinator {
 	private static final CoreMessageLogger log = messageLogger( ResourceLocalTransactionCoordinatorImpl.class );
 
+	private final TransactionCoordinatorBuilder transactionCoordinatorBuilder;
 	private final DataStoreTransactionAccess dataStoreTransactionAccess;
 	private final TransactionCoordinatorOwner transactionCoordinatorOwner;
 	private final SynchronizationRegistryStandardImpl synchronizationRegistry = new SynchronizationRegistryStandardImpl();
@@ -60,8 +63,10 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 	 * @param owner The transactionCoordinatorOwner
 	 */
 	ResourceLocalTransactionCoordinatorImpl(
+			TransactionCoordinatorBuilder transactionCoordinatorBuilder,
 			TransactionCoordinatorOwner owner,
 			DataStoreTransactionAccess dataStoreTransactionAccess) {
+		this.transactionCoordinatorBuilder = transactionCoordinatorBuilder;
 		this.dataStoreTransactionAccess = dataStoreTransactionAccess;
 		this.transactionCoordinatorOwner = owner;
 	}
@@ -100,11 +105,6 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 	}
 
 	@Override
-	public boolean isInitiator() {
-		return isActive();
-	}
-
-	@Override
 	public boolean isActive() {
 		return transactionCoordinatorOwner.isActive();
 	}
@@ -119,6 +119,10 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 		);
 	}
 
+	@Override
+	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder() {
+		return this.transactionCoordinatorBuilder;
+	}
 
 	// PhysicalTransactionDelegate ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -150,7 +154,6 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 		physicalTransactionDelegate.invalidate();
 		physicalTransactionDelegate = null;
 	}
-
 
 	/**
 	 * The delegate bridging between the local (application facing) transaction and the "physical" notion of a
@@ -194,6 +197,11 @@ public class ResourceLocalTransactionCoordinatorImpl implements TransactionCoord
 		public void rollback() {
 			dataStoreTransaction.rollback();
 			ResourceLocalTransactionCoordinatorImpl.this.afterCompletionCallback( false );
+		}
+
+		@Override
+		public TransactionStatus getStatus() {
+			return dataStoreTransaction.getStatus();
 		}
 	}
 }

@@ -24,6 +24,7 @@
 package org.hibernate.resource.transaction;
 
 import org.hibernate.engine.transaction.spi.IsolationDelegate;
+import org.hibernate.resource.transaction.spi.TransactionStatus;
 
 /**
  * Models the coordination of all transaction related flows.
@@ -66,13 +67,6 @@ public interface TransactionCoordinator {
 	public SynchronizationRegistry getLocalSynchronizations();
 
 	/**
-	 * Is this transaction the initiator of any underlying transaction?
-	 *
-	 * @return {@code true} if this transaction initiated the underlying transaction; {@code false} otherwise.
-	 */
-	public boolean isInitiator();
-
-	/**
 	 * Is this transaction still active?
 	 * <p/>
 	 * Answers on a best effort basis.  For example, in the case of JDBC based transactions we cannot know that a
@@ -91,6 +85,12 @@ public interface TransactionCoordinator {
 	 * @return An isolation delegate.
 	 */
 	public IsolationDelegate createIsolationDelegate();
+
+	/**
+	 *
+	 * @return
+	 */
+	public TransactionCoordinatorBuilder getTransactionCoordinatorBuilder();
 
 	/**
 	 * Provides the means for "local transactions" (as transaction drivers) to control the
@@ -113,6 +113,8 @@ public interface TransactionCoordinator {
 		 * Rollback the physical transaction
 		 */
 		public void rollback();
+
+		public TransactionStatus getStatus();
 
 		// todo : org.hibernate.Transaction will need access to register local Synchronizations.
 		//		depending on how we integrate TransactionCoordinator/TransactionDriverControl with

@@ -23,11 +23,15 @@
  */
 package org.hibernate.resource.transaction.backend.jta.internal;
 
+import org.hibernate.ConnectionReleaseMode;
 import org.hibernate.engine.transaction.jta.platform.spi.JtaPlatform;
+import org.hibernate.resource.jdbc.spi.JdbcSessionContext;
 import org.hibernate.resource.jdbc.spi.JdbcSessionOwner;
 import org.hibernate.resource.transaction.TransactionCoordinatorJtaBuilder;
 import org.hibernate.resource.transaction.TransactionCoordinator;
 import org.hibernate.resource.transaction.spi.TransactionCoordinatorOwner;
+
+import static org.hibernate.resource.jdbc.spi.JdbcSessionContext.*;
 
 /**
  * Concrete builder for JTA-based TransactionCoordinator instances.
@@ -68,11 +72,27 @@ public class JtaTransactionCoordinatorBuilderImpl implements TransactionCoordina
 	@Override
 	public TransactionCoordinator buildTransactionCoordinator(TransactionCoordinatorOwner owner) {
 		return new JtaTransactionCoordinatorImpl(
+				this,
 				owner,
 				jtaPlatform,
 				autoJoinTransactions,
 				preferUserTransactions,
 				performJtaThreadTracking
 		);
+	}
+
+	@Override
+	public boolean isJta() {
+		return true;
+	}
+
+	@Override
+	public ConnectionReleaseMode getDefaultConnectionReleaseMode() {
+		return ConnectionReleaseMode.AFTER_STATEMENT;
+	}
+
+	@Override
+	public ConnectionAcquisitionMode getDefaultConnectionAcquisitionMode() {
+		return ConnectionAcquisitionMode.DEFAULT;
 	}
 }
